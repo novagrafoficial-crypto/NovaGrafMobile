@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 
 const apiClient = axios.create({
   // ⚡ COLOCA AQUÍ LA URL PÚBLICA DE TU BACKEND DESPLEGADO:
-  baseURL: 'https://tu-backend-desplegado.com', 
+  baseURL: 'https://nova-graf-zbdt.onrender.com',
   timeout: 10000,
 });
 
