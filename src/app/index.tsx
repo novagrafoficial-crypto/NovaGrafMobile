@@ -11,8 +11,8 @@ export default function WelcomeLandingScreen() {
   useEffect(() => {
     if (isLoading) return;
     // Si ya tiene sesión iniciada previamente, lo sacamos del menú público y lo mandamos a su rol
-    if (user?.role === 'client') router.replace({ pathname: '/home' as any });
-    if (user?.role === 'admin') router.replace({ pathname: '(admin)/dashboard' as any });
+    if (user?.role === 'cliente') router.replace({ pathname: '/home' as any });
+    if (user?.role === 'administrador') router.replace({ pathname: '(admin)/dashboard' as any });
   }, [user, isLoading]);
 
   if (isLoading) {
