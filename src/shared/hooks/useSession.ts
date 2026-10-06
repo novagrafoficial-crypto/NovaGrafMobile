@@ -1,4 +1,3 @@
-// src/shared/hooks/useSession.ts
 import { useContext } from 'react';
 import { SessionContext } from '../providers/SessionProvider';
 

@@ -1,4 +1,3 @@
-// src/app/_layout.tsx
 import { Stack } from 'expo-router';
 import { SessionProvider } from '@/shared/providers/SessionProvider';
 

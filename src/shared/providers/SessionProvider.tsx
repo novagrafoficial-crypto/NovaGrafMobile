@@ -1,4 +1,4 @@
-// src/shared/providers/SessionProvider.tsx
+//controlan la sesion
 import React, { createContext, useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { User } from '@/types';
@@ -46,4 +46,3 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     </SessionContext.Provider>
   );
 };
-//subir a git

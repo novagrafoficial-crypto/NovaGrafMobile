@@ -1,4 +1,4 @@
-// src/types/index.ts
+// molde mapea las respuestas
 export type UserRole = 'admin' | 'client';
 
 export interface User {
