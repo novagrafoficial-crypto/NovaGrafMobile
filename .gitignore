@@ -38,6 +38,8 @@ yarn-error.*
 
 example
 
-# generated native folders
+# quitar el .env de git
 /ios
 /android
+.env
+*.env
