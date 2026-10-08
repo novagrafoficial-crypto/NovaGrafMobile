@@ -7,9 +7,8 @@ import { homeByRole } from '@/shared/utils/roleRoutes';
 import { Loading } from '@/shared/components/Loading';
 import { APP_NAME } from '@/constants/app';
 import { brandColors } from '@/constants/brand';
-import { HeroSection } from '../components/HeroSection';
 import { PublicDrawer } from '../components/PublicDrawer';
-import { FeaturedProductsSection } from '../components/FeaturedProductsSection';
+import { PublicProductList } from '../components/PublicProductList';
 import { ComoFuncionaSection } from '../components/ComoFuncionaSection';
 
 export const PublicHomeView = () => {
@@ -25,18 +24,23 @@ export const PublicHomeView = () => {
   return (
     <View style={{ flex: 1, backgroundColor: brandColors.background }}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <TouchableOpacity onPress={vm.openDrawer} hitSlop={12}>
+        <TouchableOpacity onPress={vm.openDrawer} hitSlop={12} accessibilityLabel="Abrir menú">
           <Text style={styles.burger}>☰</Text>
         </TouchableOpacity>
         <Text style={styles.brand}>{APP_NAME}</Text>
-        <View style={{ width: 28 }} />
+        <TouchableOpacity
+          onPress={() => router.push('/(auth)/login' as any)}
+          style={styles.botonEntrar}
+        >
+          <Text style={styles.textoEntrar}>Entrar</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-        <HeroSection />
-        <FeaturedProductsSection />
-        <ComoFuncionaSection />
+        {/* 1. Todos los trabajos, en vertical (al tocar uno se abre su detalle) */}
+        <PublicProductList />
 
+        {/* 2. Crear cuenta */}
         <View style={styles.cardCTA}>
           <Text style={styles.tituloCTA}>Crea tu cuenta gratis</Text>
           <Text style={styles.subtituloCTA}>
@@ -46,8 +50,13 @@ export const PublicHomeView = () => {
             style={styles.botonCTA}
             onPress={() => router.push('/(auth)/login' as any)}
           >
-            <Text style={styles.textoBotonCTA}>Registrarme / Entrar</Text>
+            <Text style={styles.textoBotonCTA}>Crear mi cuenta</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* 3. Cómo funciona */}
+        <View style={{ marginTop: 28 }}>
+          <ComoFuncionaSection />
         </View>
       </ScrollView>
 
@@ -75,15 +84,23 @@ const styles = StyleSheet.create({
   },
   burger: { color: brandColors.white, fontSize: 26 },
   brand: { color: brandColors.white, fontSize: 20, fontWeight: '700' },
-  cardCTA: { backgroundColor: brandColors.primaryDark, borderRadius: 16, padding: 24 },
+  botonEntrar: {
+    backgroundColor: brandColors.white,
+    borderRadius: 20,
+    minHeight: 40,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+  },
+  textoEntrar: { color: brandColors.primaryDark, fontWeight: '800', fontSize: 14 },
+  cardCTA: { backgroundColor: brandColors.primaryDark, borderRadius: 18, padding: 24 },
   tituloCTA: { color: brandColors.white, fontSize: 20, fontWeight: '700', marginBottom: 6 },
   subtituloCTA: { color: '#E6F2EF', fontSize: 14, marginBottom: 20 },
   botonCTA: {
     backgroundColor: brandColors.accent,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-    alignSelf: 'flex-start',
+    borderRadius: 12,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  textoBotonCTA: { color: brandColors.white, fontWeight: '700', fontSize: 14 },
+  textoBotonCTA: { color: brandColors.white, fontWeight: '800', fontSize: 16 },
 });
