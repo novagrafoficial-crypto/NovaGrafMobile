@@ -8,3 +8,4 @@ export const brandColors = {
   white: '#FFFFFF',
   error: '#C0392B',
 };
+

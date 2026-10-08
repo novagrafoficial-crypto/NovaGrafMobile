@@ -1,15 +1,13 @@
 import { Stack } from 'expo-router';
-import { SessionProvider } from '@/shared/providers/SessionProvider';
+import { AuthProvider } from '@/shared/providers/AuthProvider';
 
 export default function RootLayout() {
   return (
-    <SessionProvider>
+    <AuthProvider>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
+        <Stack.Screen name="(public)" />
         <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(client)" />
-        <Stack.Screen name="(admin)" />
       </Stack>
-    </SessionProvider>
+    </AuthProvider>
   );
 }
