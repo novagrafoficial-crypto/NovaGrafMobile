@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { getInitials } from '@/shared/utils/getInitials';
+import { PressableScale } from './PressableScale';
 import { APP_NAME } from '@/constants/app';
 import { brandColors } from '@/constants/brand';
 
@@ -26,9 +27,14 @@ export const Header = ({ profileRoute, subtitle }: HeaderProps) => {
         <Text style={styles.marca}>{APP_NAME}</Text>
         {subtitle && <Text style={styles.subtitulo}>{subtitle}</Text>}
       </View>
-      <TouchableOpacity onPress={() => router.push(profileRoute as any)} style={styles.avatar}>
+      <PressableScale
+        onPress={() => router.push(profileRoute as any)}
+        style={styles.avatar}
+        scaleTo={0.9}
+        accessibilityLabel="Ir a mi perfil"
+      >
         <Text style={styles.avatarTexto}>{getInitials(user?.nombre)}</Text>
-      </TouchableOpacity>
+      </PressableScale>
     </View>
   );
 };

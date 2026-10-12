@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { brandColors } from '@/constants/brand';
-import type { PortfolioItem } from '@/features/portafolio';
-import { splitDescripcion } from '@/features/portafolio/utils/splitDescripcion';
+import { PressableScale } from '@/shared/components/PressableScale';
+import { brandColors, brandTints } from '@/constants/brand';
+import type { PortfolioItem } from '../models/PortfolioItem';
+import { splitDescripcion } from '../utils/splitDescripcion';
 
 interface Props {
   item: PortfolioItem | null;
@@ -35,13 +36,14 @@ export const PublicProductDetailModal = ({ item, onClose, onCreateAccount }: Pro
 
         {item && (
           <View style={[styles.hoja, { paddingBottom: insets.bottom + 16 }]}>
-            <TouchableOpacity
+            <PressableScale
               onPress={onClose}
               accessibilityLabel="Cerrar"
               style={styles.botonCerrar}
+              scaleTo={0.85}
             >
               <Text style={styles.textoCerrar}>✕</Text>
-            </TouchableOpacity>
+            </PressableScale>
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.imagenBox}>
@@ -76,9 +78,9 @@ export const PublicProductDetailModal = ({ item, onClose, onCreateAccount }: Pro
               </View>
             </ScrollView>
 
-            <TouchableOpacity style={styles.boton} onPress={onCreateAccount}>
+            <PressableScale style={styles.boton} onPress={onCreateAccount}>
               <Text style={styles.textoBoton}>Crear mi cuenta</Text>
-            </TouchableOpacity>
+            </PressableScale>
           </View>
         )}
       </View>
@@ -87,7 +89,7 @@ export const PublicProductDetailModal = ({ item, onClose, onCreateAccount }: Pro
 };
 
 const styles = StyleSheet.create({
-  fondo: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
+  fondo: { flex: 1, justifyContent: 'flex-end', backgroundColor: brandTints.overlay },
   hoja: {
     backgroundColor: brandColors.white,
     borderTopLeftRadius: 24,
@@ -103,7 +105,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(15,76,69,0.85)',
+    backgroundColor: brandColors.primaryDark,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -111,7 +113,7 @@ const styles = StyleSheet.create({
   imagenBox: {
     width: '100%',
     aspectRatio: 4 / 3,
-    backgroundColor: '#F4F7F6',
+    backgroundColor: brandTints.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -121,15 +123,15 @@ const styles = StyleSheet.create({
   titulo: { fontSize: 22, fontWeight: '800', color: brandColors.primaryDark },
   pastilla: {
     alignSelf: 'flex-start',
-    backgroundColor: '#E6F2EF',
+    backgroundColor: brandTints.accentSoft,
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 4,
     marginTop: 10,
   },
   textoPastilla: { fontSize: 12, fontWeight: '600', color: brandColors.primaryDark },
-  descripcion: { fontSize: 15, lineHeight: 22, color: '#333', marginTop: 14 },
-  aviso: { fontSize: 13, color: '#555', marginTop: 16 },
+  descripcion: { fontSize: 15, lineHeight: 22, color: brandColors.primaryDark, marginTop: 14 },
+  aviso: { fontSize: 13, color: brandTints.textMuted, marginTop: 16 },
   boton: {
     backgroundColor: brandColors.accent,
     borderRadius: 12,

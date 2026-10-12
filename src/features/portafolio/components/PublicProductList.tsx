@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { usePortfolioViewModel } from '@/features/portafolio';
-import type { PortfolioItem } from '@/features/portafolio';
+import { usePortfolioViewModel } from '../viewmodels/usePortfolioViewModel';
+import type { PortfolioItem } from '../models/PortfolioItem';
 import { Loading } from '@/shared/components/Loading';
-import { brandColors } from '@/constants/brand';
+import { brandColors, brandTints } from '@/constants/brand';
 import { PublicProductCard } from './PublicProductCard';
 import { PublicProductDetailModal } from './PublicProductDetailModal';
 
@@ -33,8 +33,8 @@ export const PublicProductList = () => {
           <Text style={styles.error}>No pudimos cargar los trabajos. Toca para reintentar.</Text>
         </TouchableOpacity>
       ) : (
-        vm.items.map((item) => (
-          <PublicProductCard key={item.id} item={item} onPress={() => setSelected(item)} />
+        vm.items.map((item, index) => (
+          <PublicProductCard key={item.id} item={item} index={index} onPress={() => setSelected(item)} />
         ))
       )}
 
@@ -50,6 +50,6 @@ export const PublicProductList = () => {
 const styles = StyleSheet.create({
   seccion: { marginBottom: 8 },
   titulo: { fontSize: 26, fontWeight: '800', color: brandColors.primaryDark },
-  subtitulo: { fontSize: 14, color: '#555', marginTop: 4, marginBottom: 18 },
+  subtitulo: { fontSize: 14, color: brandTints.textMuted, marginTop: 4, marginBottom: 18 },
   error: { color: brandColors.error, fontWeight: '500', paddingVertical: 12 },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { brandColors } from '@/constants/brand';
+import { FadeInView } from '@/shared/components/FadeInView';
+import { brandColors, brandTints } from '@/constants/brand';
 
 const PASOS = [
   { icono: '🎨', titulo: 'Elige tu producto', texto: 'Explora el catálogo de productos personalizables.' },
@@ -12,7 +13,7 @@ export const ComoFuncionaSection = () => (
   <View style={styles.seccion}>
     <Text style={styles.titulo}>¿Cómo funciona?</Text>
     {PASOS.map((paso, i) => (
-      <View key={paso.titulo} style={styles.fila}>
+      <FadeInView key={paso.titulo} delay={i * 90} style={styles.fila}>
         <View style={styles.circulo}>
           <Text style={styles.icono}>{paso.icono}</Text>
         </View>
@@ -22,7 +23,7 @@ export const ComoFuncionaSection = () => (
           </Text>
           <Text style={styles.pasoTexto}>{paso.texto}</Text>
         </View>
-      </View>
+      </FadeInView>
     ))}
   </View>
 );
@@ -49,5 +50,5 @@ const styles = StyleSheet.create({
   },
   icono: { fontSize: 22 },
   pasoTitulo: { fontSize: 15, fontWeight: '700', color: brandColors.primaryDark },
-  pasoTexto: { fontSize: 13, color: '#555', marginTop: 2 },
+  pasoTexto: { fontSize: 13, color: brandTints.textMuted, marginTop: 2 },
 });

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { brandColors } from '@/constants/brand';
+import { FadeInView } from '@/shared/components/FadeInView';
+import { brandColors, brandTints } from '@/constants/brand';
 import type { PortfolioItem } from '../models/PortfolioItem';
 
-export const PortfolioCard = ({ item }: { item: PortfolioItem }) => {
+export const PortfolioCard = ({ item, index = 0 }: { item: PortfolioItem; index?: number }) => {
   const [imageFailed, setImageFailed] = useState(false);
   const titulo = item.descripcion || item.productoNombre || 'Producto personalizado';
 
   return (
-    <View style={styles.card}>
+    <FadeInView delay={Math.min(index, 6) * 60} style={styles.card}>
       <View style={styles.imageBox}>
         {item.imagenUrl && !imageFailed ? (
           <Image
@@ -40,7 +41,7 @@ export const PortfolioCard = ({ item }: { item: PortfolioItem }) => {
           <Text style={styles.precio}>Desde ${item.precioBase.toFixed(2)}</Text>
         )}
       </View>
-    </View>
+    </FadeInView>
   );
 };
 
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  imageBox: { width: '100%', aspectRatio: 1, backgroundColor: '#EEE' },
+  imageBox: { width: '100%', aspectRatio: 1, backgroundColor: brandTints.surfaceMuted },
   image: { width: '100%', height: '100%' },
   placeholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   placeholderIcon: { fontSize: 32 },
@@ -68,6 +69,6 @@ const styles = StyleSheet.create({
   badgeText: { color: brandColors.white, fontSize: 10, fontWeight: '700' },
   info: { padding: 10 },
   titulo: { fontSize: 13, fontWeight: '700', color: brandColors.primaryDark },
-  categoria: { fontSize: 11, color: '#666', marginTop: 2 },
+  categoria: { fontSize: 11, color: brandTints.textMuted, marginTop: 2 },
   precio: { fontSize: 12, fontWeight: '700', color: brandColors.primary, marginTop: 6 },
 });

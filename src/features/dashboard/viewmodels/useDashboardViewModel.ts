@@ -9,11 +9,12 @@ export const useDashboardViewModel = () => {
     { titulo: 'Ventas del mes', valor: '$24,500', icono: '💰' },
   ];
 
-  const accesosRapidos = [
+  // `ruta` es opcional: los accesos sin pantalla todavía no navegan a ningún lado.
+  const accesosRapidos: { titulo: string; icono: string; color: string; ruta?: string }[] = [
     { titulo: 'Gestionar pedidos', icono: '📋', color: brandColors.primary },
-    { titulo: 'Ver usuarios', icono: '👥', color: brandColors.accent },
-    { titulo: 'Catálogo', icono: '📦', color: brandColors.primary },
-    { titulo: 'Reportes', icono: '📊', color: brandColors.accent },
+    { titulo: 'Ver usuarios', icono: '👥', color: brandColors.primaryDark, ruta: '/(admin)/usuarios' },
+    { titulo: 'Catálogo', icono: '📦', color: brandColors.primaryDark, ruta: '/(admin)/productos' },
+    { titulo: 'Reportes', icono: '📊', color: brandColors.primary },
   ];
 
   return { estadisticas, accesosRapidos };

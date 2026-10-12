@@ -1,24 +1,29 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Header } from '@/shared/components/Header';
+import { FadeInView } from '@/shared/components/FadeInView';
+import { PressableScale } from '@/shared/components/PressableScale';
 import { PortfolioView } from '@/features/portafolio';
-import { brandColors } from '@/constants/brand';
+import { brandColors, brandTints } from '@/constants/brand';
 
 export const ClientHomeView = () => {
+  const router = useRouter();
+
   return (
     <View style={styles.contenedor}>
       <Header profileRoute="/(cliente)/perfil" />
 
-      <ScrollView contentContainerStyle={styles.contenidoScroll}>
+      <ScrollView contentContainerStyle={styles.contenidoScroll} showsVerticalScrollIndicator={false}>
         <PortfolioView />
 
-        <View style={styles.cardCTA}>
+        <FadeInView delay={200} style={styles.cardCTA}>
           <Text style={styles.tituloCTA}>¿Tienes una idea en mente?</Text>
           <Text style={styles.subtituloCTA}>Súbela y nosotros lo hacemos realidad</Text>
-          <TouchableOpacity style={styles.botonCTA}>
+          <PressableScale style={styles.botonCTA} onPress={() => router.push('/(cliente)/productos-base' as any)}>
             <Text style={styles.textoBotonCTA}>Empezar</Text>
-          </TouchableOpacity>
-        </View>
+          </PressableScale>
+        </FadeInView>
       </ScrollView>
     </View>
   );
@@ -27,19 +32,15 @@ export const ClientHomeView = () => {
 const styles = StyleSheet.create({
   contenedor: { flex: 1, backgroundColor: brandColors.background },
   contenidoScroll: { padding: 20, paddingBottom: 40 },
-  cardCTA: {
-    backgroundColor: brandColors.primary,
-    borderRadius: 16,
-    padding: 24,
-  },
+  cardCTA: { backgroundColor: brandColors.primary, borderRadius: 18, padding: 24 },
   tituloCTA: { color: brandColors.white, fontSize: 18, fontWeight: '700', marginBottom: 4 },
-  subtituloCTA: { color: '#E6F2EF', fontSize: 14, marginBottom: 20 },
+  subtituloCTA: { color: brandTints.accentSoft, fontSize: 14, marginBottom: 20 },
   botonCTA: {
-    backgroundColor: brandColors.white,
+    backgroundColor: brandColors.accent,
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 10,
+    borderRadius: 12,
     alignSelf: 'flex-start',
   },
-  textoBotonCTA: { color: brandColors.primaryDark, fontWeight: '700', fontSize: 14 },
+  textoBotonCTA: { color: brandColors.white, fontWeight: '800', fontSize: 14 },
 });
