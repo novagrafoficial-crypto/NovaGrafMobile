@@ -1,66 +1,53 @@
 import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { brandColors } from '@/constants/brand';
+import { RoleGuard } from '@/shared/components/RoleGuard';
+import { useCart } from '@/features/carrito';
+import { brandColors, brandTints } from '@/constants/brand';
+
+const icono = (emoji: string) =>
+  function TabIcon({ color }: { color: string }) {
+    return <Text style={{ fontSize: 20, color }}>{emoji}</Text>;
+  };
 
 export default function LayoutCliente() {
   const insets = useSafeAreaInsets();
+  const { count } = useCart();
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: brandColors.accent,
-        tabBarInactiveTintColor: '#888',
-        tabBarStyle: {
-          backgroundColor: brandColors.white,
-          borderTopColor: '#E0E0E0',
-          height: 60 + insets.bottom,
-          paddingBottom: insets.bottom + 4,
-          paddingTop: 4,
-        },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '600',
-          marginTop: -2,
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="inicio"
-        options={{
-          title: 'Inicio',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🏠</Text>,
+    <RoleGuard rol="cliente">
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: brandColors.primary,
+          tabBarInactiveTintColor: brandTints.textMuted,
+          tabBarStyle: {
+            backgroundColor: brandColors.white,
+            borderTopColor: brandTints.border,
+            height: 60 + insets.bottom,
+            paddingBottom: insets.bottom + 4,
+            paddingTop: 4,
+          },
+          tabBarLabelStyle: { fontSize: 10, fontWeight: '600', marginTop: -2 },
         }}
-      />
-      <Tabs.Screen
-        name="catalogo"
-        options={{
-          title: 'Catálogo',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>📦</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="carrito"
-        options={{
-          title: 'Carrito',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🛒</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="pedidos"
-        options={{
-          title: 'Pedidos',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>📋</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="perfil"
-        options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>👤</Text>,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen name="inicio" options={{ title: 'Inicio', tabBarIcon: icono('🏠') }} />
+        <Tabs.Screen name="productos-base" options={{ title: 'Categorías', tabBarIcon: icono('📦') }} />
+        <Tabs.Screen
+          name="carrito"
+          options={{
+            title: 'Carrito',
+            tabBarIcon: icono('🛒'),
+            // El numerito rojo/verde sobre el icono, igual que el header de la web
+            tabBarBadge: count > 0 ? count : undefined,
+            tabBarBadgeStyle: { backgroundColor: brandColors.accent, color: brandColors.white },
+          }}
+        />
+      
+        <Tabs.Screen name="pedidos" options={{ title: 'Pedidos', tabBarIcon: icono('📋') }} />
+        <Tabs.Screen name="perfil" options={{ title: 'Perfil', tabBarIcon: icono('👤') }} />
+        <Tabs.Screen name="producto/[id]" options={{ href: null }} />
+      </Tabs>
+    </RoleGuard>
   );
 }

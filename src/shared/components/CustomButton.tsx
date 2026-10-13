@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
-import { brandColors } from '@/constants/brand';
+import { Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { PressableScale } from './PressableScale';
+import { brandColors, brandTints } from '@/constants/brand';
 
 type Variant = 'primary' | 'accent' | 'danger' | 'outline';
 
@@ -21,14 +22,16 @@ export const CustomButton = ({
   disabled,
   style,
 }: CustomButtonProps) => (
-  <TouchableOpacity
+  <PressableScale
     style={[styles.base, styles[variant], disabled && styles.disabled, style]}
     onPress={onPress}
     disabled={disabled}
+    accessibilityRole="button"
+    accessibilityLabel={title}
   >
     {icon}
     <Text style={variant === 'outline' ? styles.textOutline : styles.text}>{title}</Text>
-  </TouchableOpacity>
+  </PressableScale>
 );
 
 const styles = StyleSheet.create({
@@ -48,9 +51,9 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: brandTints.border,
   },
   disabled: { opacity: 0.5 },
   text: { color: brandColors.white, fontWeight: '700', fontSize: 16 },
-  textOutline: { color: '#333', fontWeight: '600', fontSize: 15 },
+  textOutline: { color: brandColors.primaryDark, fontWeight: '600', fontSize: 15 },
 });

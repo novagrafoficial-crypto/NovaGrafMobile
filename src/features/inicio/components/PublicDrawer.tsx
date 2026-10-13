@@ -1,18 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  Animated,
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Animated, Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { brandColors } from '@/constants/brand';
+import { brandColors, brandTints } from '@/constants/brand';
 import { PUBLIC_MENU } from '@/constants/menu';
 import { APP_NAME } from '@/constants/app';
 import { CustomButton } from '@/shared/components/CustomButton';
+import { PressableScale } from '@/shared/components/PressableScale';
 
 const DRAWER_W = Math.min(Dimensions.get('window').width * 0.75, 320);
 
@@ -24,20 +18,16 @@ interface PublicDrawerProps {
 export const PublicDrawer = ({ isOpen, onClose }: PublicDrawerProps) => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const slide = useRef(new Animated.Value(-DRAWER_W)).current;
+  // 0 = cerrado, 1 = abierto. Un solo valor mueve el menú Y oscurece el fondo.
+  const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(slide, {
-      toValue: isOpen ? 0 : -DRAWER_W,
-      duration: 220,
+    Animated.timing(progress, {
+      toValue: isOpen ? 1 : 0,
+      duration: 240,
       useNativeDriver: true,
     }).start();
-  }, [isOpen]);
-
-  const goLogin = () => {
-    onClose();
-    router.push('/(auth)/login' as any);
-  };
+  }, [isOpen, progress]);
 
   const goTo = (route: string) => {
     onClose();
@@ -45,41 +35,53 @@ export const PublicDrawer = ({ isOpen, onClose }: PublicDrawerProps) => {
   };
 
   return (
-    <Animated.View
-      style={[
-        styles.drawer,
-        {
-          width: DRAWER_W,
-          paddingTop: insets.top + 24,
-          transform: [{ translateX: slide }],
-        },
-      ]}
-    >
-      <View>
-        <Text style={styles.drawerBrand}>{APP_NAME}</Text>
-        {PUBLIC_MENU.map((item, i) => (
-          <TouchableOpacity
-            key={item.label}
-            style={styles.menuItem}
-            onPress={() => goTo(item.route)}
-          >
-            <Text
-              style={[
-                styles.menuText,
-                i === 0 && { color: brandColors.primaryDark, fontWeight: '700' },
-              ]}
+    <>
+      {/* Fondo oscuro con fade; solo recibe toques mientras el menú está abierto */}
+      <Animated.View
+        pointerEvents={isOpen ? 'auto' : 'none'}
+        style={[StyleSheet.absoluteFill, styles.fondo, { opacity: progress }]}
+      >
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Cerrar menú" />
+      </Animated.View>
+
+      <Animated.View
+        style={[
+          styles.drawer,
+          {
+            width: DRAWER_W,
+            paddingTop: insets.top + 24,
+            transform: [
+              {
+                translateX: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-DRAWER_W, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        <View>
+          <Text style={styles.drawerBrand}>{APP_NAME}</Text>
+          {PUBLIC_MENU.map((item, i) => (
+            <PressableScale
+              key={item.label}
+              style={styles.menuItem}
+              onPress={() => goTo(item.route)}
+              scaleTo={0.97}
             >
-              {item.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <CustomButton title="Iniciar sesión" variant="accent" onPress={goLogin} />
-    </Animated.View>
+              <Text style={[styles.menuText, i === 0 && styles.menuTextActivo]}>{item.label}</Text>
+            </PressableScale>
+          ))}
+        </View>
+        <CustomButton title="Iniciar sesión" variant="accent" onPress={() => goTo('/(auth)/login')} />
+      </Animated.View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
+  fondo: { backgroundColor: brandTints.overlay, zIndex: 5 },
   drawer: {
     position: 'absolute',
     top: 0,
@@ -91,16 +93,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     zIndex: 10,
   },
-  drawerBrand: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: brandColors.primaryDark,
-  },
-  drawerSub: { fontSize: 14, color: '#666', marginBottom: 32 },
-  menuItem: {
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderColor: '#F0F0F0',
-  },
-  menuText: { fontSize: 16, color: '#555' },
+  drawerBrand: { fontSize: 24, fontWeight: '800', color: brandColors.primaryDark, marginBottom: 12 },
+  menuItem: { paddingVertical: 16, borderBottomWidth: 1, borderColor: brandTints.surfaceMuted },
+  menuText: { fontSize: 16, color: brandTints.textMuted },
+  menuTextActivo: { color: brandColors.primary, fontWeight: '700' },
 });

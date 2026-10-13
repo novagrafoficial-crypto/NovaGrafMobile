@@ -1,13 +1,10 @@
-export const getInitials = (nombre?: string): string => {
-  if (!nombre) return '??';
+export const getInitials = (nombre?: string, apellido?: string): string => {
+  const partesNombre = (nombre ?? '').trim().split(/\s+/).filter(Boolean);
+  if (partesNombre.length === 0) return '??';
 
-  const partes = nombre.trim().split(' ').filter(Boolean);
+  const primerApellido = (apellido ?? '').trim().split(/\s+/).filter(Boolean)[0];
 
-  if (partes.length >= 2) {
-    return (partes[0][0] + partes[1][0]).toUpperCase();
-  }
-  if (partes[0].length >= 2) {
-    return partes[0].slice(0, 2).toUpperCase();
-  }
-  return partes[0].toUpperCase();
+  if (primerApellido) return (partesNombre[0][0] + primerApellido[0]).toUpperCase();
+  if (partesNombre.length >= 2) return (partesNombre[0][0] + partesNombre[1][0]).toUpperCase();
+  return partesNombre[0].slice(0, 2).toUpperCase();
 };
