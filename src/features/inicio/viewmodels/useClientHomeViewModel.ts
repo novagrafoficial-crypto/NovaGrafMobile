@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { ofertasService, fechaCorta, mejorOferta, textoDescuento } from '@/features/ofertas';
 import type { Oferta, OfertaTarjeta } from '@/features/ofertas';
 import { usePortfolioViewModel } from '@/features/portafolio';
+import type { PortfolioItem } from '@/features/portafolio';
 import { clientProductService } from '@/features/catalogo-cliente';
 
 const LIMITE_OFERTAS = 6; // cuántas promociones se ven antes de "Ver todo"
@@ -171,6 +172,11 @@ export const useClientHomeViewModel = () => {
         `/(cliente)/producto/${t.productoId}?colorSeleccionado=${encodeURIComponent(t.color)}` as any
       ),
     irAlCatalogo: () => router.push('/(cliente)/productos-base' as any),
+    // Al tocar un trabajo: va al producto base con el que se hizo; si no hay, al catálogo
+    abrirTrabajo: (item: PortfolioItem) =>
+      item.productoId
+        ? router.push(`/(cliente)/producto/${item.productoId}` as any)
+        : router.push('/(cliente)/productos-base' as any),
     abrirNotificaciones: () => avisar('Las notificaciones estarán disponibles pronto.'),
     abrirChat: () => avisar('El chat estará disponible pronto.'),
   };

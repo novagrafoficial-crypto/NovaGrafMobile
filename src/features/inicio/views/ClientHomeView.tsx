@@ -3,6 +3,7 @@ import { View, Text, ScrollView, RefreshControl, StyleSheet } from 'react-native
 import { useClientHomeViewModel } from '../viewmodels/useClientHomeViewModel';
 import { HomeHeader } from '../components/HomeHeader';
 import { ChatFab } from '../components/ChatFab';
+import { ComoFuncionaSection } from '../components/ComoFuncionaSection';
 import { OfferBanner, OfferCard } from '@/features/ofertas';
 import { PortfolioCard } from '@/features/portafolio';
 import { Loading } from '@/shared/components/Loading';
@@ -44,6 +45,21 @@ export const ClientHomeView = () => {
           />
         }
       >
+        {/* 1. ¿CÓMO FUNCIONA? — cómo se pide un diseño (se oculta al buscar o filtrar) */}
+        {!vm.hayFiltros && (
+          <View>
+            <ComoFuncionaSection
+              titulo="¿Tienes una idea en mente?"
+              subtitulo="Así pides tu diseño personalizado en 5 pasos."
+              style={styles.comoFunciona}
+            />
+            <PressableScale style={styles.botonProducto} onPress={vm.irAlCatalogo}>
+              <Text style={styles.botonProductoTexto}>Elegir mi producto base</Text>
+            </PressableScale>
+          </View>
+        )}
+
+        {/* 2. OFERTAS Y PROMOS */}
         {/* BANNER con la mejor oferta (solo si hay y no se está filtrando) */}
         {vm.banner && !vm.hayFiltros && (
           <OfferBanner titulo={vm.banner.titulo} subtitulo={vm.banner.subtitulo} vigencia={vm.banner.vigencia} />
@@ -52,7 +68,7 @@ export const ClientHomeView = () => {
         {/* PROMOCIONES Y DESCUENTOS */}
         <View style={styles.seccion}>
           <View style={styles.tituloFila}>
-            <Text style={styles.titulo}>Promociones y descuentos</Text>
+            <Text style={styles.titulo}>Descubre descuentos y promociones</Text>
             {vm.hayMasOfertas && (
               <PressableScale onPress={vm.alternarVerTodas} scaleTo={0.94} hitSlop={8}>
                 <Text style={styles.enlace}>{vm.verTodas ? 'Ver menos' : 'Ver todo'}</Text>
@@ -84,10 +100,12 @@ export const ClientHomeView = () => {
           )}
         </View>
 
-        {/* INSPÍRATE: trabajos personalizados */}
+        {/* 3. PRODUCTOS PERSONALIZADOS — solo como referencia/inspiración */}
         <View style={styles.seccion}>
-          <Text style={styles.titulo}>Inspírate</Text>
-          <Text style={styles.subtitulo}>Trabajos personalizados que hemos hecho para nuestros clientes.</Text>
+          <Text style={styles.titulo}>Productos personalizados</Text>
+          <Text style={styles.subtitulo}>
+            Así lo han personalizado otros clientes. Toca uno para elegir su producto base y pídelo a tu manera.
+          </Text>
 
           {vm.portafolioCargando ? (
             <Loading />
@@ -107,22 +125,14 @@ export const ClientHomeView = () => {
           ) : (
             <View style={styles.cuadriculaPortafolio}>
               {vm.portafolioFiltrado.map((item, i) => (
-                <PortfolioCard key={item.id} item={item} index={i} />
+                <PortfolioCard key={item.id} item={item} index={i} onPress={() => vm.abrirTrabajo(item)} />
               ))}
             </View>
           )}
         </View>
-
-        {/* LLAMADA A LA ACCIÓN */}
-        <FadeInView style={styles.cta}>
-          <Text style={styles.ctaTitulo}>¿Tienes una idea en mente?</Text>
-          <Text style={styles.ctaSub}>Elige un producto base y personalízalo a tu gusto.</Text>
-          <PressableScale style={styles.ctaBoton} onPress={vm.irAlCatalogo}>
-            <Text style={styles.ctaBotonTexto}>Ver productos</Text>
-          </PressableScale>
-        </FadeInView>
       </ScrollView>
 
+      {/* Chat flotante: se conserva tal cual para desarrollarlo después */}
       <ChatFab onPress={vm.abrirChat} />
     </View>
   );
@@ -151,15 +161,15 @@ const styles = StyleSheet.create({
   vacio: { backgroundColor: brandColors.white, borderRadius: 16, padding: 18 },
   vacioTexto: { textAlign: 'center', color: brandTints.textMuted, fontSize: 14, lineHeight: 20 },
 
-  cta: { backgroundColor: brandColors.primary, borderRadius: 18, padding: 22 },
-  ctaTitulo: { color: brandColors.white, fontSize: 18, fontWeight: '800', marginBottom: 4 },
-  ctaSub: { color: brandTints.accentSoft, fontSize: 14, marginBottom: 18 },
-  ctaBoton: {
-    alignSelf: 'flex-start',
-    backgroundColor: brandColors.accent,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+  // ¿Cómo funciona? + botón
+  comoFunciona: { marginBottom: 4 },
+  botonProducto: {
+    backgroundColor: brandColors.primary,
+    paddingVertical: 15,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
   },
-  ctaBotonTexto: { color: brandColors.primaryDark, fontWeight: '800', fontSize: 14 },
+  botonProductoTexto: { color: brandColors.white, fontSize: 15, fontWeight: '800' },
 });

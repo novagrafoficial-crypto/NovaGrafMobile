@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { ClientProduct } from '../models/ClientProduct';
 import { clientProductService } from '../services/clientProductService';
 
@@ -12,6 +12,19 @@ export const useClientCatalogViewModel = () => {
   const [busqueda, setBusqueda] = useState<string>('');
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>('');
   const [menuAbierto, setMenuAbierto] = useState<boolean>(false);
+
+  // Aviso temporal (toast) para la campana de notificaciones
+  const [aviso, setAviso] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
+
+  const avisar = (texto: string) => {
+    setAviso(texto);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setAviso(null), 2500);
+  };
 
   const fetchProducts = useCallback(async (isRefresh = false) => {
     try {
@@ -64,6 +77,9 @@ export const useClientCatalogViewModel = () => {
     elegirCategoria,
     menuAbierto,
     alternarMenu: () => setMenuAbierto((v) => !v),
+    hayFiltros: busqueda.trim() !== '' || categoriaSeleccionada !== '',
+    aviso,
+    abrirNotificaciones: () => avisar('Las notificaciones estarán disponibles pronto.'),
     reintentar: () => fetchProducts(),
     refrescar: () => fetchProducts(true),
   };

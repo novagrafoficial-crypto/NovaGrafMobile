@@ -1,17 +1,46 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { FadeInView } from '@/shared/components/FadeInView';
 import { brandColors, brandTints } from '@/constants/brand';
 
 const PASOS = [
-  { icono: '🎨', titulo: 'Elige tu producto', texto: 'Explora el catálogo de productos personalizables.' },
-  { icono: '✍️', titulo: 'Personalízalo', texto: 'Sube tu idea y nosotros la hacemos realidad.' },
-  { icono: '📦', titulo: 'Recíbelo', texto: 'Da seguimiento a tu pedido desde tu celular.' },
+  {
+    icono: '🛍️',
+    titulo: 'Elige tu producto base',
+    texto: 'Escoge en el catálogo el producto que quieres personalizar.',
+  },
+  {
+    icono: '💳',
+    titulo: 'Paga tu anticipo del 50%',
+    texto: 'Con el anticipo reservas tu pedido y se activa tu solicitud.',
+  },
+  {
+    icono: '✍️',
+    titulo: 'Cuéntanos tu idea',
+    texto: 'Sube imágenes de referencia y explícanos cómo lo quieres.',
+  },
+  {
+    icono: '👀',
+    titulo: 'Aprueba tu previa',
+    texto: 'Te enviamos una vista previa; tú decides si está bien o pides cambios.',
+  },
+  {
+    icono: '📦',
+    titulo: 'Recibe tu pedido',
+    texto: 'Lo personalizamos y das seguimiento desde tu celular.',
+  },
 ];
 
-export const ComoFuncionaSection = () => (
-  <View style={styles.seccion}>
-    <Text style={styles.titulo}>¿Cómo funciona?</Text>
+interface Props {
+  titulo?: string;
+  subtitulo?: string;
+  style?: StyleProp<ViewStyle>;
+}
+
+export const ComoFuncionaSection = ({ titulo = '¿Cómo funciona?', subtitulo, style }: Props) => (
+  <View style={[styles.seccion, style]}>
+    <Text style={styles.titulo}>{titulo}</Text>
+    {!!subtitulo && <Text style={styles.subtitulo}>{subtitulo}</Text>}
     {PASOS.map((paso, i) => (
       <FadeInView key={paso.titulo} delay={i * 90} style={styles.fila}>
         <View style={styles.circulo}>
@@ -31,6 +60,7 @@ export const ComoFuncionaSection = () => (
 const styles = StyleSheet.create({
   seccion: { marginBottom: 24 },
   titulo: { fontSize: 20, fontWeight: '700', color: brandColors.primaryDark, marginBottom: 14 },
+  subtitulo: { fontSize: 13, color: brandTints.textMuted, marginTop: -8, marginBottom: 14 },
   fila: {
     flexDirection: 'row',
     alignItems: 'center',
