@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RoleGuard } from '@/shared/components/RoleGuard';
+import { useCart } from '@/features/carrito';
 import { brandColors, brandTints } from '@/constants/brand';
 
 const icono = (emoji: string) =>
@@ -11,6 +12,7 @@ const icono = (emoji: string) =>
 
 export default function LayoutCliente() {
   const insets = useSafeAreaInsets();
+  const { count } = useCart();
 
   return (
     <RoleGuard rol="cliente">
@@ -30,11 +32,20 @@ export default function LayoutCliente() {
         }}
       >
         <Tabs.Screen name="inicio" options={{ title: 'Inicio', tabBarIcon: icono('🏠') }} />
-        <Tabs.Screen name="productos-base" options={{ title: 'Catálogo', tabBarIcon: icono('📦') }} />
-        <Tabs.Screen name="carrito" options={{ title: 'Carrito', tabBarIcon: icono('🛒') }} />
+        <Tabs.Screen name="productos-base" options={{ title: 'Categorías', tabBarIcon: icono('📦') }} />
+        <Tabs.Screen
+          name="carrito"
+          options={{
+            title: 'Carrito',
+            tabBarIcon: icono('🛒'),
+            // El numerito rojo/verde sobre el icono, igual que el header de la web
+            tabBarBadge: count > 0 ? count : undefined,
+            tabBarBadgeStyle: { backgroundColor: brandColors.accent, color: brandColors.white },
+          }}
+        />
+      
         <Tabs.Screen name="pedidos" options={{ title: 'Pedidos', tabBarIcon: icono('📋') }} />
         <Tabs.Screen name="perfil" options={{ title: 'Perfil', tabBarIcon: icono('👤') }} />
-        {/* Pantalla de detalle: existe como ruta, pero NO debe salir como pestaña */}
         <Tabs.Screen name="producto/[id]" options={{ href: null }} />
       </Tabs>
     </RoleGuard>

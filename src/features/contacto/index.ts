@@ -1,0 +1,1 @@
+export { ContactoView } from './views/ContactoView';

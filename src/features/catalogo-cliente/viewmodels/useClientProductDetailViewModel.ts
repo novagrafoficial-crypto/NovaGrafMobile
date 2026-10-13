@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { useCart } from '@/features/carrito';
 import type { ClientProductDetail, Variante, PortafolioReferencia } from '../models/ClientProductDetail';
 import { clientProductDetailService } from '../services/clientProductDetailService';
 
 const CANTIDAD_MAXIMA = 99;
 
 export const useClientProductDetailViewModel = (productId: string | number, colorInicial?: string) => {
+  const { addToCart } = useCart();
   const [producto, setProducto] = useState<ClientProductDetail | null>(null);
   const [varianteActiva, setVarianteActiva] = useState<Variante | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -101,7 +103,7 @@ export const useClientProductDetailViewModel = (productId: string | number, colo
     setAgregando(true);
     setErrorCarrito('');
     try {
-      await clientProductDetailService.addToCart(varianteActiva.variante_id, cantidad);
+      await addToCart(varianteActiva.variante_id, cantidad);
       setAgregado(true);
       if (avisoTimer.current) clearTimeout(avisoTimer.current);
       avisoTimer.current = setTimeout(() => setAgregado(false), 3000);

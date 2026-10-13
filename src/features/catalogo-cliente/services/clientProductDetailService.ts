@@ -12,6 +12,4 @@ export const clientProductDetailService = {
     return Array.isArray(rows) ? rows.slice(0, 4) : [];
   },
 
-  addToCart: (varianteId: string | number, cantidad: number) =>
-    catalogApi.addToCart(varianteId, cantidad),
 };

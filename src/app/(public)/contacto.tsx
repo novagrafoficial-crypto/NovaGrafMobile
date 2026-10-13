@@ -1,5 +1,5 @@
-import { ScreenPlaceholder } from '@/shared/components/ScreenPlaceholder';
+import { ContactoView } from '@/features/contacto';
 
 export default function RutaContacto() {
-  return <ScreenPlaceholder titulo="Contacto" />;
+  return <ContactoView />;
 }

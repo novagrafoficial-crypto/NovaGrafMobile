@@ -1,0 +1,1 @@
+export { NosotrosView } from './views/NosotrosView';

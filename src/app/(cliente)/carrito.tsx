@@ -1,5 +1,5 @@
-import { ScreenPlaceholder } from '@/shared/components/ScreenPlaceholder';
+import { CartView } from '@/features/carrito';
 
 export default function RutaCarrito() {
-  return <ScreenPlaceholder titulo="Carrito" />;
+  return <CartView />;
 }
