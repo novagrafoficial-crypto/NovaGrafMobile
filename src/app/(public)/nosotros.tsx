@@ -1,5 +1,5 @@
-import { ScreenPlaceholder } from '@/shared/components/ScreenPlaceholder';
+import { NosotrosView } from '@/features/nosotros';
 
 export default function RutaNosotros() {
-  return <ScreenPlaceholder titulo="Nosotros" />;
+  return <NosotrosView />;
 }

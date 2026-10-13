@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,7 +13,9 @@ import { useLoginViewModel } from '../viewmodels/useLoginViewModel';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { CustomInput } from '@/shared/components/CustomInput';
 import { Loading } from '@/shared/components/Loading';
-import { brandColors } from '@/constants/brand';
+import { FadeInView } from '@/shared/components/FadeInView';
+import { PressableScale } from '@/shared/components/PressableScale';
+import { brandColors, brandTints } from '@/constants/brand';
 
 export const LoginView = () => {
   const router = useRouter();
@@ -28,16 +29,16 @@ export const LoginView = () => {
     >
       {/* HEADER oscuro con flecha atrás */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={12}>
+        <PressableScale onPress={() => router.back()} style={styles.backButton} hitSlop={12} scaleTo={0.85}>
           <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
+        </PressableScale>
         <Text style={styles.headerTitle}>Iniciar sesión</Text>
         <View style={{ width: 24 }} />
       </View>
 
       {/* CONTENIDO */}
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <View style={styles.card}>
+        <FadeInView style={styles.card}>
           <Text style={styles.title}>Bienvenido</Text>
 
           {vm.error && <Text style={styles.error}>{vm.error}</Text>}
@@ -59,9 +60,9 @@ export const LoginView = () => {
             onChangeText={vm.setPassword}
           />
 
-          <TouchableOpacity style={styles.forgotBtn}>
+          <PressableScale style={styles.forgotBtn} scaleTo={0.95}>
             <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
-          </TouchableOpacity>
+          </PressableScale>
 
           {vm.isLoading ? (
             <Loading />
@@ -89,13 +90,14 @@ export const LoginView = () => {
             </>
           )}
 
-          <TouchableOpacity
+          <PressableScale
             onPress={() => router.push('/(auth)/register' as any)}
             style={{ marginTop: 20 }}
+            scaleTo={0.97}
           >
             <Text style={styles.registerText}>¿No tienes una cuenta? Regístrate</Text>
-          </TouchableOpacity>
-        </View>
+          </PressableScale>
+        </FadeInView>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -118,7 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: brandColors.white,
     borderRadius: 20,
     padding: 24,
-    shadowColor: '#000',
+    shadowColor: brandColors.primaryDark,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -136,8 +138,8 @@ const styles = StyleSheet.create({
   forgotText: { color: brandColors.primary, fontSize: 13 },
   primaryBtn: { marginBottom: 16, borderRadius: 10 },
   divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 12 },
-  line: { flex: 1, height: 1, backgroundColor: '#E0E0E0' },
-  or: { marginHorizontal: 12, color: '#999', fontSize: 12 },
+  line: { flex: 1, height: 1, backgroundColor: brandTints.border },
+  or: { marginHorizontal: 12, color: brandTints.textMuted, fontSize: 12 },
   googleIcon: { fontSize: 18, fontWeight: '700', color: '#EA4335' },
   registerText: { color: brandColors.primary, textAlign: 'center', fontSize: 14 },
 });

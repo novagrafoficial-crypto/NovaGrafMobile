@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TextInputProps, TouchableOpacity, StyleSheet } from 'react-native';
-import { brandColors } from '@/constants/brand';
+import { View, Text, TextInput, TextInputProps, StyleSheet } from 'react-native';
+import { PressableScale } from './PressableScale';
+import { brandColors, brandTints } from '@/constants/brand';
 
 interface CustomInputProps extends TextInputProps {
   label: string;
@@ -8,57 +9,64 @@ interface CustomInputProps extends TextInputProps {
   isPassword?: boolean;
 }
 
-export const CustomInput = ({ label, isPassword, ...inputProps }: CustomInputProps) => {
+export const CustomInput = ({ label, isPassword, onFocus, onBlur, ...inputProps }: CustomInputProps) => {
   const [visible, setVisible] = useState(false);
+  const [focused, setFocused] = useState(false);
+
+  const focusHandlers = {
+    onFocus: (e: any) => {
+      setFocused(true);
+      onFocus?.(e);
+    },
+    onBlur: (e: any) => {
+      setFocused(false);
+      onBlur?.(e);
+    },
+  };
+
+  // El borde se ilumina con el color de marca mientras escribes.
+  const boxStyle = [styles.box, focused && styles.boxFocused];
 
   return (
     <>
       <Text style={styles.label}>{label}</Text>
-      {isPassword ? (
-        <View style={styles.passwordContainer}>
-          <TextInput
-            {...inputProps}
-            style={styles.passwordInput}
-            placeholderTextColor="#999"
-            secureTextEntry={!visible}
-          />
-          <TouchableOpacity
+      <View style={boxStyle}>
+        <TextInput
+          {...inputProps}
+          {...focusHandlers}
+          style={styles.input}
+          placeholderTextColor={brandTints.textMuted}
+          secureTextEntry={isPassword ? !visible : inputProps.secureTextEntry}
+        />
+        {isPassword && (
+          <PressableScale
             onPress={() => setVisible(!visible)}
             style={styles.eyeButton}
             hitSlop={10}
+            scaleTo={0.85}
+            accessibilityLabel={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           >
             <Text style={styles.eyeIcon}>{visible ? '🙈' : '👁️'}</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <TextInput {...inputProps} style={styles.input} placeholderTextColor="#999" />
-      )}
+          </PressableScale>
+        )}
+      </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  label: { fontSize: 13, color: '#555', marginBottom: 6, fontWeight: '500' },
-  input: {
-    backgroundColor: '#F5F5F5',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 16,
-    fontSize: 15,
-    color: brandColors.primary,
-  },
-  passwordContainer: {
+  label: { fontSize: 13, color: brandTints.textMuted, marginBottom: 6, fontWeight: '600' },
+  box: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    backgroundColor: brandTints.surfaceMuted,
+    borderWidth: 1.5,
+    borderColor: brandTints.border,
     borderRadius: 10,
     marginBottom: 16,
   },
-  passwordInput: { flex: 1, padding: 14, fontSize: 15, color: brandColors.primary },
+  boxFocused: { borderColor: brandColors.accent, backgroundColor: brandColors.white },
+  input: { flex: 1, padding: 14, fontSize: 15, color: brandColors.primaryDark },
   eyeButton: { paddingHorizontal: 14, paddingVertical: 14 },
   eyeIcon: { fontSize: 18 },
 });

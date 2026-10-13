@@ -1,5 +1,5 @@
 import { portfolioApi } from '@/data/api/portfolioApi';
-import { API_URL } from '@/constants/app';
+   import { resolveImageUrl } from '@/shared/utils/resolveImageUrl';
 import type { PortfolioItem } from '../models/PortfolioItem';
 
 // PostgreSQL devuelve los NUMERIC como texto ("150.00"), aquí los volvemos número.
@@ -15,14 +15,6 @@ const pick = (row: any, ...keys: string[]) => {
     if (row?.[k] !== undefined && row[k] !== null) return row[k];
   }
   return null;
-};
-
-// Si la imagen viene como ruta relativa, la pega al host del backend.
-const resolveImageUrl = (url: string | null): string | null => {
-  if (!url) return null;
-  if (/^(https?:|data:)/i.test(url)) return url;
-  const origin = (API_URL ?? '').replace(/\/api\/?$/, '');
-  return `${origin}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
 const extractRows = (data: any): any[] => {

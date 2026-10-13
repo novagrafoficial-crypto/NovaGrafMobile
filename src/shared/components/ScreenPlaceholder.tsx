@@ -1,12 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { brandColors } from '@/constants/brand';
+import { FadeInView } from './FadeInView';
+import { brandColors, brandTints } from '@/constants/brand';
 
 // Pantalla temporal "Próximamente..." hasta que exista el módulo real.
 export const ScreenPlaceholder = ({ titulo }: { titulo: string }) => (
   <View style={styles.contenedor}>
-    <Text style={styles.titulo}>{titulo}</Text>
-    <Text style={styles.subtitulo}>Próximamente...</Text>
+    <FadeInView style={styles.centro}>
+      <View style={styles.circulo}>
+        <Text style={styles.icono}>🚧</Text>
+      </View>
+      <Text style={styles.titulo}>{titulo}</Text>
+      <Text style={styles.subtitulo}>Próximamente...</Text>
+    </FadeInView>
   </View>
 );
 
@@ -17,6 +23,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: brandColors.background,
   },
+  centro: { alignItems: 'center' },
+  circulo: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: brandColors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  icono: { fontSize: 36 },
   titulo: { fontSize: 24, fontWeight: '700', color: brandColors.primaryDark },
-  subtitulo: { fontSize: 16, color: '#666', marginTop: 8 },
+  subtitulo: { fontSize: 16, color: brandTints.textMuted, marginTop: 8 },
 });
