@@ -1,4 +1,4 @@
-// Una variante (producto + color) que participa en un descuento
+
 export interface VarianteOferta {
   variante_id: number;
   producto_id: number;
@@ -10,11 +10,11 @@ export interface VarianteOferta {
   precio_final: number;
 }
 
-// Un descuento activo, con las variantes a las que aplica
+// Un descuento activo
 export interface Oferta {
   id: number;
   nombre: string;
-  tipo: string; // 'porcentaje' | 'fijo'
+  tipo: string; 
   valor: number;
   cantidad_minima: number;
   fecha_inicio: string;
@@ -22,7 +22,7 @@ export interface Oferta {
   variantes: VarianteOferta[];
 }
 
-// Una tarjeta de la pantalla: una variante con su descuento, ya lista para dibujar
+// Una tarjeta de la pantalla:
 export interface OfertaTarjeta {
   clave: string;
   productoId: number;

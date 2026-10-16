@@ -2,13 +2,13 @@ import { ofertasApi } from '@/data/api/ofertasApi';
 import { resolveImageUrl } from '@/shared/utils/resolveImageUrl';
 import type { Oferta, VarianteOferta } from '../models/Oferta';
 
-// PostgreSQL manda los NUMERIC como texto ("150.00"): aquí los volvemos número.
+// PostgreSQL manda los NUMERIC como texto
 const aNumero = (v: unknown, defecto = 0): number => {
   const n = Number(v);
   return Number.isNaN(n) ? defecto : n;
 };
 
-// El backend usa '/default-product.jpg' cuando no hay foto: la tratamos como "sin imagen"
+// El backend usa '/default-product.jpg'
 const aImagen = (v: unknown): string | null => {
   const texto = typeof v === 'string' ? v : '';
   if (!texto || texto.includes('default-product')) return null;
@@ -38,7 +38,7 @@ const aOferta = (o: any): Oferta => ({
 });
 
 export const ofertasService = {
-  // Acepta un arreglo directo o { ofertas | data: [...] }, según cómo responda tu controlador
+ 
   getOfertas: async (): Promise<Oferta[]> => {
     const data = await ofertasApi.getOfertas();
     const filas = Array.isArray(data) ? data : data?.ofertas ?? data?.data ?? [];
