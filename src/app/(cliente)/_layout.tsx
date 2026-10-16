@@ -47,6 +47,9 @@ export default function LayoutCliente() {
         <Tabs.Screen name="pedidos" options={{ title: 'Pedidos', tabBarIcon: icono('📋') }} />
         <Tabs.Screen name="perfil" options={{ title: 'Perfil', tabBarIcon: icono('👤') }} />
         <Tabs.Screen name="producto/[id]" options={{ href: null }} />
+        <Tabs.Screen name="checkout" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+        <Tabs.Screen name="pago-pedido/[id]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+        <Tabs.Screen name="pedido/[id]" options={{ href: null }} />
       </Tabs>
     </RoleGuard>
   );

@@ -5,7 +5,7 @@ import { APP_NAME } from '@/constants/app';
 import { brandColors } from '@/constants/brand';
 
 interface HeaderProps {
-  /** Ya no se usa (se quitó el avatar). Se deja opcional para no romper a quien aún lo pasa. */
+  /** Ya no se usa (se quitó el avatar)
   profileRoute?: string;
   /** Texto pequeño bajo la marca (ej. "Carrito", "Panel de Administrador") */
   subtitle?: string;

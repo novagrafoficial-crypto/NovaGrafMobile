@@ -1,0 +1,1 @@
+export { PagoPedidoView } from './views/PagoPedidoView';
