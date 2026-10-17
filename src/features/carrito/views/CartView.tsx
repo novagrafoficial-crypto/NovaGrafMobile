@@ -76,7 +76,7 @@ export const CartView = () => {
 
   return (
     <View style={styles.pantalla}>
-      <Header subtitle="Carrito" profileRoute="/(cliente)/perfil" />
+      <Header subtitle="Carrito" />
 
       {vm.mensaje && (
         <FadeInView
