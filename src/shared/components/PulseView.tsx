@@ -3,9 +3,9 @@ import { Animated, StyleProp, ViewStyle } from 'react-native';
 
 interface PulseViewProps {
   style?: StyleProp<ViewStyle>;
-  /** Cuánto crece en el punto máximo (1 = no crece). */
+
   scaleTo?: number;
-  /** Duración de cada "inhalar" y "exhalar", en ms. */
+
   duration?: number;
 }
 

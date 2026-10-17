@@ -1,13 +1,10 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { APP_NAME } from '@/constants/app';
-import { brandColors } from '@/constants/brand';
+import { APP_NAME } from "@/constants/app";
+import { brandColors } from "@/constants/brand";
+import { StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface HeaderProps {
-  /** Ya no se usa (se quitó el avatar). Se deja opcional para no romper a quien aún lo pasa. */
-  profileRoute?: string;
-  /** Texto pequeño bajo la marca (ej. "Carrito", "Panel de Administrador") */
+  /* Texto pequeño bajo la marca (ej. "Carrito", "Panel de Administrador") */
   subtitle?: string;
 }
 
@@ -28,9 +25,20 @@ const styles = StyleSheet.create({
     backgroundColor: brandColors.primaryDark,
     paddingHorizontal: 20,
     paddingBottom: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
-  marca: { color: brandColors.white, fontSize: 20, fontWeight: '700', textAlign: 'center' },
-  subtitulo: { color: brandColors.accent, fontSize: 12, marginTop: 2, fontWeight: '600', textAlign: 'center' },
+  marca: {
+    color: brandColors.white,
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  subtitulo: {
+    color: brandColors.accent,
+    fontSize: 12,
+    marginTop: 2,
+    fontWeight: "600",
+    textAlign: "center",
+  },
 });
