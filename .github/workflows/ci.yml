@@ -5,11 +5,14 @@ on:
     branches:
       - main
       - develop
-      - feature/configuracion-pruebas-ci
+      - release
+      - "feature/**"
+
   pull_request:
     branches:
       - main
       - develop
+      - release
 
 jobs:
   pruebas:
@@ -17,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Descargar el código
+      - name: Descargar el codigo
         uses: actions/checkout@v4
 
       - name: Configurar Node.js
