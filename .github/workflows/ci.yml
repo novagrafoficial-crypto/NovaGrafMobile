@@ -1,0 +1,39 @@
+name: CI - Nova Graf Mobile
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - release
+      - "feature/**"
+
+  pull_request:
+    branches:
+      - main
+      - develop
+      - release
+
+jobs:
+  pruebas:
+    name: Pruebas y TypeScript
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar pruebas unitarias
+        run: npm test -- --runInBand
+
+      - name: Verificar TypeScript
+        run: npx tsc --noEmit

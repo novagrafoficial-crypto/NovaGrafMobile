@@ -1,0 +1,60 @@
+name: Android - Producción EAS
+
+on:
+  push:
+    branches:
+      - release
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  validar:
+    name: Validar antes de compilar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar pruebas unitarias
+        run: npm test -- --runInBand
+
+      - name: Verificar TypeScript
+        run: npx tsc --noEmit
+
+  build-android:
+    name: Compilar Android AAB
+    needs: validar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Configurar Expo y EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Iniciar compilación Android de producción
+        run: eas build --platform android --profile production --non-interactive

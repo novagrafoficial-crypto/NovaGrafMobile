@@ -2,7 +2,6 @@ import React from 'react';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { brandColors } from '@/constants/brand';
 
-// fullScreen: pantalla completa centrada. Sin fullScreen: indicador en línea.
 export const Loading = ({ fullScreen = false }: { fullScreen?: boolean }) => {
   if (fullScreen) {
     return (

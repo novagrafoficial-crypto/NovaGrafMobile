@@ -90,6 +90,6 @@ export const useCartViewModel = () => {
     confirmarVaciar,
     irAlCatalogo: () => router.push('/(cliente)/productos-base' as any),
     // El checkout todavía no existe en el móvil
-    irAPagar: () => avisar('El pago estará disponible pronto.'),
+    irAPagar: () => router.push('/(cliente)/checkout' as any),
   };
 };
