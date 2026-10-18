@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
-import * as AuthSession from 'expo-auth-session';
-import { useRouter } from 'expo-router';
-import { authService } from '../services/authService';
-import { useAuth } from '@/shared/hooks/useAuth';
-import { homeByRole } from '@/shared/utils/roleRoutes';
-import type { User } from '../models/User';
+import { useAuth } from "@/shared/hooks/useAuth";
+import { homeByRole } from "@/shared/utils/roleRoutes";
+import * as AuthSession from "expo-auth-session";
+import * as Google from "expo-auth-session/providers/google";
+import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import { useEffect, useState } from "react";
+import type { User } from "../models/User";
+import { authService } from "../services/authService";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -14,8 +14,8 @@ export const useLoginViewModel = () => {
   const redirectUri = AuthSession.makeRedirectUri();
   const router = useRouter();
   const { saveSession } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,29 +43,34 @@ export const useLoginViewModel = () => {
   };
 
   useEffect(() => {
-    if (response?.type !== 'success') return;
+    if (response?.type !== "success") return;
 
     const idToken =
       (response.params as any)?.id_token ?? response.authentication?.idToken;
 
     if (idToken) {
       run(
-        () => authService.login({ type: 'google', idToken }),
-        'Error al autenticar con Google'
+        () => authService.login({ type: "google", idToken }),
+        "Error al autenticar con Google",
       );
     } else {
-      setError('Google no devolvió el idToken');
+      setError("Google no devolvió el idToken");
     }
   }, [response]);
 
   const handleCredentialsLogin = () => {
     if (!email.trim() || !password) {
-      setError('Ingresa tu correo y contraseña');
+      setError("Ingresa tu correo y contraseña");
       return;
     }
     run(
-      () => authService.login({ type: 'credentials', email: email.trim(), password }),
-      'Correo o contraseña incorrectos'
+      () =>
+        authService.login({
+          type: "credentials",
+          email: email.trim(),
+          password,
+        }),
+      "Correo o contraseña incorrectos",
     );
   };
 
