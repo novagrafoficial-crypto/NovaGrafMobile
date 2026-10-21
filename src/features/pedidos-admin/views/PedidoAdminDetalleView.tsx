@@ -5,8 +5,9 @@ import { Loading } from '@/shared/components/Loading';
 import { ModalConfirmacion } from '@/shared/components/ModalConfirmacion';
 import { PressableScale } from '@/shared/components/PressableScale';
 import { ScreenHeader } from '@/shared/components/ScreenHeader';
-import React from 'react';
-import { Image, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ChatPedidoView } from '@/features/chat-pedido-admin';
+import React, { useRef } from 'react';
+import { Image, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { HojaDetalle } from '../components/HojaDetalle';
 import { SelectorPrevia } from '../components/SelectorPrevia';
 import type { DetalleSeleccionado } from '../models/PedidoAdmin';
@@ -91,6 +92,7 @@ export const PedidoAdminDetalleView = () => {
   const d = vm.data;
   const estado = d?.pedido.estado;
   const sel = vm.detalle;
+  const scrollRef = useRef<ScrollView>(null);
 
   return (
     <View style={styles.pantalla}>
@@ -194,253 +196,262 @@ export const PedidoAdminDetalleView = () => {
           <CustomButton title="Reintentar" variant="outline" onPress={vm.reintentar} />
         </View>
       ) : (
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          refreshControl={
-            <RefreshControl
-              refreshing={vm.refrescando}
-              onRefresh={vm.refrescar}
-              tintColor={brandColors.primary}
-              colors={[brandColors.primary]}
-            />
-          }
-        >
-          {vm.aviso && (
-            <FadeInView
-              distance={-10}
-              duration={250}
-              style={[styles.aviso, vm.aviso.ok ? styles.avisoOk : styles.avisoErr]}
-            >
-              <Text style={[styles.avisoTxt, vm.aviso.ok ? styles.avisoTxtOk : styles.avisoTxtErr]}>
-                {vm.aviso.texto}
-              </Text>
-            </FadeInView>
-          )}
-          {vm.error && <Text style={styles.errorTxt}>{vm.error}</Text>}
-
-          <Seccion titulo="Resumen">
-            <View style={styles.resumenTop}>
-              <Text style={styles.fecha}>{formatFecha(d.pedido.fecha_pedido, true)}</Text>
-              <Pastilla
-                texto={etiquetaEstado(d.pedido.estado)}
-                bg={colorEstado(d.pedido.estado).bg}
-                fg={colorEstado(d.pedido.estado).fg}
+        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView
+            ref={scrollRef}
+            contentContainerStyle={styles.scroll}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            refreshControl={
+              <RefreshControl
+                refreshing={vm.refrescando}
+                onRefresh={vm.refrescar}
+                tintColor={brandColors.primary}
+                colors={[brandColors.primary]}
               />
-            </View>
-            <Fila etiqueta="Cliente" valor={d.pedido.cliente_nombre} />
-            <Fila etiqueta="Correo" valor={d.pedido.cliente_correo} />
-            <Fila etiqueta="Total" valor={formatMoney(d.pedido.total_general)} />
-            <Fila etiqueta="Anticipo" valor={formatMoney(d.pedido.monto_anticipo)} />
-            <Fila etiqueta="Restante" valor={formatMoney(d.pedido.monto_restante)} />
-            <Fila etiqueta="Método de pago" valor={d.pedido.metodo_pago} />
-            <Fila etiqueta="Entrega" valor={d.pedido.metodo_entrega} />
-            <Fila etiqueta="Dirección" valor={d.pedido.direccion_envio} />
-          </Seccion>
-
-          <Seccion titulo="Productos" delay={60}>
-            {d.productos.length === 0 ? (
-              <Text style={styles.vacio}>Sin productos.</Text>
-            ) : (
-              d.productos.map((p, i) => (
-                <PressableScale
-                  key={`${p.sku}-${i}`}
-                  style={styles.producto}
-                  onPress={() => vm.abrirDetalle({ tipo: 'producto', item: p })}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Ver detalle de ${p.producto_nombre}`}
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.productoNombre}>{p.producto_nombre}</Text>
-                    <Text style={styles.productoSub}>
-                      SKU: {p.sku} · Cantidad: {p.cantidad}
-                    </Text>
-                  </View>
-                  <Text style={styles.productoPrecio}>{formatMoney(p.precio_unitario)}</Text>
-                  <Text style={styles.chevron}>›</Text>
-                </PressableScale>
-              ))
-            )}
-          </Seccion>
-
-          {d.disenos.length > 0 && (
-            <Seccion titulo="Diseño del cliente" delay={100}>
-              {d.disenos.map((x) => (
-                <PressableScale
-                  key={x.id}
-                  style={styles.bloque}
-                  onPress={() => vm.abrirDetalle({ tipo: 'diseno', item: x })}
-                  accessibilityRole="button"
-                  accessibilityLabel="Ver diseño del cliente"
-                >
-                  <View style={styles.resumenTop}>
-                    <Pastilla texto={x.tipo_origen || 'Diseño'} bg="#d0eaff" fg="#0a4a7c" />
-                    <Text style={styles.fecha}>{formatFecha(x.fecha_envio)}</Text>
-                  </View>
-                  {!!x.notas_cliente && (
-                    <Text style={styles.nota} numberOfLines={2}>
-                      “{x.notas_cliente}”
-                    </Text>
-                  )}
-                  {x.usaSimulador && <Text style={styles.productoSub}>Creado con el simulador</Text>}
-                  <Text style={styles.enlace}>Ver diseño y descripción →</Text>
-                </PressableScale>
-              ))}
-            </Seccion>
-          )}
-
-          <Seccion titulo="Comprobantes de pago" delay={140}>
-            {d.pagos.length === 0 ? (
-              <Text style={styles.vacio}>Sin comprobantes aún.</Text>
-            ) : (
-              d.pagos.map((p) => {
-                const c = colorEstadoPago(p.estado_pago);
-                return (
-                  <View key={p.id} style={styles.bloque}>
-                    <View style={styles.resumenTop}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.productoNombre}>
-                          {p.tipo_pago} — {formatMoney(p.monto)}
-                        </Text>
-                        <Text style={styles.productoSub}>{formatFecha(p.fecha_pago, true)}</Text>
-                      </View>
-                      <Pastilla texto={p.estado_pago} bg={c.bg} fg={c.fg} />
-                    </View>
-                    {!!p.notas_admin && <Text style={styles.nota}>Notas: {p.notas_admin}</Text>}
-                    {!!p.comprobante_url && p.comprobante_url !== TIENDA_FISICA && (
-                      <Enlace
-                        texto="Ver comprobante →"
-                        onPress={() => vm.abrirDetalle({ tipo: 'comprobante', item: p })}
-                      />
-                    )}
-                    {p.comprobante_url === TIENDA_FISICA && (
-                      <Text style={styles.productoSub}>Pago en tienda física (sin comprobante)</Text>
-                    )}
-
-                    {p.estado_pago === 'PENDIENTE' && (
-                      <View style={styles.accionesPago}>
-                        <TextInput
-                          style={styles.inputNota}
-                          placeholder="Notas (opcional, para rechazo)"
-                          placeholderTextColor={brandTints.textMuted}
-                          value={vm.notasPago[p.id] ?? ''}
-                          onChangeText={(t) => vm.editarNotaPago(p.id, t)}
-                          editable={!vm.trabajando}
-                        />
-                        <View style={styles.fila}>
-                          <CustomButton
-                            title="✓ Aprobar"
-                            variant="accent"
-                            onPress={() => vm.pedirResolverPago(p, 'APROBADO')}
-                            disabled={vm.trabajando}
-                            style={styles.flex}
-                          />
-                          <CustomButton
-                            title="✗ Rechazar"
-                            variant="danger"
-                            onPress={() => vm.pedirResolverPago(p, 'RECHAZADO')}
-                            disabled={vm.trabajando}
-                            style={styles.flex}
-                          />
-                        </View>
-                      </View>
-                    )}
-                  </View>
-                );
-              })
-            )}
-          </Seccion>
-
-          <Seccion titulo="Previas de diseño" delay={180}>
-            {vm.bannerPrevias && (
-              <View
-                style={[
-                  styles.banner,
-                  vm.bannerPrevias.tono === 'ok' && styles.bannerOk,
-                  vm.bannerPrevias.tono === 'aviso' && styles.bannerAviso,
-                ]}
+            }
+          >
+            {vm.aviso && (
+              <FadeInView
+                distance={-10}
+                duration={250}
+                style={[styles.aviso, vm.aviso.ok ? styles.avisoOk : styles.avisoErr]}
               >
-                <Text
-                  style={[
-                    styles.bannerTxt,
-                    vm.bannerPrevias.tono === 'ok' && { color: brandColors.primary },
-                    vm.bannerPrevias.tono === 'aviso' && { color: '#7a3500' },
-                  ]}
-                >
-                  {vm.bannerPrevias.texto}
+                <Text style={[styles.avisoTxt, vm.aviso.ok ? styles.avisoTxtOk : styles.avisoTxtErr]}>
+                  {vm.aviso.texto}
                 </Text>
-              </View>
+              </FadeInView>
             )}
+            {vm.error && <Text style={styles.errorTxt}>{vm.error}</Text>}
 
-            {d.previas.length === 0 ? (
-              <Text style={styles.vacio}>Aún no se han enviado previas.</Text>
-            ) : (
-              d.previas.map((p) => {
-                const ep = COLOR_ESTADO_PREVIA[vm.estadoDePrevia(p)];
-                const url = resolveImageUrl(p.imagen_url);
-                return (
+            <Seccion titulo="Resumen">
+              <View style={styles.resumenTop}>
+                <Text style={styles.fecha}>{formatFecha(d.pedido.fecha_pedido, true)}</Text>
+                <Pastilla
+                  texto={etiquetaEstado(d.pedido.estado)}
+                  bg={colorEstado(d.pedido.estado).bg}
+                  fg={colorEstado(d.pedido.estado).fg}
+                />
+              </View>
+              <Fila etiqueta="Cliente" valor={d.pedido.cliente_nombre} />
+              <Fila etiqueta="Correo" valor={d.pedido.cliente_correo} />
+              <Fila etiqueta="Total" valor={formatMoney(d.pedido.total_general)} />
+              <Fila etiqueta="Anticipo" valor={formatMoney(d.pedido.monto_anticipo)} />
+              <Fila etiqueta="Restante" valor={formatMoney(d.pedido.monto_restante)} />
+              <Fila etiqueta="Método de pago" valor={d.pedido.metodo_pago} />
+              <Fila etiqueta="Entrega" valor={d.pedido.metodo_entrega} />
+              <Fila etiqueta="Dirección" valor={d.pedido.direccion_envio} />
+            </Seccion>
+
+            <Seccion titulo="Productos" delay={60}>
+              {d.productos.length === 0 ? (
+                <Text style={styles.vacio}>Sin productos.</Text>
+              ) : (
+                d.productos.map((p, i) => (
                   <PressableScale
-                    key={p.id}
-                    style={styles.previa}
-                    onPress={() => vm.abrirDetalle({ tipo: 'previa', item: p })}
+                    key={`${p.sku}-${i}`}
+                    style={styles.producto}
+                    onPress={() => vm.abrirDetalle({ tipo: 'producto', item: p })}
                     accessibilityRole="button"
-                    accessibilityLabel={`Ver previa ${p.numero_previa}`}
+                    accessibilityLabel={`Ver detalle de ${p.producto_nombre}`}
                   >
-                    {url && !esPdf(url) ? (
-                      <Image source={{ uri: url }} style={styles.previaImg} resizeMode="cover" />
-                    ) : (
-                      <View style={[styles.previaImg, styles.previaSinImg]}>
-                        <Text style={styles.chevron}>🖼️</Text>
-                      </View>
-                    )}
-                    <View style={styles.previaInfo}>
-                      <Text style={styles.productoNombre}>Previa {p.numero_previa}</Text>
-                      <Pastilla texto={ep.texto} bg={ep.bg} fg={ep.fg} />
-                      <Text style={styles.productoSub}>{formatFecha(p.fecha_subida)}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.productoNombre}>{p.producto_nombre}</Text>
+                      <Text style={styles.productoSub}>
+                        SKU: {p.sku} · Cantidad: {p.cantidad}
+                      </Text>
                     </View>
+                    <Text style={styles.productoPrecio}>{formatMoney(p.precio_unitario)}</Text>
                     <Text style={styles.chevron}>›</Text>
                   </PressableScale>
-                );
-              })
-            )}
-
-            {/* Se envía UNA previa a la vez. Si el cliente la rechaza, aparece de nuevo para subir otra. */}
-            {vm.puedeEnviarPrevia && (
-              <View style={styles.formPrevias}>
-                <SelectorPrevia
-                  titulo={`Previa ${vm.siguientePrevia}`}
-                  archivo={vm.previa}
-                  onElegir={vm.elegirPrevia}
-                  onQuitar={vm.quitarPrevia}
-                  disabled={vm.trabajando}
-                />
-                <CustomButton
-                  title={
-                    vm.trabajando
-                      ? 'Subiendo imagen…'
-                      : vm.siguientePrevia === 1
-                        ? 'Enviar previa'
-                        : `Enviar otra previa (${vm.siguientePrevia})`
-                  }
-                  onPress={vm.pedirEnviarPrevia}
-                  disabled={vm.trabajando || !vm.previa}
-                />
-              </View>
-            )}
-          </Seccion>
-
-          {estado !== 'CANCELADO' && estado !== 'ENVIADO' && (
-            <Seccion titulo="Acciones" delay={220}>
-              <View style={styles.acciones}>
-                {estado === 'EN_PRODUCCION' && (
-                  <CustomButton title="Marcar como listo" onPress={vm.pedirMarcarListo} disabled={vm.trabajando} />
-                )}
-                <CustomButton title="Cancelar pedido" variant="danger" onPress={vm.pedirCancelar} disabled={vm.trabajando} />
-              </View>
+                ))
+              )}
             </Seccion>
-          )}
-        </ScrollView>
+
+            {d.disenos.length > 0 && (
+              <Seccion titulo="Diseño del cliente" delay={100}>
+                {d.disenos.map((x) => (
+                  <PressableScale
+                    key={x.id}
+                    style={styles.bloque}
+                    onPress={() => vm.abrirDetalle({ tipo: 'diseno', item: x })}
+                    accessibilityRole="button"
+                    accessibilityLabel="Ver diseño del cliente"
+                  >
+                    <View style={styles.resumenTop}>
+                      <Pastilla texto={x.tipo_origen || 'Diseño'} bg="#d0eaff" fg="#0a4a7c" />
+                      <Text style={styles.fecha}>{formatFecha(x.fecha_envio)}</Text>
+                    </View>
+                    {!!x.notas_cliente && (
+                      <Text style={styles.nota} numberOfLines={2}>
+                        “{x.notas_cliente}”
+                      </Text>
+                    )}
+                    {x.usaSimulador && <Text style={styles.productoSub}>Creado con el simulador</Text>}
+                    <Text style={styles.enlace}>Ver diseño y descripción →</Text>
+                  </PressableScale>
+                ))}
+              </Seccion>
+            )}
+
+            <Seccion titulo="Comprobantes de pago" delay={140}>
+              {d.pagos.length === 0 ? (
+                <Text style={styles.vacio}>Sin comprobantes aún.</Text>
+              ) : (
+                d.pagos.map((p) => {
+                  const c = colorEstadoPago(p.estado_pago);
+                  return (
+                    <View key={p.id} style={styles.bloque}>
+                      <View style={styles.resumenTop}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.productoNombre}>
+                            {p.tipo_pago} — {formatMoney(p.monto)}
+                          </Text>
+                          <Text style={styles.productoSub}>{formatFecha(p.fecha_pago, true)}</Text>
+                        </View>
+                        <Pastilla texto={p.estado_pago} bg={c.bg} fg={c.fg} />
+                      </View>
+                      {!!p.notas_admin && <Text style={styles.nota}>Notas: {p.notas_admin}</Text>}
+                      {!!p.comprobante_url && p.comprobante_url !== TIENDA_FISICA && (
+                        <Enlace
+                          texto="Ver comprobante →"
+                          onPress={() => vm.abrirDetalle({ tipo: 'comprobante', item: p })}
+                        />
+                      )}
+                      {p.comprobante_url === TIENDA_FISICA && (
+                        <Text style={styles.productoSub}>Pago en tienda física (sin comprobante)</Text>
+                      )}
+
+                      {p.estado_pago === 'PENDIENTE' && (
+                        <View style={styles.accionesPago}>
+                          <TextInput
+                            style={styles.inputNota}
+                            placeholder="Notas (opcional, para rechazo)"
+                            placeholderTextColor={brandTints.textMuted}
+                            value={vm.notasPago[p.id] ?? ''}
+                            onChangeText={(t) => vm.editarNotaPago(p.id, t)}
+                            editable={!vm.trabajando}
+                          />
+                          <View style={styles.fila}>
+                            <CustomButton
+                              title="✓ Aprobar"
+                              variant="accent"
+                              onPress={() => vm.pedirResolverPago(p, 'APROBADO')}
+                              disabled={vm.trabajando}
+                              style={styles.flex}
+                            />
+                            <CustomButton
+                              title="✗ Rechazar"
+                              variant="danger"
+                              onPress={() => vm.pedirResolverPago(p, 'RECHAZADO')}
+                              disabled={vm.trabajando}
+                              style={styles.flex}
+                            />
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })
+              )}
+            </Seccion>
+
+            <Seccion titulo="Previas de diseño" delay={180}>
+              {vm.bannerPrevias && (
+                <View
+                  style={[
+                    styles.banner,
+                    vm.bannerPrevias.tono === 'ok' && styles.bannerOk,
+                    vm.bannerPrevias.tono === 'aviso' && styles.bannerAviso,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.bannerTxt,
+                      vm.bannerPrevias.tono === 'ok' && { color: brandColors.primary },
+                      vm.bannerPrevias.tono === 'aviso' && { color: '#7a3500' },
+                    ]}
+                  >
+                    {vm.bannerPrevias.texto}
+                  </Text>
+                </View>
+              )}
+
+              {d.previas.length === 0 ? (
+                <Text style={styles.vacio}>Aún no se han enviado previas.</Text>
+              ) : (
+                d.previas.map((p) => {
+                  const ep = COLOR_ESTADO_PREVIA[vm.estadoDePrevia(p)];
+                  const url = resolveImageUrl(p.imagen_url);
+                  return (
+                    <PressableScale
+                      key={p.id}
+                      style={styles.previa}
+                      onPress={() => vm.abrirDetalle({ tipo: 'previa', item: p })}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Ver previa ${p.numero_previa}`}
+                    >
+                      {url && !esPdf(url) ? (
+                        <Image source={{ uri: url }} style={styles.previaImg} resizeMode="cover" />
+                      ) : (
+                        <View style={[styles.previaImg, styles.previaSinImg]}>
+                          <Text style={styles.chevron}>🖼️</Text>
+                        </View>
+                      )}
+                      <View style={styles.previaInfo}>
+                        <Text style={styles.productoNombre}>Previa {p.numero_previa}</Text>
+                        <Pastilla texto={ep.texto} bg={ep.bg} fg={ep.fg} />
+                        <Text style={styles.productoSub}>{formatFecha(p.fecha_subida)}</Text>
+                      </View>
+                      <Text style={styles.chevron}>›</Text>
+                    </PressableScale>
+                  );
+                })
+              )}
+
+              {/* Se envía UNA previa a la vez. Si el cliente la rechaza, aparece de nuevo para subir otra. */}
+              {vm.puedeEnviarPrevia && (
+                <View style={styles.formPrevias}>
+                  <SelectorPrevia
+                    titulo={`Previa ${vm.siguientePrevia}`}
+                    archivo={vm.previa}
+                    onElegir={vm.elegirPrevia}
+                    onQuitar={vm.quitarPrevia}
+                    disabled={vm.trabajando}
+                  />
+                  <CustomButton
+                    title={
+                      vm.trabajando
+                        ? 'Subiendo imagen…'
+                        : vm.siguientePrevia === 1
+                          ? 'Enviar previa'
+                          : `Enviar otra previa (${vm.siguientePrevia})`
+                    }
+                    onPress={vm.pedirEnviarPrevia}
+                    disabled={vm.trabajando || !vm.previa}
+                  />
+                </View>
+              )}
+            </Seccion>
+
+            {estado !== 'CANCELADO' && estado !== 'ENVIADO' && (
+              <Seccion titulo="Acciones" delay={220}>
+                <View style={styles.acciones}>
+                  {estado === 'EN_PRODUCCION' && (
+                    <CustomButton title="Marcar como listo" onPress={vm.pedirMarcarListo} disabled={vm.trabajando} />
+                  )}
+                  <CustomButton title="Cancelar pedido" variant="danger" onPress={vm.pedirCancelar} disabled={vm.trabajando} />
+                </View>
+              </Seccion>
+            )}
+
+            {/* Chat con el cliente: va al final, igual que en la web */}
+            <ChatPedidoView
+              pedidoId={vm.pedidoId}
+              onInputFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)}
+            />
+          </ScrollView>
+        </KeyboardAvoidingView>
       )}
     </View>
   );
