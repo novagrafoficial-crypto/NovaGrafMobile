@@ -3,5 +3,5 @@ import { DisenoPedidoView } from '@/features/diseno';
 
 export default function RutaDisenoPedido() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  return <DisenoPedidoView pedidoId={Number(id)} />;
+  return <DisenoPedidoView key={id} pedidoId={Number(id)} />;
 }

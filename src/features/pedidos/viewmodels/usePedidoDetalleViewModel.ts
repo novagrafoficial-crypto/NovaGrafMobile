@@ -29,7 +29,10 @@ export const usePedidoDetalleViewModel = (pedidoId: number) => {
     pedido, cargando, error, reintentar: cargar,
     debePagar: pedido ? necesitaPago(pedido) : false,
     tienePago: pedido ? tieneAnticipo(pedido) : false,
-    debeSubirDiseno: pedido?.estado === 'EN_DISENO',
+    disenos: pedido?.disenos ?? [],
+    previas: pedido?.previas ?? [],
+    // Si ya envió sus diseños no se vuelve a ofrecer el botón de subir
+    debeSubirDiseno: pedido?.estado === 'EN_DISENO' && (pedido?.disenos.length ?? 0) === 0,
     irADiseno: () => router.push(`/(cliente)/diseno-pedido/${pedidoId}` as any),
     irAPagar: () => router.push(`/(cliente)/pago-pedido/${pedidoId}` as any),
     abrirUrl: (url: string) => Linking.openURL(url),

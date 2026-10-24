@@ -33,6 +33,23 @@ const aPedido = (r: any): Pedido => ({
     notas_admin: p.notas_admin ?? null,
     fecha_pago: p.fecha_pago ?? null,
   })),
+  disenos: (Array.isArray(r.disenos) ? r.disenos : []).map((d: any) => ({
+    id: Number(d.id),
+    variante_id: d.variante_id != null ? Number(d.variante_id) : null,
+    archivo_url: d.archivo_url ?? null,
+    notas_cliente: d.notas_cliente ?? null,
+    fecha_envio: d.fecha_envio ?? null,
+  })),
+  previas: (Array.isArray(r.previas) ? r.previas : [])
+    .map((p: any) => ({
+      id: Number(p.id),
+      numero_previa: Number(p.numero_previa ?? 0),
+      imagen_url: p.imagen_url ?? '',
+      aprobada: Boolean(p.aprobada),
+      rechazada: Boolean(p.rechazada),
+      fecha_subida: p.fecha_subida ?? null,
+    }))
+    .sort((a: any, b: any) => a.numero_previa - b.numero_previa),
 });
 
 export const pedidoService = {
