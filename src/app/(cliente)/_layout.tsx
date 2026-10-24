@@ -71,6 +71,10 @@ export default function LayoutCliente() {
           options={{ href: null, tabBarStyle: { display: "none" } }}
         />
         <Tabs.Screen name="pedido/[id]" options={{ href: null }} />
+        <Tabs.Screen
+          name="diseno-pedido/[id]"
+          options={{ href: null, tabBarStyle: { display: "none" } }}
+        />
         <Tabs.Screen name="notificaciones" options={{ href: null }} /> 
       </Tabs>
     </RoleGuard>

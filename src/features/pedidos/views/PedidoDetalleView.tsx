@@ -106,8 +106,7 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
       </ScrollView>
     );
   };
-
-  const mostrarBoton = !!p && (vm.debePagar || vm.tienePago);
+    const mostrarBoton = !!p && (vm.debeSubirDiseno || vm.debePagar || vm.tienePago);
 
   return (
     <View style={styles.pantalla}>
@@ -116,15 +115,20 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
 
       {mostrarBoton && (
         <View style={styles.barra}>
-          <CustomButton
-            title={vm.debePagar ? '💳 Pagar anticipo / subir comprobante' : '🏦 Ver datos de pago'}
-            onPress={vm.irAPagar}
-          />
+          {vm.debeSubirDiseno ? (
+            <CustomButton title="🎨 Subir mis diseños" onPress={vm.irADiseno} />
+          ) : (
+            <CustomButton
+              title={vm.debePagar ? '💳 Pagar anticipo / subir comprobante' : '🏦 Ver datos de pago'}
+              onPress={vm.irAPagar}
+            />
+          )}
         </View>
       )}
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: brandColors.background },

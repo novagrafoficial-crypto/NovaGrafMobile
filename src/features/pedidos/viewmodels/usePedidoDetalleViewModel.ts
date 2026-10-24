@@ -29,6 +29,8 @@ export const usePedidoDetalleViewModel = (pedidoId: number) => {
     pedido, cargando, error, reintentar: cargar,
     debePagar: pedido ? necesitaPago(pedido) : false,
     tienePago: pedido ? tieneAnticipo(pedido) : false,
+    debeSubirDiseno: pedido?.estado === 'EN_DISENO',
+    irADiseno: () => router.push(`/(cliente)/diseno-pedido/${pedidoId}` as any),
     irAPagar: () => router.push(`/(cliente)/pago-pedido/${pedidoId}` as any),
     abrirUrl: (url: string) => Linking.openURL(url),
     volver: () => (router.canGoBack() ? router.back() : router.replace('/(cliente)/pedidos' as any)),

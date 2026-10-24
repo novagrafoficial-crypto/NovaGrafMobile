@@ -1,4 +1,5 @@
 export interface PedidoItem {
+  variante_id: number;
   producto_nombre: string;
   color: string | null;
   imagen_url: string | null;

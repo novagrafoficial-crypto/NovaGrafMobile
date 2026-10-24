@@ -16,6 +16,7 @@ const aPedido = (r: any): Pedido => ({
   metodo_entrega_nombre: r.metodo_entrega_nombre ?? '',
   metodo_pago_nombre: r.metodo_pago_nombre ?? null,
   detalles: (r.detalles ?? []).map((d: any) => ({
+    variante_id: Number(d.variante_id),
     producto_nombre: d.producto_nombre,
     color: d.color ?? null,
     imagen_url: d.imagen_url ?? null,
