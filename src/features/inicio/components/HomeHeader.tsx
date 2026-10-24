@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PressableScale } from '@/shared/components/PressableScale';
+import { useNotificaciones } from '@/features/notificaciones';
 import { brandColors, brandTints } from '@/constants/brand';
 
 interface Props {
@@ -26,7 +27,8 @@ export const HomeHeader = ({
   placeholder = 'Busca ideas: gorras, tazas, playeras…',
 }: Props) => {
   const insets = useSafeAreaInsets();
-  const opciones = ['', ...categorias]; // '' = Todo
+  const opciones = ['', ...categorias]; 
+  const { noLeidas } = useNotificaciones();
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
@@ -51,6 +53,11 @@ export const HomeHeader = ({
 
         <PressableScale style={styles.campana} onPress={onNotificaciones} scaleTo={0.88} accessibilityLabel="Notificaciones">
           <Text style={styles.campanaIcono}>🔔</Text>
+          {noLeidas > 0 && (
+          <View style={styles.badge}>
+          <Text style={styles.badgeTexto}>{noLeidas > 99 ? '99+' : noLeidas}</Text>
+  </View>
+)}
         </PressableScale>
       </View>
 
@@ -106,6 +113,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3,
     borderBottomColor: 'transparent',
   },
+  badge: {
+  position: 'absolute',
+  top: -2,
+  right: -2,
+  minWidth: 18,
+  height: 18,
+  borderRadius: 9,
+  paddingHorizontal: 4,
+  backgroundColor: brandColors.error,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+badgeTexto: { color: brandColors.white, fontSize: 10, fontWeight: '800' },
   tabActiva: { borderBottomColor: brandColors.accent },
   tabTexto: { fontSize: 13, fontWeight: '600', color: brandTints.accentSoft },
   tabTextoActivo: { fontWeight: '800', color: brandColors.white },
