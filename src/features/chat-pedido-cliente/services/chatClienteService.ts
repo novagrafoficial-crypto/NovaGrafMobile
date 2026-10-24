@@ -10,10 +10,11 @@ const aMensaje = (m: any): MensajeChat => ({
 });
 
 export const chatClienteService = {
+  // El backend ordena por fecha_envio ASC y responde { success, mensajes }.
   getMensajes: async (pedidoId: number): Promise<MensajeChat[]> => {
-    const r = await chatClienteApi.getPedido(pedidoId);
-    return (Array.isArray(r?.chat) ? r.chat : []).map(aMensaje);
+    const r = await chatClienteApi.getMensajes(pedidoId);
+    return (Array.isArray(r?.mensajes) ? r.mensajes : []).map(aMensaje);
   },
-  enviar: (pedidoId: number, remitenteId: number, mensaje: string) =>
-    chatClienteApi.enviarMensaje({ pedido_cliente_id: pedidoId, remitente_id: remitenteId, mensaje: mensaje.trim() }),
+
+  enviar: (pedidoId: number, mensaje: string) => chatClienteApi.enviarMensaje(pedidoId, mensaje.trim()),
 };

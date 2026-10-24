@@ -46,11 +46,10 @@ export const useChatClienteViewModel = (pedidoId: number) => {
   const enviar = async () => {
     const mensaje = texto.trim();
     if (!mensaje || enviandoRef.current) return;
-    if (!miId) return setError('No se pudo identificar tu sesión. Vuelve a iniciar sesión.');
     enviandoRef.current = true;
     setEnviando(true);
     try {
-      await chatClienteService.enviar(pedidoId, miId, mensaje);
+      await chatClienteService.enviar(pedidoId, mensaje);
       setTexto('');
       await cargar();
     } catch (e: any) {

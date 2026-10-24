@@ -57,5 +57,12 @@ export const pedidoService = {
     const data = await pedidosApi.getAll();
     return (Array.isArray(data) ? data : []).map(aPedido);
   },
-  getById: async (id: number): Promise<Pedido> => aPedido(await pedidosApi.getById(id)),
+  getById: async (id: number): Promise<Pedido> => {
+    const [base, disenos, previas] = await Promise.all([
+      pedidosApi.getById(id),
+      pedidosApi.getDisenos(id).catch(() => null),
+      pedidosApi.getPrevias(id).catch(() => null),
+    ]);
+    return aPedido({ ...base, disenos: disenos?.disenos, previas: previas?.previas });
+  },
 };

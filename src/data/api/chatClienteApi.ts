@@ -1,10 +1,11 @@
 import apiClient from './ApiClient';
 
-// ⚠️ Confirma estas rutas contra el backend / la web del cliente.
-// Los mensajes se leen de GET /client/pedidos/:id (campo "chat") y se envían con POST.
+// Rutas reales del backend (routes/client/chatRoutes.js montado en /api/client/chat):
+//   GET  /api/client/chat/:id/chat  -> { success, mensajes }
+//   POST /api/client/chat/:id/chat  body { mensaje } -> el remitente sale del token (JWT)
 export const chatClienteApi = {
-  getPedido: async (pedidoId: number) => (await apiClient.get(`/client/pedidos/${pedidoId}`)).data,
+  getMensajes: async (pedidoId: number) => (await apiClient.get(`/client/chat/${pedidoId}/chat`)).data,
 
-  enviarMensaje: async (body: { pedido_cliente_id: number; remitente_id: number; mensaje: string }) =>
-    (await apiClient.post('/client/pedidos/chat', body)).data,
+  enviarMensaje: async (pedidoId: number, mensaje: string) =>
+    (await apiClient.post(`/client/chat/${pedidoId}/chat`, { mensaje })).data,
 };
