@@ -4,7 +4,7 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import { notificacionesService } from '../services/notificacionesService';
 import type { Notificacion } from '../models/Notificacion';
 
-const INTERVALO_MS = 30000; // mismo polling de 30 s que la web
+const INTERVALO_MS = 30000; 
 
 interface NotificacionesContextValue {
   notificaciones: Notificacion[];
@@ -18,7 +18,7 @@ interface NotificacionesContextValue {
 
 const NotificacionesContext = createContext<NotificacionesContextValue | undefined>(undefined);
 
-// Equivale al NotificationContext de la web: una sola copia para toda la app.
+
 export const NotificacionesProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const esCliente = user?.rol === 'cliente';
@@ -58,7 +58,7 @@ export const NotificacionesProvider = ({ children }: { children: React.ReactNode
       if (AppState.currentState === 'active') refrescar();
     }, INTERVALO_MS);
     const sub = AppState.addEventListener('change', (estado) => {
-      if (estado === 'active') refrescar(); // al volver a la app, actualiza al instante
+      if (estado === 'active') refrescar(); 
     });
 
     return () => {
@@ -75,7 +75,7 @@ export const NotificacionesProvider = ({ children }: { children: React.ReactNode
       await notificacionesService.marcarLeida(id);
     } catch (e) {
       console.error('Error al marcar como leída:', e);
-      refrescar(); // revierte al estado real del servidor
+      refrescar(); 
     }
   }, [notificaciones, refrescar]);
 

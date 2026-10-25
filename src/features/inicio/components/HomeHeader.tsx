@@ -12,11 +12,11 @@ interface Props {
   categoriaActiva: string;
   onCategoria: (categoria: string) => void;
   onNotificaciones: () => void;
-  /** Texto del buscador (opcional). Si no se pasa, usa el del Inicio. */
+ 
   placeholder?: string;
 }
 
-// Encabezado del Inicio: búsqueda + notificaciones + categorías en fila horizontal
+
 export const HomeHeader = ({
   busqueda,
   onBusqueda,
