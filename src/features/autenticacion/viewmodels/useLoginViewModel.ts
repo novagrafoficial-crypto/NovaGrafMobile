@@ -35,8 +35,16 @@ export const useLoginViewModel = () => {
     setError(null);
     try {
       await startSession(await action());
-    } catch (err: any) {
-      setError(err.response?.data?.message || fallbackMsg);
+        } catch (err: any) {
+      const data = err.response?.data;
+      if (data?.code === 'NOT_ACTIVE' && data?.id_usuario) {
+        router.push({
+          pathname: '/(auth)/verify-account',
+          params: { id_usuario: String(data.id_usuario) },
+        } as any);
+        return;
+      }
+      setError(data?.message || fallbackMsg);
     } finally {
       setIsLoading(false);
     }
