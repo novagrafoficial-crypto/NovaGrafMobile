@@ -5,6 +5,7 @@ import { EstadoBadge } from '../components/EstadoBadge';
 import { ComprobanteItem } from '../components/ComprobanteItem';
 import { DisenoEnviadoItem } from '../components/DisenoEnviadoItem';
 import { PreviaItem } from '../components/PreviaItem';
+import { RechazarPreviaModal } from '../components/RechazarPreviaModal';
 import { ChatClienteView } from '@/features/chat-pedido-cliente';
 import { ScreenHeader } from '@/shared/components/ScreenHeader';
 import { Loading } from '@/shared/components/Loading';
@@ -97,7 +98,13 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
           ) : (
             <View style={{ gap: 10 }}>
               {vm.previas.map((pr) => (
-                <PreviaItem key={pr.id} previa={pr} />
+                <PreviaItem
+                  key={pr.id}
+                  previa={pr}
+                  deshabilitado={vm.enviandoRevision}
+                  onAprobar={vm.previaPendiente?.id === pr.id ? () => vm.aprobarPrevia(pr) : undefined}
+                  onRechazar={vm.previaPendiente?.id === pr.id ? () => vm.abrirRechazo(pr) : undefined}
+                />
               ))}
             </View>
           )}
@@ -146,7 +153,8 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
       </ScrollView>
     );
   };
-    const mostrarBoton = !!p && (vm.debeSubirDiseno || vm.debePagar || vm.tienePago);
+
+  const mostrarBoton = !!p && (vm.debeSubirDiseno || vm.debePagar || vm.tienePago);
 
   return (
     <KeyboardAvoidingView
@@ -155,6 +163,15 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
     >
       <ScreenHeader title={p ? folioDe(p.id) : 'Pedido'} onBack={vm.volver} />
       <View style={{ flex: 1 }}>{cuerpo()}</View>
+
+      <RechazarPreviaModal
+        visible={!!vm.previaARechazar}
+        numeroPrevia={vm.previaARechazar?.numero_previa ?? null}
+        enviando={vm.enviandoRevision}
+        error={vm.errorRevision}
+        onCancelar={vm.cerrarRechazo}
+        onConfirmar={vm.confirmarRechazo}
+      />
 
       {mostrarBoton && (
         <View style={styles.barra}>
@@ -171,7 +188,6 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
     </KeyboardAvoidingView>
   );
 };
-
 
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: brandColors.background },

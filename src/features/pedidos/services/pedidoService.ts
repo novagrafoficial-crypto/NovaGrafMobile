@@ -48,6 +48,7 @@ const aPedido = (r: any): Pedido => ({
       aprobada: Boolean(p.aprobada),
       rechazada: Boolean(p.rechazada),
       fecha_subida: p.fecha_subida ?? null,
+      comentario_cliente: p.comentario_cliente ?? null,
     }))
     .sort((a: any, b: any) => a.numero_previa - b.numero_previa),
 });
@@ -65,4 +66,7 @@ export const pedidoService = {
     ]);
     return aPedido({ ...base, disenos: disenos?.disenos, previas: previas?.previas });
   },
+  aprobarPrevia: (pedidoId: number, numeroPrevia: number) => pedidosApi.aprobarPrevia(pedidoId, numeroPrevia),
+  rechazarPrevia: (pedidoId: number, numeroPrevia: number, comentario: string) =>
+    pedidosApi.rechazarPrevia(pedidoId, numeroPrevia, comentario),
 };
