@@ -33,6 +33,7 @@ export interface PreviaPedido {
   aprobada: boolean;
   rechazada: boolean;
   fecha_subida: string | null;
+  comentario_cliente: string | null;
 }
 
 export interface Pedido {
