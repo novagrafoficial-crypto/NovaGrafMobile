@@ -1,4 +1,5 @@
 import React from 'react';
+import { AccionesFicha } from '../components/AccionesFicha';
 import { View, Text, ScrollView, Linking, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { usePagoPedidoViewModel } from '../viewmodels/usePagoPedidoViewModel';
 import { DatosBancariosCard } from '../components/DatosBancariosCard';
@@ -55,10 +56,11 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
                 <DatosBancariosCard datos={metodo.datos} monto={pedido.monto_anticipo} pedidoId={pedido.id} />
               )
             )}
-            <CustomButton
-              title={vm.esTienda ? '📤 Compartir ticket' : '📤 Compartir datos de pago'}
-              variant="outline"
-              onPress={vm.compartir}
+            <AccionesFicha
+              generando={vm.generandoPdf}
+              error={vm.errorPdf}
+              info={vm.infoPdf}
+              onPdf={vm.descargarPdf}
             />
 
           <CustomButton title="Ir a mis pedidos" onPress={vm.irAPedidos} style={{ marginTop: 14 }} />
@@ -104,10 +106,11 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
           <DatosBancariosCard datos={metodo?.datos ?? []} monto={pedido.monto_anticipo} pedidoId={pedido.id} />
         )}
 
-        <CustomButton
-          title={vm.esTienda ? '📤 Compartir ticket' : '📤 Compartir datos de pago'}
-          variant="outline"
-          onPress={vm.compartir}
+        <AccionesFicha
+          generando={vm.generandoPdf}
+          error={vm.errorPdf}
+          info={vm.infoPdf}
+          onPdf={vm.descargarPdf}
         />
 
         {!vm.esTienda && (
