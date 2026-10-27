@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
@@ -27,9 +28,11 @@ export const PublicHomeView = () => {
     <View style={{ flex: 1, backgroundColor: brandColors.background }}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <PressableScale onPress={vm.openDrawer} hitSlop={12} scaleTo={0.85} accessibilityLabel="Abrir menú">
-          <Text style={styles.burger}>☰</Text>
+          <Text style={{ color: '#FFFFFF', fontSize: 26 }}>☰</Text>
         </PressableScale>
+
         <Text style={styles.brand}>{APP_NAME}</Text>
+
         <PressableScale
           onPress={() => router.push('/(auth)/login' as any)}
           style={styles.botonEntrar}
