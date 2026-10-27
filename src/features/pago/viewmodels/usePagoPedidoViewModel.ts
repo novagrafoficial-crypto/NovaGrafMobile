@@ -5,7 +5,9 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { pagoService } from '../services/pagoService';
+import { pdfService } from '../services/pdfService'; // PDF
 import { folioDe, modoDePago, textoParaCompartir } from '../utils/pagoUtils';
+import { htmlFichaPago, nombreArchivoPdf } from '../utils/pagoPdf'; // PDF
 import type { ArchivoComprobante, PantallaPago } from '../models/Pago';
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -15,6 +17,7 @@ export const usePagoPedidoViewModel = (pedidoId: number) => {
   const router = useRouter();
   const { user } = useAuth();
 
+  const [infoPdf, setInfoPdf] = useState<string | null>(null);
   const [pantalla, setPantalla] = useState<PantallaPago | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +26,9 @@ export const usePagoPedidoViewModel = (pedidoId: number) => {
   const [nota, setNota] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
+
+  const [generandoPdf, setGenerandoPdf] = useState(false); // PDF
+  const [errorPdf, setErrorPdf] = useState<string | null>(null); // PDF
 
   const cargar = useCallback(async (silencioso = false) => {
     if (!silencioso) setCargando(true);
@@ -102,12 +108,41 @@ export const usePagoPedidoViewModel = (pedidoId: number) => {
       ? Share.share({ title: `Pedido ${folioDe(pantalla.pedido.id)}`, message: textoParaCompartir(pantalla, user.nombre) })
       : undefined;
 
+  // PDF: genera la ficha y abre el menú para guardarla/compartirla
+    // PDF: genera la ficha y la guarda en la carpeta que el usuario elija
+  const descargarPdf = async () => {
+    if (!pantalla || generandoPdf) return;
+    setGenerandoPdf(true);
+    setErrorPdf(null);
+    setInfoPdf(null);
+
+    const html = htmlFichaPago(pantalla, user?.nombre ?? 'Cliente');
+    try {
+      const r = await pdfService.descargar(html, nombreArchivoPdf(pantalla.pedido.id));
+      if (r.estado === 'guardado') {
+        setInfoPdf(`✅ Ficha guardada en la carpeta "${r.carpeta}"`);
+      }
+    } catch (e) {
+      // Plan B: si no se pudo guardar directo, abrimos el diálogo de impresión (Guardar como PDF)
+      console.warn('Guardado directo falló, usando el diálogo de impresión:', e);
+      try {
+        await pdfService.imprimir(html);
+      } catch (e2: any) {
+        console.error('Error al generar PDF:', e2);
+        setErrorPdf(e2?.message ?? 'No se pudo generar el PDF.');
+      }
+    } finally {
+      setGenerandoPdf(false);
+    }
+  };
+
   return {
     pantalla, cargando, error, reintentar: () => cargar(),
     modo, esTienda, pagoExistente, puedePagar,
     cliente: user?.nombre ?? 'Cliente',
     archivo, quitarArchivo: () => setArchivo(null), desdeGaleria, desdeArchivo,
     nota, setNota, enviando, errorEnvio, enviar, compartir,
+    generandoPdf, errorPdf, infoPdf, descargarPdf,
     irAPedidos: () => router.replace('/(cliente)/pedidos' as any),
   };
 };

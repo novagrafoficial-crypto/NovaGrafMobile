@@ -1,4 +1,5 @@
 export interface PedidoItem {
+  variante_id: number;
   producto_nombre: string;
   color: string | null;
   imagen_url: string | null;
@@ -17,6 +18,23 @@ export interface PagoDelPedido {
   fecha_pago: string | null;
 }
 
+export interface DisenoEnviado {
+  id: number;
+  variante_id: number | null;
+  archivo_url: string | null;
+  notas_cliente: string | null;
+  fecha_envio: string | null;
+}
+
+export interface PreviaPedido {
+  id: number;
+  numero_previa: number;
+  imagen_url: string;
+  aprobada: boolean;
+  rechazada: boolean;
+  fecha_subida: string | null;
+}
+
 export interface Pedido {
   id: number;
   fecha_pedido: string;
@@ -32,4 +50,6 @@ export interface Pedido {
   metodo_pago_nombre: string | null;
   detalles: PedidoItem[];
   pagos: PagoDelPedido[];
+  disenos: DisenoEnviado[];
+  previas: PreviaPedido[];
 }

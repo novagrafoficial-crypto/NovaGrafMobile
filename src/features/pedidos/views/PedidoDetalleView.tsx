@@ -1,8 +1,11 @@
-import React from 'react';
-import { View, Text, ScrollView, Image, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, ScrollView, Image, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { usePedidoDetalleViewModel } from '../viewmodels/usePedidoDetalleViewModel';
 import { EstadoBadge } from '../components/EstadoBadge';
 import { ComprobanteItem } from '../components/ComprobanteItem';
+import { DisenoEnviadoItem } from '../components/DisenoEnviadoItem';
+import { PreviaItem } from '../components/PreviaItem';
+import { ChatClienteView } from '@/features/chat-pedido-cliente';
 import { ScreenHeader } from '@/shared/components/ScreenHeader';
 import { Loading } from '@/shared/components/Loading';
 import { CustomButton } from '@/shared/components/CustomButton';
@@ -28,6 +31,7 @@ const Fila = ({ label, valor, fuerte }: { label: string; valor: string; fuerte?:
 export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
   const vm = usePedidoDetalleViewModel(pedidoId);
   const p = vm.pedido;
+  const scrollRef = useRef<ScrollView>(null);
 
   const cuerpo = () => {
     if (vm.cargando) return <Loading fullScreen />;
@@ -41,7 +45,7 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
     }
 
     return (
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.encabezado}>
           <View>
             <Text style={styles.folio}>{folioDe(p.id)}</Text>
@@ -68,6 +72,35 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
               </View>
             ))}
           </View>
+        </Seccion>
+
+        <Seccion titulo={`Mis diseños enviados (${vm.disenos.length})`}>
+          {vm.disenos.length === 0 ? (
+            <Text style={styles.vacio}>Todavía no has enviado diseños para este pedido.</Text>
+          ) : (
+            <View style={{ gap: 10 }}>
+              {vm.disenos.map((d) => (
+                <DisenoEnviadoItem
+                  key={d.id}
+                  diseno={d}
+                  producto={p.detalles.find((x) => x.variante_id === d.variante_id)}
+                  onAbrirUrl={vm.abrirUrl}
+                />
+              ))}
+            </View>
+          )}
+        </Seccion>
+
+        <Seccion titulo={`Previas de diseño (${vm.previas.length})`}>
+          {vm.previas.length === 0 ? (
+            <Text style={styles.vacio}>Aún no te han enviado previas. Te avisaremos cuando haya una.</Text>
+          ) : (
+            <View style={{ gap: 10 }}>
+              {vm.previas.map((pr) => (
+                <PreviaItem key={pr.id} previa={pr} />
+              ))}
+            </View>
+          )}
         </Seccion>
 
         <Seccion titulo="Entrega">
@@ -103,28 +136,42 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
             </View>
           )}
         </Seccion>
+
+        <Seccion titulo="Chat con Nova Graf">
+          <ChatClienteView
+            pedidoId={p.id}
+            onInputFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 250)}
+          />
+        </Seccion>
       </ScrollView>
     );
   };
-
-  const mostrarBoton = !!p && (vm.debePagar || vm.tienePago);
+    const mostrarBoton = !!p && (vm.debeSubirDiseno || vm.debePagar || vm.tienePago);
 
   return (
-    <View style={styles.pantalla}>
+    <KeyboardAvoidingView
+      style={styles.pantalla}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScreenHeader title={p ? folioDe(p.id) : 'Pedido'} onBack={vm.volver} />
       <View style={{ flex: 1 }}>{cuerpo()}</View>
 
       {mostrarBoton && (
         <View style={styles.barra}>
-          <CustomButton
-            title={vm.debePagar ? '💳 Pagar anticipo / subir comprobante' : '🏦 Ver datos de pago'}
-            onPress={vm.irAPagar}
-          />
+          {vm.debeSubirDiseno ? (
+            <CustomButton title="🎨 Subir mis diseños" onPress={vm.irADiseno} />
+          ) : (
+            <CustomButton
+              title={vm.debePagar ? '💳 Pagar anticipo / subir comprobante' : '🏦 Ver datos de pago'}
+              onPress={vm.irAPagar}
+            />
+          )}
         </View>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 };
+
 
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: brandColors.background },

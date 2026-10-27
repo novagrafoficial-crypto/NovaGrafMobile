@@ -60,7 +60,11 @@ export const LoginView = () => {
             onChangeText={vm.setPassword}
           />
 
-          <PressableScale style={styles.forgotBtn} scaleTo={0.95}>
+          <PressableScale
+            style={styles.forgotBtn}
+            scaleTo={0.95}
+            onPress={() => router.push('/(auth)/forgot-password' as any)}
+          >
             <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
           </PressableScale>
 
