@@ -1,7 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
 import { FadeInView } from '@/shared/components/FadeInView';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
 
 interface Props {
   titulo: string;
@@ -9,15 +12,25 @@ interface Props {
   index: number;
 }
 
+// Íconos que se van turnando entre los valores
+const ICONOS: ComponentProps<typeof Ionicons>['name'][] = [
+  'ribbon-outline',
+  'people-outline',
+  'bulb-outline',
+  'shield-checkmark-outline',
+  'heart-outline',
+  'star-outline',
+];
+
 // Tarjeta de un valor de la empresa
 export const ValueCard = ({ titulo, descripcion, index }: Props) => (
   <FadeInView delay={Math.min(index, 6) * 70} style={styles.card}>
     <View style={styles.circulo}>
-      <Text style={styles.icono}>✨</Text>
+      <Ionicons name={ICONOS[index % ICONOS.length]} size={20} color={brandColors.primary} />
     </View>
     <View style={styles.info}>
-      <Text style={styles.titulo}>{titulo}</Text>
-      {!!descripcion && <Text style={styles.texto}>{descripcion}</Text>}
+      <Text style={styles.titulo} maxFontSizeMultiplier={1.15}>{titulo}</Text>
+      {!!descripcion && <Text style={styles.texto} maxFontSizeMultiplier={1.15}>{descripcion}</Text>}
     </View>
   </FadeInView>
 );
@@ -25,21 +38,15 @@ export const ValueCard = ({ titulo, descripcion, index }: Props) => (
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    gap: 12,
-    backgroundColor: brandColors.white,
-    borderRadius: 16,
-    padding: 14,
+    gap: space.md,
+    backgroundColor: surface.card,
+    borderRadius: radius.lg,
+    padding: space.md,
+    borderWidth: 1,
+    borderColor: surface.border,
   },
-  circulo: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: brandTints.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  icono: { fontSize: 20 },
+  circulo: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#E6F2EF', alignItems: 'center', justifyContent: 'center' },
   info: { flex: 1 },
-  titulo: { fontSize: 15, fontWeight: '800', color: brandColors.primaryDark },
-  texto: { fontSize: 13, color: brandTints.textMuted, lineHeight: 19, marginTop: 3 },
+  titulo: { fontFamily: fontFamily.semibold, fontSize: 15, color: textColors.primary },
+  texto: { fontFamily: fontFamily.regular, fontSize: 13, color: textColors.secondary, lineHeight: 19, marginTop: 2 },
 });

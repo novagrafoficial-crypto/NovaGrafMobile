@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import type { RegistroForm } from '../models/Registro';
 import { authService } from '../services/authService';
-import { formatFecha, validar } from '../utils/validaciones';
+import { fechaAISO, limpiarCampo, reglasPassword, validar } from '../utils/validaciones';
 
-const EMPTY: RegistroForm = {
+const VACIO: RegistroForm = {
   name: '',
   lastNameP: '',
   lastNameM: '',
@@ -17,77 +17,89 @@ const EMPTY: RegistroForm = {
   confirmPassword: '',
 };
 
-const STEP1: (keyof RegistroForm)[] = ['name', 'lastNameP', 'lastNameM', 'username', 'birthDate'];
-const STEP2: (keyof RegistroForm)[] = ['address', 'phone', 'email', 'password', 'confirmPassword'];
+// Paso 1: quién eres · Paso 2: cómo te contactamos y tu acceso
+const PASO1: (keyof RegistroForm)[] = ['name', 'lastNameP', 'lastNameM', 'birthDate', 'phone', 'address'];
+const PASO2: (keyof RegistroForm)[] = ['username', 'email', 'password', 'confirmPassword'];
 
-type Errors = Partial<Record<keyof RegistroForm, string>>;
+type Errores = Partial<Record<keyof RegistroForm, string>>;
 
 export const useRegisterViewModel = () => {
   const router = useRouter();
-  const [form, setForm] = useState<RegistroForm>(EMPTY);
-  const [errors, setErrors] = useState<Errors>({});
-  const [step, setStep] = useState<1 | 2>(1);
+  const [form, setForm] = useState<RegistroForm>(VACIO);
+  const [errores, setErrores] = useState<Errores>({});
+  // Campos que ya tocó: solo a esos se les muestra el error mientras escribe
+  const [tocados, setTocados] = useState<Partial<Record<keyof RegistroForm, boolean>>>({});
+  const [paso, setPaso] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const setField = (field: keyof RegistroForm, value: string) => {
-    const clean = field === 'birthDate' ? formatFecha(value) : value;
-    setForm((prev) => ({ ...prev, [field]: clean }));
-    setErrors((prev) => ({ ...prev, [field]: '' }));
+  const setField = (campo: keyof RegistroForm, valor: string) => {
+    const limpio = limpiarCampo(campo, valor);
+    const nuevo = { ...form, [campo]: limpio };
+    setForm(nuevo);
+    // Si ya lo había tocado, se revisa al momento (y la confirmación cuando cambia la contraseña)
+    setErrores((e) => ({
+      ...e,
+      ...(tocados[campo] ? { [campo]: validar(campo, limpio, nuevo) } : {}),
+      ...(campo === 'password' && tocados.confirmPassword
+        ? { confirmPassword: validar('confirmPassword', nuevo.confirmPassword, nuevo) }
+        : {}),
+    }));
   };
 
-  // Valida un grupo de campos y guarda los errores. Devuelve true si todo está bien.
-  const validateFields = (fields: (keyof RegistroForm)[]): boolean => {
-    const next: Errors = {};
-    let ok = true;
-    fields.forEach((f) => {
-      const msg = validar(f, form[f], form);
-      next[f] = msg;
-      if (msg) ok = false;
-    });
-    setErrors((prev) => ({ ...prev, ...next }));
-    return ok;
+  // Al salir del campo se valida
+  const tocar = (campo: keyof RegistroForm) => {
+    setTocados((t) => ({ ...t, [campo]: true }));
+    setErrores((e) => ({ ...e, [campo]: validar(campo, form[campo], form) }));
   };
 
-  const handleNext = () => {
-    if (validateFields(STEP1)) {
+  const validarGrupo = (campos: (keyof RegistroForm)[]): boolean => {
+    const nuevos: Errores = {};
+    campos.forEach((c) => (nuevos[c] = validar(c, form[c], form)));
+    setErrores((e) => ({ ...e, ...nuevos }));
+    setTocados((t) => ({ ...t, ...Object.fromEntries(campos.map((c) => [c, true])) }));
+    return campos.every((c) => !nuevos[c]);
+  };
+
+  const siguiente = () => {
+    if (validarGrupo(PASO1)) {
       setError(null);
-      setStep(2);
+      setPaso(2);
     } else {
-      setError('Corrige los errores antes de continuar.');
+      setError('Revisa los campos marcados en rojo.');
     }
   };
 
-  const handleBack = () => {
+  const atras = () => {
     setError(null);
-    setStep(1);
+    setPaso(1);
   };
 
-  const handleSubmit = async () => {
-    if (!validateFields(STEP2)) {
-      setError('Corrige los errores antes de registrarte.');
+  const registrar = async () => {
+    if (!validarGrupo(PASO2)) {
+      setError('Revisa los campos marcados en rojo.');
       return;
     }
     setIsLoading(true);
     setError(null);
     try {
-      const payload: RegistroForm = {
+      const res = await authService.register({
         ...form,
         name: form.name.trim(),
         lastNameP: form.lastNameP.trim(),
         lastNameM: form.lastNameM.trim(),
         username: form.username.trim(),
+        birthDate: fechaAISO(form.birthDate), // el backend espera AAAA-MM-DD
         address: form.address.trim(),
-        phone: form.phone.trim(),
-        email: form.email.trim(),
-      };
-      const res = await authService.register(payload);
+        phone: form.phone,
+        email: form.email.trim().toLowerCase(),
+      });
       router.replace({
         pathname: '/(auth)/verify-account',
         params: { id_usuario: String(res.id_usuario) },
       } as any);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'No se pudo completar el registro');
+      setError(err.response?.data?.message || 'No se pudo completar el registro. Intenta de nuevo.');
     } finally {
       setIsLoading(false);
     }
@@ -95,13 +107,17 @@ export const useRegisterViewModel = () => {
 
   return {
     form,
-    errors,
-    step,
+    errores,
+    paso,
     isLoading,
     error,
+    reglas: reglasPassword(form.password),
     setField,
-    handleNext,
-    handleBack,
-    handleSubmit,
+    tocar,
+    siguiente,
+    atras,
+    registrar,
+    volver: () => (paso === 2 ? atras() : router.canGoBack() ? router.back() : router.replace('/' as any)),
+    irALogin: () => router.replace('/(auth)/login' as any),
   };
 };

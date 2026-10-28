@@ -1,5 +1,5 @@
-import { ScreenPlaceholder } from '@/shared/components/ScreenPlaceholder';
+import { CatalogoPublicoView } from '@/features/catalogo-publico';
 
 export default function RutaCatalogoPublico() {
-  return <ScreenPlaceholder titulo="Catálogo" />;
+  return <CatalogoPublicoView />;
 }

@@ -17,8 +17,6 @@ const ROJO = '#DC2626';
 const VERDE_AHORRO = '#15803D';
 const ESCALA = 1.15;
 
-// Tarjeta de una promoción. Todas miden lo mismo: cada renglón tiene un alto fijo
-// aunque el dato venga vacío, así la cuadrícula queda pareja.
 export const OfferCard = ({ tarjeta: t, index, onPress }: Props) => {
   const [fallo, setFallo] = useState(false);
   const ahorro = t.precioOriginal - t.precioFinal;
@@ -98,7 +96,6 @@ const styles = StyleSheet.create({
     borderColor: surface.border,
   },
 
-  // Imagen cuadrada: todas las tarjetas tienen la misma foto de alto
   imagenBox: {
     width: '100%',
     aspectRatio: 1,

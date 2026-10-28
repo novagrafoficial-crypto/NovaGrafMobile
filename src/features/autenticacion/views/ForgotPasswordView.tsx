@@ -3,28 +3,31 @@ import { useForgotPasswordViewModel } from '../viewmodels/useForgotPasswordViewM
 import { AuthScreen } from '../components/AuthScreen';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { CustomInput } from '@/shared/components/CustomInput';
-import { Loading } from '@/shared/components/Loading';
 
 export const ForgotPasswordView = () => {
   const vm = useForgotPasswordViewModel();
 
   return (
     <AuthScreen
-      headerTitle="Recuperar contraseña"
-      title="¿Olvidaste tu contraseña?"
+      title="Recupera tu contraseña"
       subtitle="Escribe tu correo y te enviaremos un código de 6 dígitos."
+      icono="key-outline"
       error={vm.error}
       info={vm.info}
     >
       <CustomInput
         label="Correo electrónico"
-        placeholder="tu@correo.com"
+        icono="mail-outline"
+        placeholder="nombre@correo.com"
         autoCapitalize="none"
         keyboardType="email-address"
+        textContentType="emailAddress"
+        returnKeyType="send"
+        onSubmitEditing={vm.handleSubmit}
         value={vm.email}
-        onChangeText={vm.setEmail}
+        onChangeText={(t) => vm.setEmail(t.replace(/\s/g, ''))}
       />
-      {vm.isLoading ? <Loading /> : <CustomButton title="Enviar código" onPress={vm.handleSubmit} />}
+      <CustomButton title="Enviar código" onPress={vm.handleSubmit} loading={vm.isLoading} />
     </AuthScreen>
   );
 };

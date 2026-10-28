@@ -11,7 +11,6 @@ import type { CartItem } from '../models/CartItem';
 interface Props {
   item: CartItem;
   index: number;
-  /** true mientras se actualiza este renglón (desactiva los botones). */
   ocupado: boolean;
   onMas: () => void;
   onMenos: () => void;
