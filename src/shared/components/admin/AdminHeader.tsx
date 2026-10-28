@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PressableScale } from '../PressableScale';
 import { brandColors } from '@/constants/brand';
 import { fontFamily, space } from '@/constants/theme';
+import { useMenuAdminOpcional } from '@/features/menu-admin/providers/MenuAdminProvider';
 
 interface Props {
   titulo: string;
@@ -23,15 +24,21 @@ const ESCALA = 1.15;
 // alineado a la izquierda y la etiqueta "Panel administrativo" (estilo dashboard).
 export const AdminHeader = ({ titulo, etiqueta = 'Panel administrativo', onBack, derecha, children }: Props) => {
   const insets = useSafeAreaInsets();
+  // Sin flecha de regreso se muestra el botón ☰ que abre el menú lateral
+  const menu = useMenuAdminOpcional();
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
       <View style={styles.fila}>
-        {!!onBack && (
+        {onBack ? (
           <PressableScale onPress={onBack} hitSlop={10} style={styles.atras} accessibilityLabel="Regresar">
             <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
           </PressableScale>
-        )}
+        ) : menu ? (
+          <PressableScale onPress={menu.abrir} hitSlop={10} style={styles.atras} accessibilityLabel="Abrir menú">
+            <Ionicons name="menu" size={22} color="#FFFFFF" />
+          </PressableScale>
+        ) : null}
         <View style={styles.textos}>
           <Text style={styles.etiqueta} numberOfLines={1} maxFontSizeMultiplier={1}>{etiqueta.toUpperCase()}</Text>
           <Text style={styles.titulo} numberOfLines={1} maxFontSizeMultiplier={ESCALA}>{titulo}</Text>

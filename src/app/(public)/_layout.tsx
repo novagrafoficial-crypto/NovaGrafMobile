@@ -6,7 +6,7 @@ import { Loading } from '@/shared/components/Loading';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { homeByRole } from '@/shared/utils/roleRoutes';
 
-// Parte pública con menú lateral (☰). El menú se dibuja una sola vez, encima de las pantallas.
+// Parte pública con menú lateral (☰)
 export default function PublicLayout() {
   const { user, isLoading } = useAuth();
 

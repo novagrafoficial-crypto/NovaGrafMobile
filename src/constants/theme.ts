@@ -1,7 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-// Guía visual de NovaGraf para el móvil.
-// Textos en negro/gris oscuro (más legibles) y la marca solo para acentos.
-// ─────────────────────────────────────────────────────────────
 import { brandColors } from './brand';
 
 /** Colores de TEXTO. La marca (teal) se reserva para acentos, no para párrafos. */
