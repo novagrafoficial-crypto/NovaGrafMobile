@@ -44,6 +44,8 @@ export interface PreviaAdmin {
   fecha_subida: string | null;
   fecha_vista: string | null; // cuándo la abrió el cliente
   fecha_aprobacion: string | null;
+  /** Lo que escribió el cliente al pedir cambios */
+  comentario_cliente: string | null;
 }
 
 export interface DisenoCliente {

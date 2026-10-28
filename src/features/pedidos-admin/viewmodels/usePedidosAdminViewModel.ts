@@ -1,10 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { pedidosAdminService } from '../services/pedidosAdminService';
 import type { PedidoResumen } from '../models/PedidoAdmin';
-import { ESTADOS_PEDIDO, OPCIONES_ORDEN, etiquetaEstado, type OrdenPedidos } from '../utils/pedidoAdminUtils';
+import { ESTADOS_PEDIDO, OPCIONES_ORDEN, accionAdmin, etiquetaEstado, type OrdenPedidos } from '../utils/pedidoAdminUtils';
 
-export type FiltroEstado = 'TODOS' | string;
+// 'TODOS', 'ATENDER' (los que esperan una acción del admin) o un estado del pedido
+export type FiltroEstado = 'TODOS' | 'ATENDER' | string;
 
 const normalizar = (t: string) =>
   t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -16,6 +17,8 @@ const tiempo = (fecha: string) => {
 
 export const usePedidosAdminViewModel = () => {
   const router = useRouter();
+  // Desde el Inicio se puede llegar con ?estado=EN_PRODUCCION
+  const { estado: estadoParam } = useLocalSearchParams<{ estado?: string }>();
   const [pedidos, setPedidos] = useState<PedidoResumen[]>([]);
   const [cargando, setCargando] = useState(true);
   const [refrescando, setRefrescando] = useState(false);
@@ -42,28 +45,45 @@ export const usePedidosAdminViewModel = () => {
     }, [cargar])
   );
 
+  // Si viene un estado desde el Inicio, se aplica ese filtro
+  useFocusEffect(
+    useCallback(() => {
+      if (estadoParam) {
+        setFiltro(estadoParam);
+        router.setParams({ estado: undefined } as any);
+      }
+    }, [estadoParam, router])
+  );
+
   const refrescar = async () => {
     setRefrescando(true);
     await cargar();
     setRefrescando(false);
   };
 
-  // Opciones del combo de estado: "Todos" + cada estado, con su cantidad de pedidos.
+  // Chips de filtro: Todos, Por atender y cada estado (solo los que tienen pedidos), con su cantidad.
   const opcionesEstado = useMemo(() => {
     const conteo: Record<string, number> = {};
     pedidos.forEach((p) => {
       conteo[p.estado] = (conteo[p.estado] ?? 0) + 1;
     });
+    const porAtender = pedidos.filter((p) => !!accionAdmin(p.estado)).length;
     return [
-      { valor: 'TODOS', etiqueta: 'Todos', detalle: String(pedidos.length) },
-      ...ESTADOS_PEDIDO.map((e) => ({ valor: e as string, etiqueta: etiquetaEstado(e), detalle: String(conteo[e] ?? 0) })),
+      { valor: 'TODOS', etiqueta: 'Todos', cantidad: pedidos.length },
+      { valor: 'ATENDER', etiqueta: 'Por atender', cantidad: porAtender },
+      ...ESTADOS_PEDIDO.filter((e) => (conteo[e] ?? 0) > 0 || e === filtro).map((e) => ({
+        valor: e as string,
+        etiqueta: etiquetaEstado(e),
+        cantidad: conteo[e] ?? 0,
+      })),
     ];
-  }, [pedidos]);
+  }, [pedidos, filtro]);
 
   const pedidosFiltrados = useMemo(() => {
     const q = normalizar(busqueda).replace(/^#/, '');
     const filtrados = pedidos.filter((p) => {
-      const coincideEstado = filtro === 'TODOS' || p.estado === filtro;
+      const coincideEstado =
+        filtro === 'TODOS' || (filtro === 'ATENDER' ? !!accionAdmin(p.estado) : p.estado === filtro);
       const coincideTexto =
         !q || normalizar(`${p.id} ${p.cliente_nombre} ${p.cliente_correo}`).includes(q);
       return coincideEstado && coincideTexto;
@@ -87,6 +107,11 @@ export const usePedidosAdminViewModel = () => {
     opcionesEstado,
     orden,
     setOrden: (o: string) => setOrden(o as OrdenPedidos),
+    alternarOrden: () => setOrden((o) => (o === 'RECIENTES' ? 'ANTIGUOS' : 'RECIENTES')),
+    limpiarFiltros: () => {
+      setBusqueda('');
+      setFiltro('TODOS');
+    },
     opcionesOrden: OPCIONES_ORDEN as { valor: string; etiqueta: string }[],
     refrescar,
     reintentar: cargar,

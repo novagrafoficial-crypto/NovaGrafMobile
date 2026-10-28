@@ -15,6 +15,8 @@ interface Props {
   aviso?: string;
   textoConfirmar?: string;
   textoCancelar?: string;
+  /** 'peligro' (rojo, por defecto) para eliminar/cancelar; 'normal' (verde) para aprobar/enviar */
+  tono?: 'peligro' | 'normal';
   onConfirmar: () => void;
   onCancelar: () => void;
 }
@@ -31,15 +33,18 @@ export const ModalConfirmacion = ({
   aviso,
   textoConfirmar = 'Sí, eliminar',
   textoCancelar = 'Cancelar',
+  tono = 'peligro',
   onConfirmar,
   onCancelar,
-}: Props) => (
+}: Props) => {
+  const normal = tono === 'normal';
+  return (
   <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancelar}>
     <View style={styles.overlay}>
       <View style={styles.card}>
-        <View style={styles.iconContainer}>
+        <View style={[styles.iconContainer, normal && { backgroundColor: '#E6F2EF' }]}>
           {esIonicon(icono) ? (
-            <Ionicons name={icono as keyof typeof Ionicons.glyphMap} size={26} color={brandColors.error} />
+            <Ionicons name={icono as keyof typeof Ionicons.glyphMap} size={26} color={normal ? brandColors.primary : brandColors.error} />
           ) : (
             <Text style={styles.icon}>{icono}</Text>
           )}
@@ -52,14 +57,15 @@ export const ModalConfirmacion = ({
           <PressableScale style={[styles.btn, styles.btnCancel]} onPress={onCancelar}>
             <Text style={styles.btnCancelText}>{textoCancelar}</Text>
           </PressableScale>
-          <PressableScale style={[styles.btn, styles.btnConfirm]} onPress={onConfirmar}>
+          <PressableScale style={[styles.btn, styles.btnConfirm, normal && { backgroundColor: brandColors.primary }]} onPress={onConfirmar}>
             <Text style={styles.btnConfirmText}>{textoConfirmar}</Text>
           </PressableScale>
         </View>
       </View>
     </View>
   </Modal>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   overlay: {
