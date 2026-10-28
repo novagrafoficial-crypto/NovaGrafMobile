@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { FadeInView } from '@/shared/components/FadeInView';
 import { PressableScale } from '@/shared/components/PressableScale';
 import { brandColors, brandTints } from '@/constants/brand';
@@ -29,7 +30,10 @@ export const OfferCard = ({ tarjeta: t, index, onPress }: Props) => {
             <Image
               source={{ uri: t.imagen }}
               style={styles.imagen}
-              resizeMode="contain"
+              contentFit="contain"
+              cachePolicy="memory-disk"
+              recyclingKey={t.clave}
+              transition={200}
               onError={() => setFallo(true)}
             />
           ) : (

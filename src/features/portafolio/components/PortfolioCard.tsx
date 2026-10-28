@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { PressableScale } from '@/shared/components/PressableScale';
 import { FadeInView } from '@/shared/components/FadeInView';
 import { brandColors, brandTints } from '@/constants/brand';
@@ -28,12 +29,16 @@ export const PortfolioCard = ({ item, index = 0, onPress }: Props) => {
     <FadeInView delay={Math.min(index, 6) * 60} style={styles.card}>
       <View style={styles.imageBox}>
         {item.imagenUrl && !imageFailed ? (
-          <Image
-            source={{ uri: item.imagenUrl }}
-            style={styles.image}
-            resizeMode="cover"
-            onError={() => setImageFailed(true)}
-          />
+            <Image
+              source={{ uri: item.imagenUrl }}
+              style={styles.image}
+              contentFit="cover"
+              // expo-image reduce la foto al tamaño de la tarjeta y la guarda en caché → scroll fluido
+              cachePolicy="memory-disk"
+              recyclingKey={String(item.id)}
+              transition={200}
+              onError={() => setImageFailed(true)}
+            />
         ) : (
           <View style={styles.placeholder}>
             <Text style={styles.placeholderIcon}>🖼️</Text>

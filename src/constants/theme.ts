@@ -48,3 +48,10 @@ export const radius = { sm: 8, md: 12, lg: 16, pill: 999 };
 
 /** Tamaño de íconos. */
 export const iconSize = { sm: 16, md: 20, lg: 24 };
+
+export const fontFamily = {
+  regular: 'Poppins_400Regular',
+  medium: 'Poppins_500Medium',
+  semibold: 'Poppins_600SemiBold',
+  bold: 'Poppins_700Bold',
+};
