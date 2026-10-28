@@ -5,7 +5,7 @@ import { QuickAction } from '../components/QuickAction';
 import { InfoCard } from '../components/InfoCard';
 import { ContactRow } from '../components/ContactRow';
 import { SocialChip } from '../components/SocialChip';
-import { ScreenHeader } from '@/shared/components/ScreenHeader';
+import { PublicHeader } from '@/features/menu-publico';
 import { Loading } from '@/shared/components/Loading';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { FadeInView } from '@/shared/components/FadeInView';
@@ -18,7 +18,7 @@ export const ContactoView = () => {
 
   return (
     <View style={styles.pantalla}>
-      <ScreenHeader title="Contacto" />
+      <PublicHeader titulo="Contacto" />
 
       {vm.aviso && (
         <FadeInView distance={-10} duration={250} style={styles.toast}>

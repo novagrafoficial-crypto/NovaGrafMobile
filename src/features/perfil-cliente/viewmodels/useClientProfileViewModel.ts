@@ -136,6 +136,8 @@ export const useClientProfileViewModel = () => {
     noLeidas,
     irANotificaciones: () => router.push('/(cliente)/notificaciones' as any),
     irAPedidos: () => router.push('/(cliente)/pedidos' as any),
+    irAPoliticas: () => router.push('/politicas' as any),
+    irAEliminarCuenta: () => router.push('/eliminar-cuenta' as any),
     pwForm,
     setPwForm,
     pwSaving,

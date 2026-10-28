@@ -184,6 +184,8 @@ export const ClientProfileView = () => {
                 </>
               )}
 
+              <FilaMenu icono="document-text-outline" titulo="Políticas y privacidad" onPress={vm.irAPoliticas} />
+              <FilaMenu icono="trash-outline" titulo="Eliminar mi cuenta" onPress={vm.irAEliminarCuenta} />
               <FilaMenu icono="log-out-outline" titulo="Cerrar sesión" flecha="ninguna" peligro onPress={vm.pedirLogout} ultima />
             </FadeInView>
           </ScrollView>

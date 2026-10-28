@@ -6,7 +6,7 @@ import { SectionHeading } from '../components/SectionHeading';
 import { PurposeCard } from '../components/PurposeCard';
 import { ValueCard } from '../components/ValueCard';
 import { TimelineItem } from '../components/TimelineItem';
-import { ScreenHeader } from '@/shared/components/ScreenHeader';
+import { PublicHeader } from '@/features/menu-publico';
 import { Loading } from '@/shared/components/Loading';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { FadeInView } from '@/shared/components/FadeInView';
@@ -19,7 +19,7 @@ export const NosotrosView = () => {
 
   return (
     <View style={styles.pantalla}>
-      <ScreenHeader title="Nosotros" />
+      <PublicHeader titulo="Nosotros" />
 
       {vm.loading ? (
         <Loading fullScreen />

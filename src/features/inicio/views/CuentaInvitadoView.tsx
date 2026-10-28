@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { PublicHeader } from '@/features/menu-publico';
 import { brandColors } from '@/constants/brand';
 import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
 import { CustomButton } from '@/shared/components/CustomButton';
@@ -22,13 +22,10 @@ const BENEFICIOS: { icono: Icono; titulo: string; texto: string }[] = [
 // Pestaña "Cuenta" sin sesión (como Amazon o Mercado Libre): invita a entrar o registrarse.
 export const CuentaInvitadoView = () => {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.pantalla}>
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-        <Text style={styles.titulo} maxFontSizeMultiplier={ESCALA}>Mi cuenta</Text>
-      </View>
+      <PublicHeader titulo="Mi cuenta" conEntrar={false} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <FadeInView style={styles.card}>
