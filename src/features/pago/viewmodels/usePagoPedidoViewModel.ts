@@ -120,7 +120,7 @@ export const usePagoPedidoViewModel = (pedidoId: number) => {
     try {
       const r = await pdfService.descargar(html, nombreArchivoPdf(pantalla.pedido.id));
       if (r.estado === 'guardado') {
-        setInfoPdf(`✅ Ficha guardada en la carpeta "${r.carpeta}"`);
+        setInfoPdf(`Ficha guardada en la carpeta "${r.carpeta}"`);
       }
     } catch (e) {
       // Plan B: si no se pudo guardar directo, abrimos el diálogo de impresión (Guardar como PDF)
@@ -144,5 +144,6 @@ export const usePagoPedidoViewModel = (pedidoId: number) => {
     nota, setNota, enviando, errorEnvio, enviar, compartir,
     generandoPdf, errorPdf, infoPdf, descargarPdf,
     irAPedidos: () => router.replace('/(cliente)/pedidos' as any),
+     volver: () => (router.canGoBack() ? router.back() : router.replace('/(cliente)/pedidos' as any)),
   };
 };

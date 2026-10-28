@@ -1,6 +1,7 @@
 import React from 'react';
 import { AccionesFicha } from '../components/AccionesFicha';
 import { View, Text, ScrollView, Linking, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { usePagoPedidoViewModel } from '../viewmodels/usePagoPedidoViewModel';
 import { DatosBancariosCard } from '../components/DatosBancariosCard';
 import { TicketTienda } from '../components/TicketTienda';
@@ -36,18 +37,26 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
       return (
         <ScrollView contentContainerStyle={styles.scroll}>
           <FadeInView style={styles.exito}>
-            <View style={styles.check}><Text style={styles.checkTxt}>✓</Text></View>
+            <View style={styles.check}><Ionicons name="checkmark" size={34} color={brandColors.white} /></View>
             <Text style={styles.exitoTitulo}>{enTienda ? '¡Pago en tienda registrado!' : '¡Comprobante enviado!'}</Text>
             <Text style={styles.exitoSub}>
               {enTienda ? 'El administrador confirmará tu pago en breve.' : 'El administrador está verificando tu comprobante.'}
             </Text>
             <Text style={styles.folio}>{folioDe(pedido.id)}</Text>
             <Text style={styles.linea}>Anticipo: <Text style={styles.negrita}>{money(p.monto)}</Text></Text>
-            <Text style={styles.linea}>Estado: <Text style={styles.negrita}>⏳ {p.estado_pago}</Text></Text>
+            <View style={styles.estadoFila}>
+              <Ionicons name="time-outline" size={16} color={brandTints.textMuted} />
+              <Text style={styles.linea}>Estado: <Text style={styles.negrita}>{p.estado_pago}</Text></Text>
+            </View>
             {!enTienda && p.comprobante_url && (
               <Text style={styles.link} onPress={() => Linking.openURL(p.comprobante_url!)}>Ver comprobante</Text>
             )}
-            {p.notas_admin && <Text style={styles.nota}>📝 Nota del administrador: {p.notas_admin}</Text>}
+            {p.notas_admin && (
+              <View style={styles.estadoFila}>
+                <Ionicons name="information-circle-outline" size={16} color={brandColors.primaryDark} />
+                <Text style={styles.nota}>Nota del administrador: {p.notas_admin}</Text>
+              </View>
+            )}
           </FadeInView>
           {metodo && (
               vm.esTienda ? (
@@ -83,20 +92,14 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
     return (
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <FadeInView>
-          <Text style={styles.titulo}>¡Pedido {folioDe(pedido.id)} creado!</Text>
-          <Text style={styles.sub}>
-            {vm.esTienda
-              ? 'Acude a la tienda con este ticket para pagar tu anticipo.'
-              : vm.modo === 'DEPOSITO'
-                ? 'Realiza el depósito con estos datos y sube tu ficha.'
-                : 'Realiza la transferencia con estos datos y sube tu comprobante.'}
-          </Text>
+          <Text style={styles.titulo}>Pedido {folioDe(pedido.id)}</Text>
         </FadeInView>
 
         {metodo && (
-          <Text style={styles.metodo}>
-            {vm.esTienda ? '🏪' : '🏦'} {metodo.nombre}
-          </Text>
+          <View style={styles.estadoFila}>
+            <Ionicons name={vm.esTienda ? 'storefront-outline' : 'business-outline'} size={20} color={brandColors.primary} />
+            <Text style={styles.metodo}>{metodo.nombre}</Text>
+          </View>
         )}
         {metodo?.instrucciones && !vm.esTienda && <Text style={styles.instrucciones}>{metodo.instrucciones}</Text>}
 
@@ -143,13 +146,14 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
 
   return (
     <KeyboardAvoidingView style={styles.pantalla} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScreenHeader title="Pago del anticipo" onBack={vm.irAPedidos} />
+      <ScreenHeader title="Pago del anticipo" onBack={vm.volver} />
       <View style={{ flex: 1 }}>{cuerpo()}</View>
 
       {mostrarBarra && (
         <View style={styles.barra}>
           <CustomButton
-            title={vm.enviando ? 'Procesando...' : vm.esTienda ? '🏪 Confirmar pago en tienda' : '📤 Subir comprobante'}
+            title={vm.enviando ? 'Procesando...' : vm.esTienda ? 'Confirmar pago en tienda' : 'Subir comprobante'}
+            icon={<Ionicons name={vm.esTienda ? 'storefront-outline' : 'cloud-upload-outline'} size={20} color={brandColors.white} />}
             onPress={vm.enviar}
             disabled={vm.enviando || (!vm.esTienda && !vm.archivo)}
           />
@@ -172,7 +176,7 @@ const styles = StyleSheet.create({
   instrucciones: { fontSize: 13, color: brandColors.primaryDark, backgroundColor: brandTints.accentSoft, padding: 12, borderRadius: 12 },
   exito: { backgroundColor: brandColors.white, borderRadius: 20, padding: 22, alignItems: 'center', gap: 4 },
   check: { width: 64, height: 64, borderRadius: 32, backgroundColor: brandColors.accent, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  checkTxt: { color: brandColors.white, fontSize: 32, fontWeight: '800' },
+  estadoFila: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   exitoTitulo: { fontSize: 20, fontWeight: '800', color: brandColors.primaryDark, textAlign: 'center' },
   exitoSub: { fontSize: 13, color: brandTints.textMuted, textAlign: 'center' },
   folio: { fontSize: 18, fontWeight: '800', color: brandColors.primary, marginTop: 8 },

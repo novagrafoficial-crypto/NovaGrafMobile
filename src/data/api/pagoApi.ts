@@ -8,4 +8,9 @@ export const pagoApi = {
     pedidoId: number,
     body: { tipo_pago: string; monto: number; comprobante_url: string; notas_admin: string | null }
   ) => (await apiClient.post(`/client/pedidos/${pedidoId}/comprobante`, body)).data,
+
+   registrarPagoFinal: async (
+    pedidoId: number,
+    body: { tipo_pago: string; monto: number; comprobante_url: string; notas_admin: string | null }
+  ) => (await apiClient.post(`/client/pedidos/${pedidoId}/pago-final`, body)).data,
 };

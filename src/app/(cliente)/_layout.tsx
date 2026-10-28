@@ -17,6 +17,7 @@ export default function LayoutCliente() {
   return (
     <RoleGuard rol="cliente">
       <Tabs
+        backBehavior="history"
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: brandColors.primary,
@@ -73,6 +74,14 @@ export default function LayoutCliente() {
         <Tabs.Screen name="pedido/[id]" options={{ href: null }} />
         <Tabs.Screen
           name="diseno-pedido/[id]"
+          options={{ href: null, tabBarStyle: { display: "none" } }}
+        />
+        <Tabs.Screen
+          name="pago-final/[id]"
+          options={{ href: null, tabBarStyle: { display: "none" } }}
+        />
+        <Tabs.Screen
+          name="chat-pedido/[id]"
           options={{ href: null, tabBarStyle: { display: "none" } }}
         />
         <Tabs.Screen name="notificaciones" options={{ href: null }} /> 

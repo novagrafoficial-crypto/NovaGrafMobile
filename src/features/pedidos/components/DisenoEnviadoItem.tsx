@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { PressableScale } from '@/shared/components/PressableScale';
 import { formatFecha } from '@/shared/utils/format';
 import { resolveImageUrl } from '@/shared/utils/resolveImageUrl';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontSize, fontWeight, iconSize, radius, space, surface, textColors } from '@/constants/theme';
 import { esPdf } from '../utils/pedidoUtils';
 import { ImagenAmpliable } from './ImagenAmpliable';
 import type { DisenoEnviado, PedidoItem } from '../models/Pedido';
@@ -26,24 +28,35 @@ export const DisenoEnviadoItem = ({ diseno, producto, onAbrirUrl }: Props) => {
       </View>
 
       {url && esPdf(url) ? (
-        <PressableScale onPress={() => onAbrirUrl(url)} style={styles.pdf}>
-          <Text style={styles.pdfTxt}>📄 Abrir diseño (PDF)</Text>
+        <PressableScale onPress={() => onAbrirUrl(url)} style={styles.archivo}>
+          <Ionicons name="document-attach-outline" size={iconSize.md} color={brandColors.primary} />
+          <Text style={styles.archivoTxt}>Abrir diseño (PDF)</Text>
+          <Ionicons name="open-outline" size={iconSize.sm} color={textColors.muted} />
         </PressableScale>
       ) : url ? (
         <ImagenAmpliable url={url} />
       ) : null}
 
-      {!!diseno.notas_cliente && <Text style={styles.nota}>📝 {diseno.notas_cliente}</Text>}
+      {!!diseno.notas_cliente && (
+        <View style={styles.nota}>
+          <Ionicons name="chatbox-ellipses-outline" size={iconSize.sm} color={textColors.muted} />
+          <Text style={styles.notaTxt}>{diseno.notas_cliente}</Text>
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: brandTints.surfaceMuted, borderRadius: 12, padding: 12, gap: 8 },
-  fila: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
-  titulo: { flex: 1, fontSize: 14, fontWeight: '800', color: brandColors.primaryDark },
-  fecha: { fontSize: 12, color: brandTints.textMuted },
-  pdf: { backgroundColor: brandColors.white, borderRadius: 10, padding: 10, alignItems: 'center' },
-  pdfTxt: { fontSize: 13, fontWeight: '700', color: brandColors.primary },
-  nota: { fontSize: 12, color: brandColors.primaryDark },
+  card: { backgroundColor: surface.muted, borderRadius: radius.md, padding: space.md, gap: space.sm },
+  fila: { flexDirection: 'row', justifyContent: 'space-between', gap: space.sm },
+  titulo: { flex: 1, fontSize: fontSize.body, fontWeight: fontWeight.semibold, color: textColors.primary },
+  fecha: { fontSize: fontSize.caption, color: textColors.muted },
+  archivo: {
+    flexDirection: 'row', alignItems: 'center', gap: space.sm,
+    backgroundColor: surface.card, borderRadius: radius.sm, padding: space.md,
+  },
+  archivoTxt: { flex: 1, fontSize: fontSize.body, fontWeight: fontWeight.semibold, color: textColors.primary },
+  nota: { flexDirection: 'row', gap: space.sm, alignItems: 'flex-start' },
+  notaTxt: { flex: 1, fontSize: fontSize.small, color: textColors.secondary, lineHeight: 19 },
 });

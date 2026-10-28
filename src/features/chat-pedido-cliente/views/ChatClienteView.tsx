@@ -12,18 +12,24 @@ const hora = (iso: string | null) => {
     : d.toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 };
 
-interface Props { pedidoId: number; onInputFocus?: () => void }
+interface Props {
+  pedidoId: number;
+  onInputFocus?: () => void;
+  /** true = ocupa toda la pantalla (pantalla de chat propia), sin límite de alto. */
+  pantallaCompleta?: boolean;
+}
 
-export const ChatClienteView = ({ pedidoId, onInputFocus }: Props) => {
+export const ChatClienteView = ({ pedidoId, onInputFocus, pantallaCompleta }: Props) => {
+
   const vm = useChatClienteViewModel(pedidoId);
   const listaRef = useRef<ScrollView>(null);
   const puedeEnviar = !!vm.texto.trim() && !vm.enviando;
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, pantallaCompleta && styles.cardCompleta]}>
       <ScrollView
         ref={listaRef}
-        style={styles.lista}
+        style={[styles.lista, pantallaCompleta && styles.listaCompleta]}
         contentContainerStyle={styles.listaContenido}
         nestedScrollEnabled
         keyboardShouldPersistTaps="handled"
@@ -79,6 +85,8 @@ export const ChatClienteView = ({ pedidoId, onInputFocus }: Props) => {
 
 const styles = StyleSheet.create({
   card: { backgroundColor: brandColors.white, borderRadius: 14, padding: 14 },
+  cardCompleta: { flex: 1, borderRadius: 0 },
+  listaCompleta: { flex: 1, maxHeight: undefined },
   lista: { maxHeight: 320, marginBottom: 10 },
   listaContenido: { gap: 8, flexGrow: 1 },
   vacio: { color: brandTints.textMuted, fontSize: 13 },

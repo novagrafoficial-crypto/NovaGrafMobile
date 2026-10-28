@@ -1,62 +1,61 @@
-import React, { useRef } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, Image, StyleSheet, RefreshControl } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { usePedidoDetalleViewModel } from '../viewmodels/usePedidoDetalleViewModel';
-import { EstadoBadge } from '../components/EstadoBadge';
+import { ProgresoPedido } from '../components/ProgresoPedido';
+import { SiguientePasoCard } from '../components/SiguientePasoCard';
+import { EtapaCard } from '../components/EtapaCard';
 import { ComprobanteItem } from '../components/ComprobanteItem';
 import { DisenoEnviadoItem } from '../components/DisenoEnviadoItem';
 import { PreviaItem } from '../components/PreviaItem';
 import { RechazarPreviaModal } from '../components/RechazarPreviaModal';
-import { ChatClienteView } from '@/features/chat-pedido-cliente';
 import { ScreenHeader } from '@/shared/components/ScreenHeader';
 import { Loading } from '@/shared/components/Loading';
 import { CustomButton } from '@/shared/components/CustomButton';
-import { FadeInView } from '@/shared/components/FadeInView';
+import { PressableScale } from '@/shared/components/PressableScale';
 import { resolveImageUrl } from '@/shared/utils/resolveImageUrl';
 import { folioDe, formatFecha, money } from '@/shared/utils/format';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontSize, fontWeight, iconSize, radius, space, surface, textColors } from '@/constants/theme';
+import type { EtapaId, IconoNombre } from '../utils/etapasPedido';
 
-const Seccion = ({ titulo, children }: { titulo: string; children: React.ReactNode }) => (
-  <FadeInView style={styles.seccion}>
-    <Text style={styles.seccionTitulo}>{titulo}</Text>
-    {children}
-  </FadeInView>
-);
-
+// ── Piezas pequeñas reutilizadas dentro de las etapas ──────────
 const Fila = ({ label, valor, fuerte }: { label: string; valor: string; fuerte?: boolean }) => (
   <View style={styles.fila}>
-    <Text style={[styles.label, fuerte && styles.fuerte]}>{label}</Text>
-    <Text style={[styles.valor, fuerte && styles.fuerte]}>{valor}</Text>
+    <Text style={[styles.label, fuerte && styles.labelFuerte]}>{label}</Text>
+    <Text style={[styles.valor, fuerte && styles.valorFuerte]}>{valor}</Text>
   </View>
+);
+
+const Vacio = ({ icono, texto }: { icono: IconoNombre; texto: string }) => (
+  <View style={styles.vacio}>
+    <Ionicons name={icono} size={iconSize.md} color={textColors.muted} />
+    <Text style={styles.vacioTxt}>{texto}</Text>
+  </View>
+);
+
+const Dato = ({ icono, texto, fuerte }: { icono: IconoNombre; texto: string; fuerte?: boolean }) => (
+  <View style={styles.dato}>
+    <Ionicons name={icono} size={iconSize.md} color={textColors.secondary} />
+    <Text style={[styles.datoTxt, fuerte && styles.datoFuerte]}>{texto}</Text>
+  </View>
+);
+
+const icono = (name: IconoNombre, color: string = textColors.inverse) => (
+  <Ionicons name={name} size={iconSize.md} color={color} />
 );
 
 export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
   const vm = usePedidoDetalleViewModel(pedidoId);
   const p = vm.pedido;
-  const scrollRef = useRef<ScrollView>(null);
 
-  const cuerpo = () => {
-    if (vm.cargando) return <Loading fullScreen />;
-    if (vm.error || !p) {
-      return (
-        <View style={styles.centrado}>
-          <Text style={styles.error}>{vm.error ?? 'Pedido no encontrado'}</Text>
-          <CustomButton title="Reintentar" onPress={vm.reintentar} style={{ marginTop: 12 }} />
-        </View>
-      );
-    }
-
-    return (
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.encabezado}>
-          <View>
-            <Text style={styles.folio}>{folioDe(p.id)}</Text>
-            <Text style={styles.fecha}>{formatFecha(p.fecha_pedido)}</Text>
-          </View>
-          <EstadoBadge estado={p.estado} />
-        </View>
-
-        <Seccion titulo="Productos">
-          <View style={styles.caja}>
+  // Contenido de cada etapa al desplegarla
+  const contenidoEtapa = (id: EtapaId): React.ReactNode => {
+    if (!p) return null;
+    switch (id) {
+      case 'pedido':
+        return (
+          <>
             {p.detalles.map((d, i) => (
               <View key={i} style={styles.item}>
                 <Image
@@ -72,32 +71,63 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
                 <Text style={styles.itemSubtotal}>{money(d.subtotal)}</Text>
               </View>
             ))}
-          </View>
-        </Seccion>
+            <View style={styles.linea} />
+            <Fila label="Subtotal productos" valor={money(p.total_productos)} />
+            <Fila label="Costo de envío" valor={money(p.costo_envio)} />
+            <Fila label="Total" valor={money(p.total_general)} fuerte />
+          </>
+        );
 
-        <Seccion titulo={`Mis diseños enviados (${vm.disenos.length})`}>
-          {vm.disenos.length === 0 ? (
-            <Text style={styles.vacio}>Todavía no has enviado diseños para este pedido.</Text>
-          ) : (
-            <View style={{ gap: 10 }}>
-              {vm.disenos.map((d) => (
+      case 'anticipo':
+        return (
+          <>
+            <Fila label="Anticipo (50%)" valor={money(p.monto_anticipo)} fuerte />
+            {!!p.metodo_pago_nombre && <Fila label="Método de pago" valor={p.metodo_pago_nombre} />}
+            {vm.pagoAnticipo ? (
+              <ComprobanteItem pago={vm.pagoAnticipo} onAbrirUrl={vm.abrirUrl} />
+            ) : (
+              <Vacio icono="receipt-outline" texto="Todavía no registras tu anticipo." />
+            )}
+            {(vm.debePagar || vm.tienePago) && (
+              <CustomButton
+                title={vm.debePagar ? 'Pagar anticipo' : 'Ver datos de pago'}
+                variant={vm.debePagar ? 'primary' : 'outline'}
+                icon={icono(vm.debePagar ? 'card-outline' : 'document-text-outline', vm.debePagar ? textColors.inverse : textColors.primary)}
+                onPress={vm.irAPagar}
+              />
+            )}
+          </>
+        );
+
+      case 'diseno':
+        return (
+          <>
+            {vm.disenos.length === 0 ? (
+              <Vacio icono="image-outline" texto="Todavía no has enviado diseños para este pedido." />
+            ) : (
+              vm.disenos.map((d) => (
                 <DisenoEnviadoItem
                   key={d.id}
                   diseno={d}
                   producto={p.detalles.find((x) => x.variante_id === d.variante_id)}
                   onAbrirUrl={vm.abrirUrl}
                 />
-              ))}
-            </View>
-          )}
-        </Seccion>
+              ))
+            )}
+            {vm.debeSubirDiseno && (
+              <CustomButton title="Subir mis diseños" icon={icono('cloud-upload-outline')} onPress={vm.irADiseno} />
+            )}
+          </>
+        );
 
-        <Seccion titulo={`Previas de diseño (${vm.previas.length})`}>
-          {vm.previas.length === 0 ? (
-            <Text style={styles.vacio}>Aún no te han enviado previas. Te avisaremos cuando haya una.</Text>
-          ) : (
-            <View style={{ gap: 10 }}>
-              {vm.previas.map((pr) => (
+      case 'previas':
+        return (
+          <>
+            {vm.previas.length === 0 ? (
+              <Vacio icono="hourglass-outline" texto="Aún no te enviamos previas. Te avisaremos cuando haya una." />
+            ) : (
+              // La más reciente primero: es la que importa
+              [...vm.previas].reverse().map((pr) => (
                 <PreviaItem
                   key={pr.id}
                   previa={pr}
@@ -105,64 +135,112 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
                   onAprobar={vm.previaPendiente?.id === pr.id ? () => vm.aprobarPrevia(pr) : undefined}
                   onRechazar={vm.previaPendiente?.id === pr.id ? () => vm.abrirRechazo(pr) : undefined}
                 />
-              ))}
-            </View>
-          )}
-        </Seccion>
-
-        <Seccion titulo="Entrega">
-          <View style={styles.caja}>
-            <Text style={styles.dato}>{p.metodo_entrega_nombre}</Text>
-            {!!p.direccion_envio && <Text style={styles.datoSec}>{p.direccion_envio}</Text>}
-            {!!p.fecha_entrega_estimada && (
-              <Text style={styles.datoSec}>Entrega estimada: {formatFecha(p.fecha_entrega_estimada)}</Text>
+              ))
             )}
-          </View>
-        </Seccion>
+            <PressableScale onPress={vm.irAChat} style={styles.linkChat}>
+              <Ionicons name="chatbubble-ellipses-outline" size={iconSize.md} color={brandColors.primary} />
+              <Text style={styles.linkChatTxt}>¿Dudas sobre tu previa? Escríbenos</Text>
+            </PressableScale>
+          </>
+        );
 
-        <Seccion titulo="Pago">
-          <View style={styles.caja}>
-            {!!p.metodo_pago_nombre && <Text style={styles.dato}>{p.metodo_pago_nombre}</Text>}
-            <Fila label="Subtotal productos" valor={money(p.total_productos)} />
-            <Fila label="Costo de envío" valor={money(p.costo_envio)} />
-            <View style={styles.linea} />
-            <Fila label="Total" valor={money(p.total_general)} fuerte />
-            <Fila label="Anticipo (50%)" valor={money(p.monto_anticipo)} />
-            <Fila label="Saldo restante (50%)" valor={money(p.monto_restante)} />
-          </View>
-        </Seccion>
-
-        <Seccion titulo={`Comprobantes (${p.pagos.length})`}>
-          {p.pagos.length === 0 ? (
-            <Text style={styles.vacio}>Todavía no has registrado ningún pago.</Text>
-          ) : (
-            <View style={{ gap: 10 }}>
-              {p.pagos.map((pg) => (
-                <ComprobanteItem key={pg.id} pago={pg} onAbrirUrl={vm.abrirUrl} />
-              ))}
-            </View>
-          )}
-        </Seccion>
-
-        <Seccion titulo="Chat con Nova Graf">
-          <ChatClienteView
-            pedidoId={p.id}
-            onInputFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 250)}
+      case 'produccion':
+        return (
+          <Vacio
+            icono="construct-outline"
+            texto={
+              p.estado === 'EN_PRODUCCION'
+                ? 'Tu diseño fue aprobado y ya se está fabricando.'
+                : 'La producción de tu pedido terminó.'
+            }
           />
-        </Seccion>
+        );
+
+      case 'pagoFinal':
+        return (
+          <>
+            <Fila label="Saldo restante (50%)" valor={money(p.monto_restante)} fuerte />
+            {vm.pagoFinal ? (
+              <ComprobanteItem pago={vm.pagoFinal} onAbrirUrl={vm.abrirUrl} />
+            ) : (
+              <Vacio icono="cash-outline" texto="Cuando tu pedido esté listo te pediremos el pago final." />
+            )}
+            {vm.puedePagarFinal && (
+              <CustomButton title="Pagar saldo" icon={icono('card-outline')} onPress={vm.irAPagoFinal} />
+            )}
+          </>
+        );
+
+      case 'entrega':
+        return (
+          <>
+            <Dato icono="car-outline" texto={p.metodo_entrega_nombre} fuerte />
+            {!!p.direccion_envio && <Dato icono="location-outline" texto={p.direccion_envio} />}
+            {!!p.fecha_entrega_estimada && (
+              <Dato icono="calendar-outline" texto={`Entrega estimada: ${formatFecha(p.fecha_entrega_estimada)}`} />
+            )}
+          </>
+        );
+    }
+  };
+
+  const cuerpo = () => {
+    if (vm.cargando) return <Loading fullScreen />;
+    if (vm.error || !p) {
+      return (
+        <View style={styles.centrado}>
+          <Ionicons name="cloud-offline-outline" size={40} color={textColors.muted} />
+          <Text style={styles.error}>{vm.error ?? 'Pedido no encontrado'}</Text>
+          <CustomButton title="Reintentar" onPress={vm.reintentar} style={{ marginTop: space.md }} />
+        </View>
+      );
+    }
+
+    return (
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        refreshControl={
+          <RefreshControl
+            refreshing={false}
+            onRefresh={vm.reintentar}
+            tintColor={brandColors.primary}
+            colors={[brandColors.primary]}
+          />
+        }
+      >
+        <ProgresoPedido pedido={p} etapas={vm.etapas} progreso={vm.progreso} cancelado={vm.cancelado} />
+
+        {vm.siguientePaso && <SiguientePasoCard paso={vm.siguientePaso} />}
+
+        <Text style={styles.seccionTitulo}>Seguimiento del pedido</Text>
+        <View>
+          {vm.etapas.map((e, i) => (
+            <EtapaCard
+              key={e.id}
+              etapa={e}
+              abierta={vm.etapaAbierta === e.id}
+              esUltima={i === vm.etapas.length - 1}
+              onToggle={() => vm.toggleEtapa(e.id)}
+            >
+              {contenidoEtapa(e.id)}
+            </EtapaCard>
+          ))}
+        </View>
       </ScrollView>
     );
   };
 
-  const mostrarBoton = !!p && (vm.debeSubirDiseno || vm.debePagar || vm.tienePago);
-
   return (
-    <KeyboardAvoidingView
-      style={styles.pantalla}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <View style={styles.pantalla}>
       <ScreenHeader title={p ? folioDe(p.id) : 'Pedido'} onBack={vm.volver} />
       <View style={{ flex: 1 }}>{cuerpo()}</View>
+
+      {/* Chat siempre a la mano, en su propia pantalla */}
+      {!!p && (
+        <PressableScale onPress={vm.irAChat} style={styles.fab} scaleTo={0.9} accessibilityLabel="Abrir chat del pedido">
+          <Ionicons name="chatbubble-ellipses" size={26} color={textColors.inverse} />
+        </PressableScale>
+      )}
 
       <RechazarPreviaModal
         visible={!!vm.previaARechazar}
@@ -172,46 +250,46 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
         onCancelar={vm.cerrarRechazo}
         onConfirmar={vm.confirmarRechazo}
       />
-
-      {mostrarBoton && (
-        <View style={styles.barra}>
-          {vm.debeSubirDiseno ? (
-            <CustomButton title="🎨 Subir mis diseños" onPress={vm.irADiseno} />
-          ) : (
-            <CustomButton
-              title={vm.debePagar ? '💳 Pagar anticipo / subir comprobante' : '🏦 Ver datos de pago'}
-              onPress={vm.irAPagar}
-            />
-          )}
-        </View>
-      )}
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: brandColors.background },
-  scroll: { padding: 16, paddingBottom: 28, gap: 16 },
-  centrado: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  error: { color: brandColors.error, textAlign: 'center', fontWeight: '500' },
-  encabezado: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  folio: { fontSize: 22, fontWeight: '800', color: brandColors.primaryDark },
-  fecha: { fontSize: 12, color: brandTints.textMuted },
-  seccion: { gap: 8 },
-  seccionTitulo: { fontSize: 15, fontWeight: '800', color: brandColors.primaryDark },
-  caja: { backgroundColor: brandColors.white, borderRadius: 14, padding: 14, gap: 8 },
-  item: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  img: { width: 48, height: 48, borderRadius: 8, backgroundColor: brandTints.surfaceMuted },
-  itemNombre: { fontSize: 13, fontWeight: '700', color: brandColors.primaryDark },
-  itemDetalle: { fontSize: 11, color: brandTints.textMuted, marginTop: 1 },
-  itemSubtotal: { fontSize: 13, fontWeight: '800', color: brandColors.primary },
-  dato: { fontSize: 14, fontWeight: '700', color: brandColors.primaryDark },
-  datoSec: { fontSize: 13, color: brandTints.textMuted },
-  fila: { flexDirection: 'row', justifyContent: 'space-between' },
-  label: { fontSize: 13, color: brandTints.textMuted },
-  valor: { fontSize: 13, fontWeight: '700', color: brandColors.primaryDark },
-  fuerte: { fontSize: 16, fontWeight: '800', color: brandColors.primaryDark },
-  linea: { height: 1, backgroundColor: brandTints.border },
-  vacio: { fontSize: 13, color: brandTints.textMuted },
-  barra: { backgroundColor: brandColors.white, padding: 14, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  pantalla: { flex: 1, backgroundColor: surface.screen },
+  scroll: { padding: space.lg, paddingBottom: 100, gap: space.lg },
+  centrado: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, gap: space.sm },
+  error: { color: textColors.secondary, fontSize: fontSize.body, textAlign: 'center' },
+  seccionTitulo: { fontSize: fontSize.title, fontWeight: fontWeight.bold, color: textColors.primary, marginTop: space.xs },
+  // productos
+  item: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  img: { width: 52, height: 52, borderRadius: radius.sm, backgroundColor: surface.muted },
+  itemNombre: { fontSize: fontSize.body, fontWeight: fontWeight.semibold, color: textColors.primary },
+  itemDetalle: { fontSize: fontSize.small, color: textColors.muted, marginTop: 2 },
+  itemSubtotal: { fontSize: fontSize.body, fontWeight: fontWeight.bold, color: textColors.primary },
+  // filas de importes
+  fila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  label: { fontSize: fontSize.body, color: textColors.secondary },
+  valor: { fontSize: fontSize.body, fontWeight: fontWeight.medium, color: textColors.primary },
+  labelFuerte: { fontWeight: fontWeight.semibold, color: textColors.primary },
+  valorFuerte: { fontSize: fontSize.bodyLg, fontWeight: fontWeight.bold, color: textColors.primary },
+  linea: { height: 1, backgroundColor: surface.border },
+  // datos con ícono
+  dato: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
+  datoTxt: { flex: 1, fontSize: fontSize.body, color: textColors.secondary, lineHeight: 21 },
+  datoFuerte: { fontWeight: fontWeight.semibold, color: textColors.primary },
+  // vacío
+  vacio: {
+    flexDirection: 'row', alignItems: 'center', gap: space.sm,
+    backgroundColor: surface.muted, borderRadius: radius.md, padding: space.md,
+  },
+  vacioTxt: { flex: 1, fontSize: fontSize.small, color: textColors.secondary, lineHeight: 19 },
+  // chat
+  linkChat: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.xs },
+  linkChatTxt: { fontSize: fontSize.body, fontWeight: fontWeight.semibold, color: brandColors.primary },
+  fab: {
+    position: 'absolute', right: space.lg, bottom: space.xl,
+    width: 58, height: 58, borderRadius: 29,
+    backgroundColor: brandColors.primary, alignItems: 'center', justifyContent: 'center',
+    elevation: 6, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, shadowOffset: { width: 0, height: 4 },
+  },
 });
