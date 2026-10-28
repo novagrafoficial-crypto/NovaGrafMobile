@@ -52,9 +52,12 @@ export const esCancelado = (p: Pedido) => p.estado.includes('CANCEL');
 
 export const indiceEtapaActual = (p: Pedido) => INDICE_POR_ESTADO[p.estado] ?? 0;
 
-export const pagoAnticipo = (p: Pedido) => p.pagos.find((x) => x.tipo_pago === 'ANTICIPO') ?? null;
-// El más reciente: si el admin rechazó uno, el cliente pudo subir otro
-export const pagoFinal = (p: Pedido) => [...p.pagos].reverse().find((x) => x.tipo_pago !== 'ANTICIPO') ?? null;
+// Siempre el MÁS RECIENTE (id más alto): si el admin rechazó uno, el cliente pudo subir otro.
+const masReciente = (p: Pedido, esDelTipo: (tipo: string) => boolean) =>
+  [...p.pagos].sort((a, b) => b.id - a.id).find((x) => esDelTipo(x.tipo_pago)) ?? null;
+
+export const pagoAnticipo = (p: Pedido) => masReciente(p, (t) => t === 'ANTICIPO');
+export const pagoFinal = (p: Pedido) => masReciente(p, (t) => t !== 'ANTICIPO');
 
 const resumenDe = (id: EtapaId, estado: EstadoEtapa, p: Pedido): string => {
   if (estado === 'pendiente') return 'Aún no inicia';

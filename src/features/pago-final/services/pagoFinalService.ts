@@ -28,7 +28,7 @@ export const pagoFinalService = {
     );
     const montoPendiente = Math.max(redondear(pedido.total_general - pagado), 0);
     // El más reciente (si el admin rechazó uno, el cliente puede haber subido otro)
-    const pagoFinal = [...pedido.pagos].reverse().find((p) => p.tipo_pago !== 'ANTICIPO') ?? null;
+    const pagoFinal = [...pedido.pagos].sort((a, b) => b.id - a.id).find((p) => p.tipo_pago !== 'ANTICIPO') ?? null;
 
     return { pedido, metodo, pagado, montoPendiente, pagoFinal };
   },

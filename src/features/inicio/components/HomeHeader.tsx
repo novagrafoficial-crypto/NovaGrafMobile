@@ -56,7 +56,7 @@ export const HomeHeader = ({
           hitSlop={8}
           accessibilityLabel={noLeidas > 0 ? `Notificaciones, ${noLeidas} sin leer` : 'Notificaciones'}
         >
-          <Ionicons name="notifications-outline" size={20} color={BLANCO} />
+          <Ionicons name="notifications-outline" size={25} color={BLANCO} />
           {noLeidas > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeTexto} maxFontSizeMultiplier={1}>{noLeidas > 9 ? '9+' : noLeidas}</Text>
@@ -133,9 +133,9 @@ const styles = StyleSheet.create({
   hola: { flex: 1, fontFamily: fontFamily.semibold, fontSize: 15, color: BLANCO },
   holaSub: { fontFamily: fontFamily.regular, fontSize: 13, color: 'rgba(255,255,255,0.75)' },
   campana: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -144,10 +144,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 3,
     right: 3,
-    minWidth: 15,
-    height: 15,
-    borderRadius: 8,
-    paddingHorizontal: 3,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 4,
     backgroundColor: brandColors.error,
     borderWidth: 1.5,
     borderColor: FONDO,
@@ -185,6 +185,6 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   chipActivo: { borderBottomColor: BLANCO },
-  chipTexto: { fontFamily: fontFamily.medium, fontSize: 15, color: 'rgba(255,255,255,0.7)' },
+  chipTexto: { fontFamily: fontFamily.medium, fontSize: 15, color: BLANCO  },
   chipTextoActivo: { fontFamily: fontFamily.semibold, color: BLANCO },
 });

@@ -125,7 +125,7 @@ export const PagoFinalView = ({ pedidoId }: { pedidoId: number }) => {
           label="Nota"
           value={vm.nota}
           onChangeText={vm.setNota}
-          placeholder={vm.esTienda ? 'Paso a la tienda el viernes' : 'Transferí desde la cuenta de mi esposo'}
+          placeholder={vm.esTienda ? 'Paso a la tienda el viernes' : 'Le envío el comprobante'}
           multiline
           numberOfLines={2}
           textAlignVertical="top"

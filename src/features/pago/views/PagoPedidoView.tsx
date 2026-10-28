@@ -124,6 +124,26 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
           <Text style={styles.titulo}>Pedido {folioDe(pedido.id)}</Text>
         </FadeInView>
 
+        {/* Comprobante anterior rechazado: se explica y se pide uno nuevo */}
+        {!!vm.rechazoAnterior && (
+          <FadeInView style={styles.rechazo}>
+            <View style={styles.rechazoIcono}>
+              <Ionicons name="close-circle-outline" size={22} color={brandColors.error} />
+            </View>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={styles.rechazoTitulo}>Tu comprobante fue rechazado</Text>
+              <Text style={styles.rechazoTexto}>
+                {vm.rechazoAnterior.notas_admin || 'No pudimos validar tu pago. Sube un comprobante nuevo.'}
+              </Text>
+              {!!vm.rechazoAnterior.comprobante_url && vm.rechazoAnterior.comprobante_url !== 'TIENDA_FISICA' && (
+                <Text style={styles.rechazoLink} onPress={() => Linking.openURL(vm.rechazoAnterior!.comprobante_url!)}>
+                  Ver comprobante anterior
+                </Text>
+              )}
+            </View>
+          </FadeInView>
+        )}
+
         {metodo && (
           <View style={styles.fila}>
             <Ionicons name={vm.esTienda ? 'storefront-outline' : 'business-outline'} size={20} color={textColors.primary} />
@@ -178,7 +198,15 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
       {mostrarBarra && (
         <View style={styles.barra}>
           <CustomButton
-            title={vm.enviando ? 'Procesando...' : vm.esTienda ? 'Confirmar pago en tienda' : 'Subir comprobante'}
+            title={
+              vm.enviando
+                ? 'Procesando...'
+                : vm.esTienda
+                  ? 'Confirmar pago en tienda'
+                  : vm.rechazoAnterior
+                    ? 'Enviar nuevo comprobante'
+                    : 'Subir comprobante'
+            }
             icon={<Ionicons name={vm.esTienda ? 'storefront-outline' : 'cloud-upload-outline'} size={20} color="#FFFFFF" />}
             onPress={vm.enviar}
             disabled={vm.enviando || (!vm.esTienda && !vm.archivo)}
@@ -244,6 +272,28 @@ const styles = StyleSheet.create({
     padding: space.md,
   },
   notaTexto: { flex: 1, fontFamily: fontFamily.regular, fontSize: 14, color: textColors.primary },
+
+  // Comprobante rechazado
+  rechazo: {
+    flexDirection: 'row',
+    gap: space.md,
+    backgroundColor: '#FEF2F2',
+    borderRadius: radius.lg,
+    padding: space.md,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  rechazoIcono: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rechazoTitulo: { fontFamily: fontFamily.semibold, fontSize: 15, color: textColors.primary },
+  rechazoTexto: { fontFamily: fontFamily.regular, fontSize: 14, color: textColors.secondary },
+  rechazoLink: { fontFamily: fontFamily.semibold, fontSize: 13, color: brandColors.primary, marginTop: 4 },
 
   // Error
   errorBox: {

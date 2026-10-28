@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, LayoutAnimation, Linking } from 'react-native';
+import { LayoutAnimation, Linking } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { pedidoService } from '../services/pedidoService';
 import { necesitaPago, tieneAnticipo } from '../utils/pedidoUtils';
@@ -23,6 +23,7 @@ export const usePedidoDetalleViewModel = (pedidoId: number) => {
 
   // Revisión de previas
   const [previaARechazar, setPreviaARechazar] = useState<PreviaPedido | null>(null);
+  const [previaAAprobar, setPreviaAAprobar] = useState<PreviaPedido | null>(null);
   const [enviandoRevision, setEnviandoRevision] = useState(false);
   const [errorRevision, setErrorRevision] = useState<string | null>(null);
 
@@ -83,7 +84,7 @@ export const usePedidoDetalleViewModel = (pedidoId: number) => {
           return { tono: 'accion', titulo: 'Paga tu anticipo', texto: 'Con el 50% del total iniciamos tu diseño.', boton: 'Pagar anticipo', onPress: irAPagar };
         }
         if (anticipo.estado_pago === 'RECHAZADO') {
-          return { tono: 'accion', titulo: 'Revisa tu comprobante', texto: anticipo.notas_admin ?? 'Tu comprobante no se pudo validar.', boton: 'Ver datos de pago', onPress: irAPagar };
+          return { tono: 'accion', titulo: 'Revisa tu comprobante', texto: anticipo.notas_admin ?? 'Tu comprobante no se pudo validar.', boton: 'Subir de nuevo', onPress: irAPagar };
         }
         return { tono: 'espera', titulo: 'Verificando tu anticipo', texto: 'Estamos revisando tu comprobante. Te avisaremos al confirmarlo.' };
       case 'EN_DISENO':
@@ -117,29 +118,31 @@ export const usePedidoDetalleViewModel = (pedidoId: number) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pedido, previaPendiente]);
 
+  // ── Aprobar previa (con el modal de la app, no el Alert del sistema) ──
   const aprobarPrevia = (previa: PreviaPedido) => {
-    Alert.alert(
-      'Aprobar previa',
-      `¿Confirmas que la previa ${previa.numero_previa} es la correcta? Tu pedido pasará a producción y ya no se podrá cambiar el diseño.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Sí, aprobar',
-          onPress: async () => {
-            setEnviandoRevision(true);
-            try {
-              await pedidoService.aprobarPrevia(pedidoId, previa.numero_previa);
-              await cargar();
-            } catch (e) {
-              Alert.alert('No se pudo aprobar', mensajeDeError(e, 'Intenta de nuevo en unos minutos.'));
-              await cargar();
-            } finally {
-              setEnviandoRevision(false);
-            }
-          },
-        },
-      ]
-    );
+    setErrorRevision(null);
+    setPreviaAAprobar(previa);
+  };
+
+  const cerrarAprobacion = () => {
+    if (enviandoRevision) return;
+    setPreviaAAprobar(null);
+    setErrorRevision(null);
+  };
+
+  const confirmarAprobacion = async () => {
+    if (!previaAAprobar) return;
+    setEnviandoRevision(true);
+    setErrorRevision(null);
+    try {
+      await pedidoService.aprobarPrevia(pedidoId, previaAAprobar.numero_previa);
+      setPreviaAAprobar(null);
+      await cargar();
+    } catch (e) {
+      setErrorRevision(mensajeDeError(e, 'No se pudo aprobar. Intenta de nuevo en unos minutos.'));
+    } finally {
+      setEnviandoRevision(false);
+    }
   };
 
   const abrirRechazo = (previa: PreviaPedido) => {
@@ -183,6 +186,7 @@ export const usePedidoDetalleViewModel = (pedidoId: number) => {
     // Revisión de previas
     previaARechazar, enviandoRevision, errorRevision,
     aprobarPrevia, abrirRechazo, cerrarRechazo, confirmarRechazo,
+    previaAAprobar, cerrarAprobacion, confirmarAprobacion,
     // Si ya envió sus diseños no se vuelve a ofrecer el botón de subir
     debeSubirDiseno: pedido?.estado === 'EN_DISENO' && (pedido?.disenos.length ?? 0) === 0,
     irADiseno,

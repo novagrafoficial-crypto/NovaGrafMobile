@@ -191,6 +191,6 @@ export const useClientHomeViewModel = () => {
         ? router.push(`/(cliente)/producto/${item.productoId}` as any)
         : router.push('/(cliente)/productos-base' as any),
     abrirNotificaciones: () => router.push('/(cliente)/notificaciones' as any),
-    abrirChat: () => avisar('El chat estará disponible pronto.'),
+    abrirChat: () => avisar('Chat disponible en pedidos.'),
   };
 };

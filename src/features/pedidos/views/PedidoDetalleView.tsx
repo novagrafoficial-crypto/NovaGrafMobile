@@ -9,6 +9,7 @@ import { ComprobanteItem } from '../components/ComprobanteItem';
 import { DisenoEnviadoItem } from '../components/DisenoEnviadoItem';
 import { PreviaItem } from '../components/PreviaItem';
 import { RechazarPreviaModal } from '../components/RechazarPreviaModal';
+import { AprobarPreviaModal } from '../components/AprobarPreviaModal';
 import { ScreenHeader } from '@/shared/components/ScreenHeader';
 import { Loading } from '@/shared/components/Loading';
 import { CustomButton } from '@/shared/components/CustomButton';
@@ -241,6 +242,14 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
           <Ionicons name="chatbubble-ellipses" size={26} color={textColors.inverse} />
         </PressableScale>
       )}
+
+      <AprobarPreviaModal
+        previa={vm.previaAAprobar}
+        enviando={vm.enviandoRevision}
+        error={vm.errorRevision}
+        onCancelar={vm.cerrarAprobacion}
+        onConfirmar={vm.confirmarAprobacion}
+      />
 
       <RechazarPreviaModal
         visible={!!vm.previaARechazar}
