@@ -39,13 +39,6 @@ export const DatosPagoCard = ({ metodo, modo, pedidoId, cliente, monto }: Props)
         </View>
       </View>
 
-      {!!metodo?.instrucciones && (
-        <View style={styles.instrucciones}>
-          <Ionicons name="information-circle-outline" size={iconSize.sm} color={textColors.secondary} />
-          <Text style={styles.instruccionesTxt}>{metodo.instrucciones}</Text>
-        </View>
-      )}
-
       {esTienda && (
         <>
           <Row etiqueta="Folio" valor={folioDe(pedidoId)} grande />

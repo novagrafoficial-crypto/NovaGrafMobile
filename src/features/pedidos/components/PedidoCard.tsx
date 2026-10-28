@@ -6,7 +6,7 @@ import { PressableScale } from '@/shared/components/PressableScale';
 import { resolveImageUrl } from '@/shared/utils/resolveImageUrl';
 import { folioDe, formatFecha, money } from '@/shared/utils/format';
 import { brandColors } from '@/constants/brand';
-import { fontSize, fontWeight, iconSize, radius, space, surface, textColors } from '@/constants/theme';
+import { fontFamily, iconSize, radius, space, surface, textColors } from '@/constants/theme';
 import { EstadoBadge } from './EstadoBadge';
 import { necesitaPago } from '../utils/pedidoUtils';
 import { construirEtapas, esCancelado, progresoPedido } from '../utils/etapasPedido';
@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: surface.border,
   },
   fila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  folio: { fontSize: fontSize.title, fontWeight: fontWeight.bold, color: textColors.primary },
-  fecha: { fontSize: fontSize.small, color: textColors.muted, marginTop: 2 },
+  folio: { fontFamily: fontFamily.bold, fontSize: 17, color: textColors.primary },
+  fecha: { fontFamily: fontFamily.regular, fontSize: 13, color: textColors.secondary, marginTop: 1 },
   productos: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   miniaturas: { flexDirection: 'row' },
   mini: {
@@ -100,15 +100,15 @@ const styles = StyleSheet.create({
     borderWidth: 2, borderColor: surface.card,
   },
   masMini: { marginLeft: -10, alignItems: 'center', justifyContent: 'center' },
-  masTxt: { fontSize: fontSize.small, fontWeight: fontWeight.bold, color: textColors.secondary },
-  piezas: { fontSize: fontSize.small, color: textColors.muted },
-  total: { fontSize: fontSize.title, fontWeight: fontWeight.bold, color: textColors.primary },
+  masTxt: { fontFamily: fontFamily.semibold, fontSize: 13, color: textColors.primary },
+  piezas: { fontFamily: fontFamily.regular, fontSize: 13, color: textColors.secondary },
+  total: { fontFamily: fontFamily.bold, fontSize: 18, color: textColors.primary },
   pista: { height: 6, borderRadius: radius.pill, backgroundColor: surface.muted, overflow: 'hidden' },
   relleno: { height: '100%', borderRadius: radius.pill, backgroundColor: brandColors.accent },
-  paso: { fontSize: fontSize.small, fontWeight: fontWeight.medium, color: textColors.secondary },
+  paso: { fontFamily: fontFamily.medium, fontSize: 13, color: textColors.primary },
   pagar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm,
     backgroundColor: brandColors.primary, borderRadius: radius.md, paddingVertical: 13,
   },
-  pagarTxt: { color: textColors.inverse, fontWeight: fontWeight.semibold, fontSize: fontSize.body },
+  pagarTxt: { fontFamily: fontFamily.semibold, fontSize: 15, color: textColors.inverse },
 });

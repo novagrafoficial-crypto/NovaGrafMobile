@@ -7,12 +7,13 @@ import { ResumenSaldoCard } from '../components/ResumenSaldoCard';
 import { DatosPagoCard } from '../components/DatosPagoCard';
 import { SelectorComprobante } from '../components/SelectorComprobante';
 import { PagoEnviadoCard } from '../components/PagoEnviadoCard';
+import { ModalConfirmarPago } from '../components/ModalConfirmarPago';
 import { ScreenHeader } from '@/shared/components/ScreenHeader';
 import { Loading } from '@/shared/components/Loading';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { CustomInput } from '@/shared/components/CustomInput';
 import { brandColors } from '@/constants/brand';
-import { fontSize, fontWeight, iconSize, radius, space, surface, textColors } from '@/constants/theme';
+import { fontFamily, fontSize, fontWeight, iconSize, radius, space, surface, textColors } from '@/constants/theme';
 
 export const PagoFinalView = ({ pedidoId }: { pedidoId: number }) => {
   const vm = usePagoFinalViewModel(pedidoId);
@@ -38,6 +39,26 @@ export const PagoFinalView = ({ pedidoId }: { pedidoId: number }) => {
       return (
         <ScrollView contentContainerStyle={styles.scroll}>
           <PagoEnviadoCard pedidoId={pedido.id} pago={pagoFinal} />
+
+          {/* Comprobante y recibo */}
+          {!!vm.comprobanteUrl && (
+            <CustomButton
+              title="Ver comprobante"
+              variant="outline"
+              icon={<Ionicons name="document-text-outline" size={iconSize.md} color={textColors.primary} />}
+              onPress={vm.verComprobante}
+            />
+          )}
+          <CustomButton
+            title={vm.generandoPdf ? 'Generando recibo…' : 'Descargar recibo (PDF)'}
+            variant="outline"
+            icon={<Ionicons name="download-outline" size={iconSize.md} color={textColors.primary} />}
+            onPress={vm.descargarRecibo}
+            disabled={vm.generandoPdf}
+          />
+          {!!vm.infoPdf && <Text style={styles.info}>{vm.infoPdf}</Text>}
+          {!!vm.errorPdf && <Text style={styles.errorPdf}>{vm.errorPdf}</Text>}
+
           <CustomButton
             title="Ver seguimiento del pedido"
             icon={<Ionicons name="git-commit-outline" size={iconSize.md} color={textColors.inverse} />}
@@ -127,6 +148,16 @@ export const PagoFinalView = ({ pedidoId }: { pedidoId: number }) => {
       <ScreenHeader title="Pago final" onBack={vm.volver} />
       <View style={{ flex: 1 }}>{cuerpo()}</View>
 
+      <ModalConfirmarPago
+        visible={vm.confirmarVisible}
+        esTienda={vm.esTienda}
+        monto={vm.pantalla?.montoPendiente ?? 0}
+        archivo={vm.archivo?.name}
+        enviando={vm.enviando}
+        onConfirmar={vm.confirmarEnvio}
+        onCancelar={vm.cancelarConfirmacion}
+      />
+
       {mostrarBarra && (
         <View style={[styles.barra, { paddingBottom: insets.bottom + space.md }]}>
           <CustomButton
@@ -175,6 +206,8 @@ const styles = StyleSheet.create({
   },
   alertaTitulo: { fontSize: fontSize.body, fontWeight: fontWeight.semibold, color: '#991B1B' },
   alertaTxt: { fontSize: fontSize.small, color: '#991B1B', marginTop: 2 },
+  info: { fontFamily: fontFamily.medium, fontSize: 13, color: brandColors.primary, textAlign: 'center' },
+  errorPdf: { fontFamily: fontFamily.medium, fontSize: 13, color: brandColors.error, textAlign: 'center' },
   barra: {
     backgroundColor: surface.card, paddingHorizontal: space.lg, paddingTop: space.md,
     borderTopWidth: 1, borderTopColor: surface.border,

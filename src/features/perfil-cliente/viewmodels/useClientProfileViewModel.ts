@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { useNotificaciones } from '@/features/notificaciones';
 import type { ClientProfile } from '../models/ClientProfile';
 import { clientProfileService } from '../services/clientProfileService';
 
@@ -25,6 +26,9 @@ export const useClientProfileViewModel = () => {
   const [pwMsg, setPwMsg] = useState<Mensaje | null>(null);
 
   const [logoutVisible, setLogoutVisible] = useState<boolean>(false);
+  // Mostrar / ocultar lo que se escribe en los campos de contraseña
+  const [verPw, setVerPw] = useState<boolean>(false);
+  const { noLeidas } = useNotificaciones();
 
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const later = (fn: () => void, ms: number) => {
@@ -100,6 +104,12 @@ export const useClientProfileViewModel = () => {
     }
   };
 
+  // Cancelar la edición regresa los datos a como estaban
+  const cancelarEdicion = () => {
+    if (profile) setForm(profile);
+    setEditing(false);
+  };
+
   const confirmarLogout = async () => {
     setLogoutVisible(false);
     await deleteSession();
@@ -116,7 +126,16 @@ export const useClientProfileViewModel = () => {
     setEditing,
     toastMsg,
     showPwForm,
-    alternarPwForm: () => setShowPwForm((v) => !v),
+    alternarPwForm: () => {
+      setShowPwForm((v) => !v);
+      setPwMsg(null);
+    },
+    verPw,
+    alternarVerPw: () => setVerPw((v) => !v),
+    cancelarEdicion,
+    noLeidas,
+    irANotificaciones: () => router.push('/(cliente)/notificaciones' as any),
+    irAPedidos: () => router.push('/(cliente)/pedidos' as any),
     pwForm,
     setPwForm,
     pwSaving,

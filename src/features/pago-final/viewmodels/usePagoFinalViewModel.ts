@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+import { Linking } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { modoDePago } from '@/features/pago/utils/pagoUtils';
-import { money } from '@/shared/utils/format';
 import { pagoFinalService } from '../services/pagoFinalService';
+import { pdfService } from '@/features/pago/services/pdfService';
+import { htmlReciboPagoFinal, nombreReciboPdf } from '../utils/reciboPagoFinal';
 import type { ArchivoComprobante, PantallaPagoFinal } from '../models/PagoFinal';
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -27,6 +28,12 @@ export const usePagoFinalViewModel = (pedidoId: number) => {
   const [nota, setNota] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
+  const [confirmarVisible, setConfirmarVisible] = useState(false);
+
+  // Recibo en PDF
+  const [generandoPdf, setGenerandoPdf] = useState(false);
+  const [infoPdf, setInfoPdf] = useState<string | null>(null);
+  const [errorPdf, setErrorPdf] = useState<string | null>(null);
 
   const cargar = useCallback(async (silencioso = false) => {
     if (!silencioso) setCargando(true);
@@ -105,20 +112,46 @@ export const usePagoFinalViewModel = (pedidoId: number) => {
     }
   };
 
+  // Paso 1: validar y abrir el modal de confirmación (con el diseño de la app)
   const enviar = () => {
     if (!pantalla || enviando) return;
     if (!esTienda && !archivo) return setErrorEnvio('Selecciona tu comprobante de pago.');
-    Alert.alert(
-      esTienda ? 'Confirmar pago en tienda' : 'Enviar comprobante',
-      esTienda
-        ? `¿Confirmas que pagarás ${money(pantalla.montoPendiente)} en tienda?`
-        : `Se enviará tu comprobante por ${money(pantalla.montoPendiente)} para verificación.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Confirmar', onPress: registrar },
-      ]
-    );
+    setErrorEnvio(null);
+    setConfirmarVisible(true);
   };
+
+  // Paso 2: el cliente confirma en el modal
+  const confirmarEnvio = async () => {
+    await registrar();
+    setConfirmarVisible(false);
+  };
+
+  // Recibo del pago final en PDF (mismo servicio que la ficha del anticipo)
+  const descargarRecibo = async () => {
+    if (!pantalla || generandoPdf) return;
+    setGenerandoPdf(true);
+    setErrorPdf(null);
+    setInfoPdf(null);
+    const html = htmlReciboPagoFinal(pantalla, user?.nombre ?? 'Cliente');
+    try {
+      const r = await pdfService.descargar(html, nombreReciboPdf(pantalla.pedido.id));
+      if (r.estado === 'guardado') setInfoPdf(`Recibo guardado en la carpeta "${r.carpeta}"`);
+    } catch {
+      // Si Android no deja guardar directo, se abre el diálogo para "Guardar como PDF"
+      try {
+        await pdfService.imprimir(html);
+      } catch (e: any) {
+        setErrorPdf(e?.message ?? 'No se pudo generar el recibo.');
+      }
+    } finally {
+      setGenerandoPdf(false);
+    }
+  };
+
+  const comprobanteUrl =
+    pantalla?.pagoFinal?.comprobante_url && pantalla.pagoFinal.comprobante_url !== 'TIENDA_FISICA'
+      ? pantalla.pagoFinal.comprobante_url
+      : null;
 
   return {
     pantalla, cargando, error, reintentar: () => cargar(),
@@ -126,6 +159,12 @@ export const usePagoFinalViewModel = (pedidoId: number) => {
     cliente: user?.nombre ?? 'Cliente',
     archivo, quitarArchivo: () => setArchivo(null), desdeGaleria, desdeArchivo,
     nota, setNota, enviando, errorEnvio, enviar,
+    // Modal de confirmación
+    confirmarVisible, confirmarEnvio, cancelarConfirmacion: () => setConfirmarVisible(false),
+    // Después de enviar
+    comprobanteUrl,
+    verComprobante: () => comprobanteUrl && Linking.openURL(comprobanteUrl),
+    generandoPdf, infoPdf, errorPdf, descargarRecibo,
     // Regresa a la pantalla anterior (el detalle del pedido); si no hay historial, va al detalle
     volver: () => (router.canGoBack() ? router.back() : router.replace(`/(cliente)/pedido/${pedidoId}` as any)),
     irAlPedido: () => router.replace(`/(cliente)/pedido/${pedidoId}` as any),

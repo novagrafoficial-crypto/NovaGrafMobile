@@ -1,8 +1,8 @@
 import React from 'react';
-import { AccionesFicha } from '../components/AccionesFicha';
 import { View, Text, ScrollView, Linking, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { usePagoPedidoViewModel } from '../viewmodels/usePagoPedidoViewModel';
+import { AccionesFicha } from '../components/AccionesFicha';
 import { DatosBancariosCard } from '../components/DatosBancariosCard';
 import { TicketTienda } from '../components/TicketTienda';
 import { ComprobantePicker } from '../components/ComprobantePicker';
@@ -12,7 +12,12 @@ import { Loading } from '@/shared/components/Loading';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { CustomInput } from '@/shared/components/CustomInput';
 import { FadeInView } from '@/shared/components/FadeInView';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
+
+// Texto del estado del pago en español
+const textoEstado = (estado: string) =>
+  estado === 'APROBADO' ? 'Aprobado' : estado === 'RECHAZADO' ? 'Rechazado' : 'En verificación';
 
 export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
   const vm = usePagoPedidoViewModel(pedidoId);
@@ -22,73 +27,97 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
     if (vm.error || !vm.pantalla) {
       return (
         <View style={styles.centrado}>
-          <Text style={styles.error}>{vm.error ?? 'Pedido no encontrado'}</Text>
-          <CustomButton title="Reintentar" onPress={vm.reintentar} style={styles.botonAncho} />
+          <Ionicons name="cloud-offline-outline" size={40} color={textColors.muted} />
+          <Text style={styles.texto}>{vm.error ?? 'Pedido no encontrado'}</Text>
+          <CustomButton title="Reintentar" variant="outline" onPress={vm.reintentar} style={styles.botonAncho} />
         </View>
       );
     }
 
     const { pedido, metodo } = vm.pantalla;
 
-    // 1) Ya registró su anticipo
+    // ── 1) Ya registró su anticipo: solo confirmación ──────────
     if (vm.pagoExistente) {
       const p = vm.pagoExistente;
       const enTienda = p.comprobante_url === 'TIENDA_FISICA';
       return (
         <ScrollView contentContainerStyle={styles.scroll}>
           <FadeInView style={styles.exito}>
-            <View style={styles.check}><Ionicons name="checkmark" size={34} color={brandColors.white} /></View>
-            <Text style={styles.exitoTitulo}>{enTienda ? '¡Pago en tienda registrado!' : '¡Comprobante enviado!'}</Text>
-            <Text style={styles.exitoSub}>
-              {enTienda ? 'El administrador confirmará tu pago en breve.' : 'El administrador está verificando tu comprobante.'}
-            </Text>
-            <Text style={styles.folio}>{folioDe(pedido.id)}</Text>
-            <Text style={styles.linea}>Anticipo: <Text style={styles.negrita}>{money(p.monto)}</Text></Text>
-            <View style={styles.estadoFila}>
-              <Ionicons name="time-outline" size={16} color={brandTints.textMuted} />
-              <Text style={styles.linea}>Estado: <Text style={styles.negrita}>{p.estado_pago}</Text></Text>
+            <View style={styles.check}>
+              <Ionicons name={enTienda ? 'storefront-outline' : 'checkmark'} size={34} color="#FFFFFF" />
             </View>
-            {!enTienda && p.comprobante_url && (
-              <Text style={styles.link} onPress={() => Linking.openURL(p.comprobante_url!)}>Ver comprobante</Text>
+            <Text style={styles.exitoTitulo}>{enTienda ? 'Pago en tienda registrado' : 'Comprobante enviado'}</Text>
+            <Text style={styles.exitoSub}>
+              {enTienda ? 'Paga en tienda mostrando tu ticket.' : 'Estamos verificando tu pago.'}
+            </Text>
+
+            {/* Detalle del pago */}
+            <View style={styles.detalle}>
+              <View style={styles.detalleFila}>
+                <Text style={styles.detalleLabel}>Pedido</Text>
+                <Text style={styles.detalleValor}>{folioDe(pedido.id)}</Text>
+              </View>
+              <View style={styles.detalleFila}>
+                <Text style={styles.detalleLabel}>Anticipo</Text>
+                <Text style={styles.detalleValor}>{money(p.monto)}</Text>
+              </View>
+              <View style={styles.detalleFila}>
+                <Text style={styles.detalleLabel}>Estado</Text>
+                <View style={styles.fila}>
+                  <Ionicons name="time-outline" size={16} color={textColors.primary} />
+                  <Text style={styles.detalleValor}>{textoEstado(p.estado_pago)}</Text>
+                </View>
+              </View>
+            </View>
+
+            {!enTienda && !!p.comprobante_url && (
+              <CustomButton
+                title="Ver comprobante"
+                variant="outline"
+                icon={<Ionicons name="document-text-outline" size={20} color={textColors.primary} />}
+                onPress={() => Linking.openURL(p.comprobante_url!)}
+                style={styles.botonCompleto}
+              />
             )}
-            {p.notas_admin && (
-              <View style={styles.estadoFila}>
-                <Ionicons name="information-circle-outline" size={16} color={brandColors.primaryDark} />
-                <Text style={styles.nota}>Nota del administrador: {p.notas_admin}</Text>
+
+            {!!p.notas_admin && (
+              <View style={styles.notaBox}>
+                <Ionicons name="information-circle-outline" size={18} color={textColors.secondary} />
+                <Text style={styles.notaTexto}>{p.notas_admin}</Text>
               </View>
             )}
           </FadeInView>
-          {metodo && (
-              vm.esTienda ? (
-                <TicketTienda pedido={pedido} cliente={vm.cliente} metodoNombre={metodo.nombre} datos={metodo.datos} />
-              ) : (
-                <DatosBancariosCard datos={metodo.datos} monto={pedido.monto_anticipo} pedidoId={pedido.id} />
-              )
-            )}
-            <AccionesFicha
-              generando={vm.generandoPdf}
-              error={vm.errorPdf}
-              info={vm.infoPdf}
-              onPdf={vm.descargarPdf}
-            />
 
-          <CustomButton title="Ir a mis pedidos" onPress={vm.irAPedidos} style={{ marginTop: 14 }} />
+          {/* Solo en tienda: todavía necesita el ticket para pagar en caja */}
+          {enTienda && metodo && (
+            <>
+              <TicketTienda pedido={pedido} cliente={vm.cliente} metodoNombre={metodo.nombre} datos={metodo.datos} />
+              <AccionesFicha generando={vm.generandoPdf} error={vm.errorPdf} info={vm.infoPdf} onPdf={vm.descargarPdf} />
+            </>
+          )}
+
+          <CustomButton
+            title="Ir a mis pedidos"
+            icon={<Ionicons name="receipt-outline" size={20} color="#FFFFFF" />}
+            onPress={vm.irAPedidos}
+          />
         </ScrollView>
       );
     }
 
-    // 2) El pedido ya avanzó de estado
+    // ── 2) El pedido ya avanzó de estado ───────────────────────
     if (!vm.puedePagar) {
       return (
         <View style={styles.centrado}>
+          <Ionicons name="checkmark-done-outline" size={40} color={textColors.muted} />
           <Text style={styles.exitoTitulo}>Pedido en proceso</Text>
-          <Text style={styles.exitoSub}>Estado actual: {pedido.estado}</Text>
+          <Text style={styles.texto}>Este pedido ya no requiere el pago del anticipo.</Text>
           <CustomButton title="Ir a mis pedidos" onPress={vm.irAPedidos} style={styles.botonAncho} />
         </View>
       );
     }
 
-    // 3) Flujo normal: datos según método + comprobante
+    // ── 3) Flujo normal: datos de pago + comprobante ───────────
     return (
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <FadeInView>
@@ -96,12 +125,11 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
         </FadeInView>
 
         {metodo && (
-          <View style={styles.estadoFila}>
-            <Ionicons name={vm.esTienda ? 'storefront-outline' : 'business-outline'} size={20} color={brandColors.primary} />
+          <View style={styles.fila}>
+            <Ionicons name={vm.esTienda ? 'storefront-outline' : 'business-outline'} size={20} color={textColors.primary} />
             <Text style={styles.metodo}>{metodo.nombre}</Text>
           </View>
         )}
-        {metodo?.instrucciones && !vm.esTienda && <Text style={styles.instrucciones}>{metodo.instrucciones}</Text>}
 
         {vm.esTienda ? (
           <TicketTienda pedido={pedido} cliente={vm.cliente} metodoNombre={metodo?.nombre ?? 'Tienda'} datos={metodo?.datos ?? []} />
@@ -109,12 +137,7 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
           <DatosBancariosCard datos={metodo?.datos ?? []} monto={pedido.monto_anticipo} pedidoId={pedido.id} />
         )}
 
-        <AccionesFicha
-          generando={vm.generandoPdf}
-          error={vm.errorPdf}
-          info={vm.infoPdf}
-          onPdf={vm.descargarPdf}
-        />
+        <AccionesFicha generando={vm.generandoPdf} error={vm.errorPdf} info={vm.infoPdf} onPdf={vm.descargarPdf} />
 
         {!vm.esTienda && (
           <ComprobantePicker
@@ -125,19 +148,22 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
           />
         )}
 
-        <View>
-          <CustomInput
-            label="Nota adicional (opcional)"
-            value={vm.nota}
-            onChangeText={vm.setNota}
-            placeholder={vm.esTienda ? 'Ej: Paso a la tienda el lunes' : 'Ej: Le envío el comprobante de mi anticipo'}
-            multiline
-            numberOfLines={2}
-            textAlignVertical="top"
-          />
-        </View>
+        <CustomInput
+          label="Nota adicional (opcional)"
+          value={vm.nota}
+          onChangeText={vm.setNota}
+          placeholder={vm.esTienda ? 'Paso a la tienda el lunes' : 'Le envío el comprobante de mi anticipo'}
+          multiline
+          numberOfLines={2}
+          textAlignVertical="top"
+        />
 
-        {vm.errorEnvio && <View style={styles.errorBox}><Text style={styles.errorBoxTxt}>{vm.errorEnvio}</Text></View>}
+        {!!vm.errorEnvio && (
+          <View style={styles.errorBox}>
+            <Ionicons name="alert-circle-outline" size={18} color={brandColors.error} />
+            <Text style={styles.errorTexto}>{vm.errorEnvio}</Text>
+          </View>
+        )}
       </ScrollView>
     );
   };
@@ -153,11 +179,11 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
         <View style={styles.barra}>
           <CustomButton
             title={vm.enviando ? 'Procesando...' : vm.esTienda ? 'Confirmar pago en tienda' : 'Subir comprobante'}
-            icon={<Ionicons name={vm.esTienda ? 'storefront-outline' : 'cloud-upload-outline'} size={20} color={brandColors.white} />}
+            icon={<Ionicons name={vm.esTienda ? 'storefront-outline' : 'cloud-upload-outline'} size={20} color="#FFFFFF" />}
             onPress={vm.enviar}
             disabled={vm.enviando || (!vm.esTienda && !vm.archivo)}
           />
-          <CustomButton title="Lo haré después" variant="outline" onPress={vm.irAPedidos} />
+          <CustomButton title="Más tarde" variant="outline" onPress={vm.irAPedidos} />
         </View>
       )}
     </KeyboardAvoidingView>
@@ -165,26 +191,77 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
 };
 
 const styles = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: brandColors.background },
-  scroll: { padding: 16, paddingBottom: 28, gap: 14 },
-  centrado: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 6 },
-  error: { color: brandColors.error, textAlign: 'center', fontWeight: '500' },
-  botonAncho: { paddingHorizontal: 28, marginTop: 12 },
-  titulo: { fontSize: 20, fontWeight: '800', color: brandColors.primaryDark },
-  sub: { fontSize: 13, color: brandTints.textMuted, marginTop: 2 },
-  metodo: { fontSize: 15, fontWeight: '800', color: brandColors.primary },
-  instrucciones: { fontSize: 13, color: brandColors.primaryDark, backgroundColor: brandTints.accentSoft, padding: 12, borderRadius: 12 },
-  exito: { backgroundColor: brandColors.white, borderRadius: 20, padding: 22, alignItems: 'center', gap: 4 },
-  check: { width: 64, height: 64, borderRadius: 32, backgroundColor: brandColors.accent, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  estadoFila: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  exitoTitulo: { fontSize: 20, fontWeight: '800', color: brandColors.primaryDark, textAlign: 'center' },
-  exitoSub: { fontSize: 13, color: brandTints.textMuted, textAlign: 'center' },
-  folio: { fontSize: 18, fontWeight: '800', color: brandColors.primary, marginTop: 8 },
-  linea: { fontSize: 13, color: brandTints.textMuted },
-  negrita: { fontWeight: '800', color: brandColors.primaryDark },
-  link: { marginTop: 6, color: brandColors.primary, fontWeight: '700', textDecorationLine: 'underline' },
-  nota: { marginTop: 8, fontSize: 12, color: brandColors.primaryDark, textAlign: 'center' },
-  errorBox: { backgroundColor: brandTints.errorSoft, borderRadius: 12, padding: 12 },
-  errorBoxTxt: { color: brandColors.error, fontWeight: '600', textAlign: 'center' },
-  barra: { backgroundColor: brandColors.white, padding: 14, gap: 8, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+  pantalla: { flex: 1, backgroundColor: surface.screen },
+  scroll: { padding: space.lg, paddingBottom: space.xl, gap: space.md },
+  centrado: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, gap: space.sm },
+  texto: { fontFamily: fontFamily.regular, fontSize: 15, color: textColors.secondary, textAlign: 'center' },
+  botonAncho: { paddingHorizontal: 28, marginTop: space.sm },
+  fila: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+
+  // Flujo normal
+  titulo: { fontFamily: fontFamily.bold, fontSize: 20, color: textColors.primary },
+  metodo: { fontFamily: fontFamily.semibold, fontSize: 16, color: textColors.primary },
+
+  // Confirmación
+  exito: {
+    backgroundColor: surface.card,
+    borderRadius: radius.lg,
+    padding: 20,
+    alignItems: 'center',
+    gap: space.sm,
+    borderWidth: 1,
+    borderColor: surface.border,
+  },
+  check: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: brandColors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  exitoTitulo: { fontFamily: fontFamily.bold, fontSize: 20, color: textColors.primary, textAlign: 'center' },
+  exitoSub: { fontFamily: fontFamily.regular, fontSize: 14, color: textColors.secondary, textAlign: 'center' },
+  detalle: {
+    alignSelf: 'stretch',
+    backgroundColor: surface.muted,
+    borderRadius: radius.md,
+    padding: 14,
+    gap: 10,
+    marginTop: space.sm,
+  },
+  detalleFila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  detalleLabel: { fontFamily: fontFamily.regular, fontSize: 14, color: textColors.secondary },
+  detalleValor: { fontFamily: fontFamily.semibold, fontSize: 15, color: textColors.primary },
+  botonCompleto: { alignSelf: 'stretch' },
+  notaBox: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    gap: space.sm,
+    backgroundColor: surface.muted,
+    borderRadius: radius.md,
+    padding: space.md,
+  },
+  notaTexto: { flex: 1, fontFamily: fontFamily.regular, fontSize: 14, color: textColors.primary },
+
+  // Error
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    backgroundColor: '#FEF2F2',
+    borderRadius: radius.md,
+    padding: space.md,
+  },
+  errorTexto: { flex: 1, fontFamily: fontFamily.medium, fontSize: 14, color: brandColors.error },
+
+  // Barra inferior
+  barra: {
+    backgroundColor: surface.card,
+    padding: 14,
+    gap: space.sm,
+    borderTopWidth: 1,
+    borderTopColor: surface.border,
+  },
 });
