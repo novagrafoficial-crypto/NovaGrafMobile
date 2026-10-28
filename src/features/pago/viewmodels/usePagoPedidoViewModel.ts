@@ -47,7 +47,13 @@ export const usePagoPedidoViewModel = (pedidoId: number) => {
 
   const modo = modoDePago(pantalla?.metodo ?? null);
   const esTienda = modo === 'TIENDA';
-  const pagoExistente = pantalla?.pedido.pagos.find((p) => p.tipo_pago === 'ANTICIPO') ?? null;
+  // El anticipo más reciente (id más alto)
+  const ultimoAnticipo =
+    [...(pantalla?.pedido.pagos ?? [])].sort((a, b) => b.id - a.id).find((p) => p.tipo_pago === 'ANTICIPO') ?? null;
+  // Si el admin lo rechazó, el cliente puede volver a subirlo
+  const rechazoAnterior = ultimoAnticipo?.estado_pago === 'RECHAZADO' ? ultimoAnticipo : null;
+  // Pago en verificación o aprobado → solo se muestra la confirmación
+  const pagoExistente = rechazoAnterior ? null : ultimoAnticipo;
   const puedePagar = pantalla?.pedido.estado === 'PENDIENTE_VERIFICACION' && !pagoExistente;
 
   const aceptar = (a: ArchivoComprobante) => {
@@ -120,7 +126,7 @@ export const usePagoPedidoViewModel = (pedidoId: number) => {
     try {
       const r = await pdfService.descargar(html, nombreArchivoPdf(pantalla.pedido.id));
       if (r.estado === 'guardado') {
-        setInfoPdf(`✅ Ficha guardada en la carpeta "${r.carpeta}"`);
+        setInfoPdf(`Ficha guardada en la carpeta "${r.carpeta}"`);
       }
     } catch (e) {
       // Plan B: si no se pudo guardar directo, abrimos el diálogo de impresión (Guardar como PDF)
@@ -138,11 +144,12 @@ export const usePagoPedidoViewModel = (pedidoId: number) => {
 
   return {
     pantalla, cargando, error, reintentar: () => cargar(),
-    modo, esTienda, pagoExistente, puedePagar,
+    modo, esTienda, pagoExistente, puedePagar, rechazoAnterior,
     cliente: user?.nombre ?? 'Cliente',
     archivo, quitarArchivo: () => setArchivo(null), desdeGaleria, desdeArchivo,
     nota, setNota, enviando, errorEnvio, enviar, compartir,
     generandoPdf, errorPdf, infoPdf, descargarPdf,
     irAPedidos: () => router.replace('/(cliente)/pedidos' as any),
+     volver: () => (router.canGoBack() ? router.back() : router.replace('/(cliente)/pedidos' as any)),
   };
 };

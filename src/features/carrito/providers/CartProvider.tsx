@@ -6,6 +6,8 @@ import type { CartItem } from '../models/CartItem';
 interface CartContextValue {
   items: CartItem[];
   total: number;
+  /** Lo que se ahorra con ofertas (ya está descontado del total) */
+  ahorro: number;
   /** Total de piezas (suma de cantidades): es el número de la pestaña. */
   count: number;
   loading: boolean;
@@ -92,6 +94,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     () => ({
       items,
       total,
+      ahorro: items.reduce((suma, i) => suma + i.ahorro, 0),
       count: items.reduce((suma, i) => suma + i.cantidad, 0),
       loading,
       error,

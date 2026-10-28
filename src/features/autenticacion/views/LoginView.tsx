@@ -1,149 +1,82 @@
 import React from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLoginViewModel } from '../viewmodels/useLoginViewModel';
+import { AuthScreen, EnlaceAuth } from '../components/AuthScreen';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { CustomInput } from '@/shared/components/CustomInput';
-import { Loading } from '@/shared/components/Loading';
-import { FadeInView } from '@/shared/components/FadeInView';
 import { PressableScale } from '@/shared/components/PressableScale';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, space, surface, textColors } from '@/constants/theme';
 
 export const LoginView = () => {
-  const router = useRouter();
   const vm = useLoginViewModel();
-  const insets = useSafeAreaInsets();
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: brandColors.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <AuthScreen
+      title="¡Hola de nuevo!"
+      subtitle="Inicia sesión para ver precios, personalizar y seguir tus pedidos."
+      icono="person-outline"
+      onBack={vm.volver}
+      error={vm.error}
+      pie={<EnlaceAuth texto="¿No tienes cuenta?" accion="Regístrate" onPress={vm.irARegistro} />}
     >
-      {/* HEADER oscuro con flecha atrás */}
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <PressableScale onPress={() => router.back()} style={styles.backButton} hitSlop={12} scaleTo={0.85}>
-          <Text style={styles.backIcon}>←</Text>
-        </PressableScale>
-        <Text style={styles.headerTitle}>Iniciar sesión</Text>
-        <View style={{ width: 24 }} />
+      <CustomInput
+        label="Correo electrónico"
+        icono="mail-outline"
+        placeholder="nombre@correo.com"
+        autoCapitalize="none"
+        autoComplete="email"
+        keyboardType="email-address"
+        textContentType="emailAddress"
+        returnKeyType="next"
+        value={vm.email}
+        onChangeText={vm.setEmail}
+        onBlur={vm.revisarEmail}
+        error={vm.errorEmail}
+      />
+
+      <CustomInput
+        label="Contraseña"
+        icono="lock-closed-outline"
+        placeholder="Tu contraseña"
+        isPassword
+        autoComplete="password"
+        textContentType="password"
+        returnKeyType="done"
+        onSubmitEditing={vm.handleCredentialsLogin}
+        value={vm.password}
+        onChangeText={vm.setPassword}
+        error={vm.errorPassword}
+      />
+
+      <PressableScale style={styles.olvide} onPress={vm.irARecuperar} hitSlop={8} scaleTo={0.95}>
+        <Text style={styles.olvideTexto} maxFontSizeMultiplier={1.15}>¿Olvidaste tu contraseña?</Text>
+      </PressableScale>
+
+      <CustomButton title="Iniciar sesión" onPress={vm.handleCredentialsLogin} loading={vm.isLoading} />
+
+      <View style={styles.separador}>
+        <View style={styles.linea} />
+        <Text style={styles.o} maxFontSizeMultiplier={1.15}>o continúa con</Text>
+        <View style={styles.linea} />
       </View>
 
-      {/* CONTENIDO */}
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <FadeInView style={styles.card}>
-          <Text style={styles.title}>Bienvenido</Text>
-
-          {vm.error && <Text style={styles.error}>{vm.error}</Text>}
-
-          <CustomInput
-            label="Correo electrónico"
-            placeholder="tu@correo.com"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={vm.email}
-            onChangeText={vm.setEmail}
-          />
-
-          <CustomInput
-            label="Contraseña"
-            placeholder="••••••••"
-            isPassword
-            value={vm.password}
-            onChangeText={vm.setPassword}
-          />
-
-          <PressableScale
-            style={styles.forgotBtn}
-            scaleTo={0.95}
-            onPress={() => router.push('/(auth)/forgot-password' as any)}
-          >
-            <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
-          </PressableScale>
-
-          {vm.isLoading ? (
-            <Loading />
-          ) : (
-            <>
-              <CustomButton
-                title="Iniciar sesión"
-                onPress={vm.handleCredentialsLogin}
-                style={styles.primaryBtn}
-              />
-
-              <View style={styles.divider}>
-                <View style={styles.line} />
-                <Text style={styles.or}>o continúa con</Text>
-                <View style={styles.line} />
-              </View>
-
-              <CustomButton
-                title="Google"
-                variant="outline"
-                icon={<Text style={styles.googleIcon}>G</Text>}
-                onPress={vm.handleGoogleLogin}
-                disabled={vm.isGoogleDisabled}
-              />
-            </>
-          )}
-
-          <PressableScale
-            onPress={() => router.push('/(auth)/register' as any)}
-            style={{ marginTop: 20 }}
-            scaleTo={0.97}
-          >
-            <Text style={styles.registerText}>¿No tienes una cuenta? Regístrate</Text>
-          </PressableScale>
-        </FadeInView>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <CustomButton
+        title="Continuar con Google"
+        variant="outline"
+        icon={<Ionicons name="logo-google" size={19} color="#EA4335" />}
+        onPress={vm.handleGoogleLogin}
+        disabled={vm.isGoogleDisabled || vm.isLoading}
+      />
+    </AuthScreen>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: brandColors.primaryDark,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  backButton: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
-  backIcon: { color: brandColors.white, fontSize: 26, fontWeight: '600', lineHeight: 26 },
-  headerTitle: { color: brandColors.white, fontSize: 17, fontWeight: '600' },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 20 },
-  card: {
-    backgroundColor: brandColors.white,
-    borderRadius: 20,
-    padding: 24,
-    shadowColor: brandColors.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: brandColors.primary,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  error: { color: brandColors.error, textAlign: 'center', marginBottom: 16, fontWeight: '500' },
-  forgotBtn: { alignSelf: 'flex-end', marginBottom: 20 },
-  forgotText: { color: brandColors.primary, fontSize: 13 },
-  primaryBtn: { marginBottom: 16, borderRadius: 10 },
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 12 },
-  line: { flex: 1, height: 1, backgroundColor: brandTints.border },
-  or: { marginHorizontal: 12, color: brandTints.textMuted, fontSize: 12 },
-  googleIcon: { fontSize: 18, fontWeight: '700', color: '#EA4335' },
-  registerText: { color: brandColors.primary, textAlign: 'center', fontSize: 14 },
+  olvide: { alignSelf: 'flex-end', marginTop: -4, marginBottom: space.lg },
+  olvideTexto: { fontFamily: fontFamily.semibold, fontSize: 13, color: brandColors.primary },
+  separador: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginVertical: space.lg },
+  linea: { flex: 1, height: 1, backgroundColor: surface.border },
+  o: { fontFamily: fontFamily.regular, fontSize: 13, color: textColors.muted },
 });

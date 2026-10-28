@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { brandColors } from '@/constants/brand';
 
@@ -13,7 +14,8 @@ interface Props {
 export const AccionesFicha = ({ generando, error, info, onPdf }: Props) => (
   <View style={styles.caja}>
     <CustomButton
-      title={generando ? 'Generando PDF...' : '📥 Descargar ficha (PDF)'}
+      title={generando ? 'Generando PDF...' : 'Descargar ficha (PDF)'}
+      icon={<Ionicons name="download-outline" size={20} color={brandColors.white} />}
       onPress={onPdf}
       disabled={generando}
     />

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { ActivityIndicator, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { PressableScale } from './PressableScale';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, radius, surface, textColors } from '@/constants/theme';
 
 type Variant = 'primary' | 'accent' | 'danger' | 'outline';
 
@@ -11,6 +12,8 @@ interface CustomButtonProps {
   variant?: Variant;
   icon?: React.ReactNode;
   disabled?: boolean;
+  /** Muestra una ruedita en lugar del texto y bloquea el botón */
+  loading?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -20,24 +23,32 @@ export const CustomButton = ({
   variant = 'primary',
   icon,
   disabled,
+  loading,
   style,
 }: CustomButtonProps) => (
   <PressableScale
-    style={[styles.base, styles[variant], disabled && styles.disabled, style]}
+    style={[styles.base, styles[variant], (disabled || loading) && styles.disabled, style]}
     onPress={onPress}
-    disabled={disabled}
+    disabled={disabled || loading}
     accessibilityRole="button"
     accessibilityLabel={title}
   >
-    {icon}
-    <Text style={variant === 'outline' ? styles.textOutline : styles.text}>{title}</Text>
+    {loading ? (
+      <ActivityIndicator color={variant === 'outline' ? brandColors.primary : '#FFFFFF'} />
+    ) : (
+      <>
+        {icon}
+        <Text style={variant === 'outline' ? styles.textOutline : styles.text} maxFontSizeMultiplier={1.15}>{title}</Text>
+      </>
+    )}
   </PressableScale>
 );
 
 const styles = StyleSheet.create({
   base: {
-    padding: 16,
-    borderRadius: 12,
+    minHeight: 50,
+    paddingHorizontal: 18,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -46,14 +57,8 @@ const styles = StyleSheet.create({
   primary: { backgroundColor: brandColors.primary },
   accent: { backgroundColor: brandColors.accent },
   danger: { backgroundColor: brandColors.error },
-  outline: {
-    backgroundColor: brandColors.white,
-    padding: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: brandTints.border,
-  },
-  disabled: { opacity: 0.5 },
-  text: { color: brandColors.white, fontWeight: '700', fontSize: 16 },
-  textOutline: { color: brandColors.primaryDark, fontWeight: '600', fontSize: 15 },
+  outline: { backgroundColor: surface.card, borderWidth: 1, borderColor: surface.border },
+  disabled: { opacity: 0.55 },
+  text: { fontFamily: fontFamily.semibold, color: '#FFFFFF', fontSize: 16 },
+  textOutline: { fontFamily: fontFamily.semibold, color: textColors.primary, fontSize: 15 },
 });

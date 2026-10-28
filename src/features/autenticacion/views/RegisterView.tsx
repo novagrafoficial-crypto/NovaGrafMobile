@@ -1,162 +1,181 @@
 import React from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRegisterViewModel } from '../viewmodels/useRegisterViewModel';
+import { AuthScreen, EnlaceAuth } from '../components/AuthScreen';
 import type { RegistroForm } from '../models/Registro';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { CustomInput } from '@/shared/components/CustomInput';
-import { Loading } from '@/shared/components/Loading';
 import { FadeInView } from '@/shared/components/FadeInView';
-import { PressableScale } from '@/shared/components/PressableScale';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
+
+const PASOS = ['Tus datos', 'Tu cuenta'];
 
 export const RegisterView = () => {
-  const router = useRouter();
   const vm = useRegisterViewModel();
-  const insets = useSafeAreaInsets();
 
-  // Un campo = input + su mensaje de error debajo
-  const field = (name: keyof RegistroForm, label: string, props: any = {}) => (
-    <View key={name}>
-      <CustomInput
-        label={label}
-        value={vm.form[name]}
-        onChangeText={(v: string) => vm.setField(name, v)}
-        {...props}
-      />
-      {!!vm.errors[name] && <Text style={styles.fieldError}>{vm.errors[name]}</Text>}
-    </View>
-  );
+  // Props comunes de cada campo: valor, cambio, salida del campo y error
+  const campo = (nombre: keyof RegistroForm) => ({
+    value: vm.form[nombre],
+    onChangeText: (v: string) => vm.setField(nombre, v),
+    onBlur: () => vm.tocar(nombre),
+    error: vm.errores[nombre] || null,
+  });
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: brandColors.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <AuthScreen
+      title="Crea tu cuenta"
+      subtitle={vm.paso === 1 ? 'Primero, cuéntanos quién eres.' : 'Ahora crea tu usuario y contraseña.'}
+      icono="person-add-outline"
+      etiqueta={`PASO ${vm.paso} DE 2`}
+      onBack={vm.volver}
+      error={vm.error}
+      pie={<EnlaceAuth texto="¿Ya tienes cuenta?" accion="Inicia sesión" onPress={vm.irALogin} />}
     >
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <PressableScale
-          onPress={() => (vm.step === 2 ? vm.handleBack() : router.back())}
-          style={styles.backButton}
-          hitSlop={12}
-          scaleTo={0.85}
-        >
-          <Text style={styles.backIcon}>←</Text>
-        </PressableScale>
-        <Text style={styles.headerTitle}>Crear cuenta</Text>
-        <View style={{ width: 24 }} />
+      {/* Indicador de pasos */}
+      <View style={styles.pasos}>
+        {PASOS.map((p, i) => {
+          const n = i + 1;
+          const hecho = vm.paso > n;
+          const actual = vm.paso === n;
+          return (
+            <View key={p} style={styles.paso}>
+              <View style={[styles.pasoBarra, (hecho || actual) && styles.pasoBarraActiva]} />
+              <View style={styles.pasoFila}>
+                <Ionicons
+                  name={hecho ? 'checkmark-circle' : actual ? 'ellipse' : 'ellipse-outline'}
+                  size={14}
+                  color={hecho || actual ? brandColors.primary : textColors.muted}
+                />
+                <Text style={[styles.pasoTexto, (hecho || actual) && styles.pasoTextoActivo]} maxFontSizeMultiplier={1.15}>{p}</Text>
+              </View>
+            </View>
+          );
+        })}
       </View>
 
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <FadeInView style={styles.card}>
-          <Text style={styles.title}>Regístrate</Text>
-          <Text style={styles.step}>Paso {vm.step} de 2</Text>
-
-          {vm.error && <Text style={styles.error}>{vm.error}</Text>}
-
-          {vm.step === 1 ? (
-            <>
-              {field('name', 'Nombre(s)', { placeholder: 'Tu nombre' })}
-              {field('lastNameP', 'Apellido paterno', { placeholder: 'Apellido paterno' })}
-              {field('lastNameM', 'Apellido materno', { placeholder: 'Apellido materno' })}
-              {field('username', 'Nombre de usuario', {
-                placeholder: 'usuario_123',
-                autoCapitalize: 'none',
-              })}
-              {field('birthDate', 'Fecha de nacimiento', {
-                placeholder: 'AAAA-MM-DD',
-                keyboardType: 'number-pad',
-                maxLength: 10,
-              })}
-              <CustomButton title="Continuar" onPress={vm.handleNext} style={styles.primaryBtn} />
-            </>
-          ) : (
-            <>
-              {field('address', 'Domicilio', { placeholder: 'Calle, número, colonia' })}
-              {field('phone', 'Teléfono', {
-                placeholder: '7711234567',
-                keyboardType: 'phone-pad',
-                maxLength: 15,
-              })}
-              {field('email', 'Correo electrónico', {
-                placeholder: 'tu@correo.com',
-                autoCapitalize: 'none',
-                keyboardType: 'email-address',
-              })}
-              {field('password', 'Contraseña', { placeholder: '••••••••', isPassword: true })}
-              {field('confirmPassword', 'Confirmar contraseña', {
-                placeholder: '••••••••',
-                isPassword: true,
-              })}
-
-              {vm.isLoading ? (
-                <Loading />
-              ) : (
-                <>
-                  <CustomButton
-                    title="Crear cuenta"
-                    onPress={vm.handleSubmit}
-                    style={styles.primaryBtn}
-                  />
-                  <CustomButton title="Atrás" variant="outline" onPress={vm.handleBack} />
-                </>
-              )}
-            </>
-          )}
-
-          <PressableScale
-            onPress={() => router.replace('/(auth)/login' as any)}
-            style={{ marginTop: 20 }}
-            scaleTo={0.97}
-          >
-            <Text style={styles.loginText}>¿Ya tienes cuenta? Inicia sesión</Text>
-          </PressableScale>
+      {vm.paso === 1 ? (
+        <FadeInView key="paso1">
+          <CustomInput label="Nombre(s)" icono="person-outline" placeholder="Ej. María Fernanda" autoCapitalize="words" textContentType="givenName" {...campo('name')} />
+          <View style={styles.dos}>
+            <View style={{ flex: 1 }}>
+              <CustomInput label="Apellido paterno" placeholder="Ej. López" autoCapitalize="words" textContentType="familyName" {...campo('lastNameP')} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <CustomInput label="Apellido materno" opcional placeholder="Ej. Ruiz" autoCapitalize="words" {...campo('lastNameM')} />
+            </View>
+          </View>
+          <CustomInput
+            label="Fecha de nacimiento"
+            icono="calendar-outline"
+            placeholder="DD/MM/AAAA"
+            keyboardType="number-pad"
+            maxLength={10}
+            {...campo('birthDate')}
+          />
+          <CustomInput
+            label="Teléfono"
+            icono="call-outline"
+            placeholder="10 dígitos"
+            keyboardType="number-pad"
+            textContentType="telephoneNumber"
+            maxLength={10}
+            ayuda={vm.form.phone ? `${vm.form.phone.length}/10 dígitos` : 'Solo números, sin espacios'}
+            {...campo('phone')}
+          />
+          <CustomInput
+            label="Domicilio"
+            icono="location-outline"
+            placeholder="Calle, número y colonia"
+            textContentType="fullStreetAddress"
+            {...campo('address')}
+          />
+          <CustomButton
+            title="Continuar"
+            icon={<Ionicons name="arrow-forward" size={18} color="#FFFFFF" />}
+            onPress={vm.siguiente}
+          />
         </FadeInView>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      ) : (
+        <FadeInView key="paso2">
+          <CustomInput
+            label="Nombre de usuario"
+            icono="at-outline"
+            placeholder="Ej. maria_lopez"
+            autoCapitalize="none"
+            autoCorrect={false}
+            ayuda="Letras, números, punto o guion bajo"
+            {...campo('username')}
+          />
+          <CustomInput
+            label="Correo electrónico"
+            icono="mail-outline"
+            placeholder="nombre@correo.com"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            {...campo('email')}
+          />
+          <CustomInput
+            label="Contraseña"
+            icono="lock-closed-outline"
+            placeholder="Crea una contraseña"
+            isPassword
+            textContentType="newPassword"
+            {...campo('password')}
+          />
+
+          {/* Reglas de la contraseña con palomita */}
+          <View style={styles.reglas}>
+            {vm.reglas.map((r) => (
+              <View key={r.texto} style={styles.regla}>
+                <Ionicons
+                  name={r.ok ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={16}
+                  color={r.ok ? '#166534' : textColors.muted}
+                />
+                <Text style={[styles.reglaTexto, r.ok && { color: '#166534' }]} maxFontSizeMultiplier={1.15}>{r.texto}</Text>
+              </View>
+            ))}
+          </View>
+
+          <CustomInput
+            label="Confirmar contraseña"
+            icono="lock-closed-outline"
+            placeholder="Escríbela otra vez"
+            isPassword
+            textContentType="newPassword"
+            {...campo('confirmPassword')}
+          />
+
+          <CustomButton title="Crear mi cuenta" onPress={vm.registrar} loading={vm.isLoading} />
+          <CustomButton title="Atrás" variant="outline" onPress={vm.atras} disabled={vm.isLoading} style={{ marginTop: space.sm }} />
+        </FadeInView>
+      )}
+    </AuthScreen>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: brandColors.primaryDark,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  pasos: { flexDirection: 'row', gap: space.sm, marginBottom: space.xl },
+  paso: { flex: 1, gap: 6 },
+  pasoBarra: { height: 4, borderRadius: 2, backgroundColor: surface.border },
+  pasoBarraActiva: { backgroundColor: brandColors.primary },
+  pasoFila: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  pasoTexto: { fontFamily: fontFamily.medium, fontSize: 12, color: textColors.muted },
+  pasoTextoActivo: { color: textColors.primary },
+  dos: { flexDirection: 'row', gap: space.md },
+  reglas: {
+    gap: 4,
+    marginTop: -8,
+    marginBottom: space.lg,
+    padding: space.md,
+    borderRadius: radius.md,
+    backgroundColor: surface.card,
+    borderWidth: 1,
+    borderColor: surface.border,
   },
-  backButton: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
-  backIcon: { color: brandColors.white, fontSize: 26, fontWeight: '600', lineHeight: 26 },
-  headerTitle: { color: brandColors.white, fontSize: 17, fontWeight: '600' },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 20 },
-  card: {
-    backgroundColor: brandColors.white,
-    borderRadius: 20,
-    padding: 24,
-    shadowColor: brandColors.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: brandColors.primary,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  step: { textAlign: 'center', color: brandTints.textMuted, fontSize: 13, marginBottom: 20 },
-  error: { color: brandColors.error, textAlign: 'center', marginBottom: 16, fontWeight: '500' },
-  fieldError: { color: brandColors.error, fontSize: 12, marginTop: -10, marginBottom: 12 },
-  primaryBtn: { marginBottom: 12, borderRadius: 10 },
-  loginText: { color: brandColors.primary, textAlign: 'center', fontSize: 14 },
+  regla: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  reglaTexto: { fontFamily: fontFamily.regular, fontSize: 13, color: textColors.secondary },
 });

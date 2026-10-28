@@ -65,9 +65,9 @@ export const useContactoViewModel = () => {
   const acciones = useMemo<AccionRapida[]>(() => {
     const buscar = (tipos: string[]) => filas.find((f) => tipos.includes(f.tipo) && f.href);
     const definidas = [
-      { clave: 'llamar', icono: '📞', titulo: 'Llamar', fila: buscar(['telefono', 'teléfono']) },
-      { clave: 'whatsapp', icono: '💬', titulo: 'WhatsApp', fila: buscar(['whatsapp']) },
-      { clave: 'correo', icono: '✉️', titulo: 'Correo', fila: buscar(['email', 'correo']) },
+      { clave: 'llamar', icono: 'call', titulo: 'Llamar', fila: buscar(['telefono', 'teléfono']) },
+      { clave: 'whatsapp', icono: 'logo-whatsapp', titulo: 'WhatsApp', fila: buscar(['whatsapp']) },
+      { clave: 'correo', icono: 'mail', titulo: 'Correo', fila: buscar(['email', 'correo']) },
     ];
     return definidas.flatMap((a) =>
       a.fila?.href ? [{ clave: a.clave, icono: a.icono, titulo: a.titulo, href: a.fila.href }] : []

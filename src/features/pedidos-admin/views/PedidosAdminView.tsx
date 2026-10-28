@@ -1,38 +1,50 @@
 import React from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
-import { brandColors, brandTints } from '@/constants/brand';
+import { FlatList, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
+import { AdminHeader, BotonHeader, PastillaAdmin } from '@/shared/components/admin';
 import { CustomButton } from '@/shared/components/CustomButton';
-import { FadeInView } from '@/shared/components/FadeInView';
-import { Header } from '@/shared/components/Header';
 import { Loading } from '@/shared/components/Loading';
 import { PressableScale } from '@/shared/components/PressableScale';
-import { SelectorOpciones } from '../components/SelectorOpciones';
 import { usePedidosAdminViewModel } from '../viewmodels/usePedidosAdminViewModel';
-import { colorEstado, etiquetaEstado, formatFecha, formatMoney } from '../utils/pedidoAdminUtils';
+import { accionAdmin, colorEstado, etiquetaEstado, formatFecha, formatMoney, iconoEstado } from '../utils/pedidoAdminUtils';
 import type { PedidoResumen } from '../models/PedidoAdmin';
 
-const EstadoBadge = ({ estado }: { estado: string }) => {
-  const c = colorEstado(estado);
+const ESCALA = 1.15;
+
+// Fila de pedido: barra de color del estado a la izquierda, datos y total.
+const PedidoFila = ({ pedido, onPress }: { pedido: PedidoResumen; onPress: () => void }) => {
+  const c = colorEstado(pedido.estado);
+  const accion = accionAdmin(pedido.estado);
   return (
-    <View style={[styles.badge, { backgroundColor: c.bg }]}>
-      <Text style={[styles.badgeTxt, { color: c.fg }]}>{etiquetaEstado(estado)}</Text>
-    </View>
+    <PressableScale style={styles.card} onPress={onPress} scaleTo={0.98} accessibilityRole="button">
+      <View style={[styles.barraEstado, { backgroundColor: c.fg }]} />
+      <View style={styles.cardCuerpo}>
+        <View style={styles.cardFila}>
+          <Text style={styles.cardId} maxFontSizeMultiplier={ESCALA}>#{pedido.id}</Text>
+          <Text style={styles.cardTotal} maxFontSizeMultiplier={ESCALA}>{formatMoney(pedido.total_general)}</Text>
+        </View>
+        <View style={styles.cardFila}>
+          <View style={styles.cliente}>
+            <Ionicons name="person-outline" size={14} color={textColors.secondary} />
+            <Text style={styles.clienteTexto} numberOfLines={1} maxFontSizeMultiplier={ESCALA}>{pedido.cliente_nombre}</Text>
+          </View>
+          <Text style={styles.fecha} maxFontSizeMultiplier={ESCALA}>{formatFecha(pedido.fecha_pedido)}</Text>
+        </View>
+        <View style={styles.cardFila}>
+          <PastillaAdmin texto={etiquetaEstado(pedido.estado)} icono={iconoEstado(pedido.estado)} bg={c.bg} fg={c.fg} />
+          {!!accion && (
+            <View style={styles.accion}>
+              <Ionicons name="flash" size={12} color="#B45309" />
+              <Text style={styles.accionTexto} maxFontSizeMultiplier={ESCALA}>Te toca</Text>
+            </View>
+          )}
+        </View>
+      </View>
+    </PressableScale>
   );
 };
-
-const PedidoCard = ({ pedido, onPress }: { pedido: PedidoResumen; onPress: () => void }) => (
-  <PressableScale style={styles.card} onPress={onPress} accessibilityRole="button">
-    <View style={styles.cardFila}>
-      <Text style={styles.cardId}>Pedido #{pedido.id}</Text>
-      <Text style={styles.cardTotal}>{formatMoney(pedido.total_general)}</Text>
-    </View>
-    <Text style={styles.cardCliente} numberOfLines={1}>{pedido.cliente_nombre}</Text>
-    <View style={[styles.cardFila, { marginTop: 8 }]}>
-      <Text style={styles.cardFecha}>{formatFecha(pedido.fecha_pedido)}</Text>
-      <EstadoBadge estado={pedido.estado} />
-    </View>
-  </PressableScale>
-);
 
 export const PedidosAdminView = () => {
   const vm = usePedidosAdminViewModel();
@@ -40,40 +52,60 @@ export const PedidosAdminView = () => {
 
   return (
     <View style={styles.pantalla}>
-      <Header subtitle="Pedidos" />
-
-      <View style={styles.controles}>
-        <TextInput
-          style={styles.input}
-          placeholder="Buscar por #pedido, cliente o correo..."
-          placeholderTextColor={brandTints.textMuted}
-          value={vm.busqueda}
-          onChangeText={vm.setBusqueda}
-          autoCapitalize="none"
-          autoCorrect={false}
-          clearButtonMode="while-editing"
-        />
-
-        <View style={styles.combos}>
-          <SelectorOpciones
-            titulo="Estado"
-            opciones={vm.opcionesEstado}
-            valor={vm.filtro}
-            onChange={vm.setFiltro}
+      <AdminHeader
+        titulo="Pedidos"
+        derecha={
+          <BotonHeader
+            icono={vm.orden === 'RECIENTES' ? 'arrow-down-outline' : 'arrow-up-outline'}
+            etiqueta={vm.orden === 'RECIENTES' ? 'Más recientes primero' : 'Más antiguos primero'}
+            onPress={vm.alternarOrden}
           />
-          <SelectorOpciones
-            titulo="Ordenar por"
-            opciones={vm.opcionesOrden}
-            valor={vm.orden}
-            onChange={vm.setOrden}
+        }
+      >
+        {/* Buscador dentro del encabezado verde */}
+        <View style={styles.buscador}>
+          <Ionicons name="search-outline" size={18} color={textColors.muted} />
+          <TextInput
+            style={styles.input}
+            placeholder="Buscar #pedido, cliente o correo"
+            placeholderTextColor={textColors.muted}
+            value={vm.busqueda}
+            onChangeText={vm.setBusqueda}
+            autoCapitalize="none"
+            autoCorrect={false}
+            maxFontSizeMultiplier={ESCALA}
           />
+          {!!vm.busqueda && (
+            <PressableScale onPress={() => vm.setBusqueda('')} hitSlop={8} accessibilityLabel="Borrar búsqueda">
+              <Ionicons name="close-circle" size={18} color={textColors.muted} />
+            </PressableScale>
+          )}
         </View>
+      </AdminHeader>
 
-        {!vm.cargando && !vm.error && (
-          <Text style={styles.conteo}>
-            {vm.pedidosFiltrados.length} de {vm.pedidos.length} pedidos
-          </Text>
-        )}
+      {/* Chips de estado con cantidad */}
+      <View style={styles.chipsBarra}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+          {vm.opcionesEstado.map((o) => {
+            const activo = vm.filtro === o.valor;
+            return (
+              <PressableScale
+                key={o.valor}
+                style={[styles.chip, activo && styles.chipActivo]}
+                onPress={() => vm.setFiltro(o.valor)}
+                scaleTo={0.95}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: activo }}
+              >
+                {o.valor === 'ATENDER' && <Ionicons name="flash" size={13} color={activo ? '#FFFFFF' : '#B45309'} />}
+                <Text style={[styles.chipTexto, activo && styles.chipTextoActivo]} maxFontSizeMultiplier={ESCALA}>{o.etiqueta}</Text>
+                <View style={[styles.chipNumero, activo && styles.chipNumeroActivo]}>
+                  <Text style={[styles.chipNumeroTexto, activo && { color: '#FFFFFF' }]} maxFontSizeMultiplier={1}>{o.cantidad}</Text>
+                </View>
+              </PressableScale>
+            );
+          })}
+        </ScrollView>
       </View>
 
       {vm.cargando ? (
@@ -82,31 +114,36 @@ export const PedidosAdminView = () => {
         <FlatList
           data={vm.pedidosFiltrados}
           keyExtractor={(p) => String(p.id)}
-          renderItem={({ item }) => <PedidoCard pedido={item} onPress={() => vm.abrirPedido(item.id)} />}
+          renderItem={({ item }) => <PedidoFila pedido={item} onPress={() => vm.abrirPedido(item.id)} />}
           contentContainerStyle={styles.lista}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl
-              refreshing={vm.refrescando}
-              onRefresh={vm.refrescar}
-              tintColor={brandColors.primary}
-              colors={[brandColors.primary]}
-            />
+            <RefreshControl refreshing={vm.refrescando} onRefresh={vm.refrescar} tintColor={brandColors.primary} colors={[brandColors.primary]} />
           }
           ListHeaderComponent={
             vm.error ? (
-              <FadeInView style={styles.errorBox}>
-                <Text style={styles.errorTxt}>{vm.error}</Text>
+              <View style={styles.error}>
+                <Ionicons name="cloud-offline-outline" size={22} color={brandColors.error} />
+                <Text style={styles.errorTexto}>{vm.error}</Text>
                 <CustomButton title="Reintentar" variant="outline" onPress={vm.reintentar} />
-              </FadeInView>
-            ) : null
+              </View>
+            ) : (
+              <Text style={styles.conteo} maxFontSizeMultiplier={ESCALA}>
+                {vm.pedidosFiltrados.length} {vm.pedidosFiltrados.length === 1 ? 'pedido' : 'pedidos'}
+                {vm.orden === 'RECIENTES' ? ' · más recientes primero' : ' · más antiguos primero'}
+              </Text>
+            )
           }
           ListEmptyComponent={
             vm.error ? null : (
-              <Text style={styles.vacio}>
-                {hayFiltros ? 'Ningún pedido coincide con tu búsqueda.' : 'Aún no hay pedidos registrados.'}
-              </Text>
+              <View style={styles.vacio}>
+                <Ionicons name="file-tray-outline" size={40} color={textColors.muted} />
+                <Text style={styles.vacioTexto} maxFontSizeMultiplier={ESCALA}>
+                  {hayFiltros ? 'Ningún pedido coincide con el filtro.' : 'Aún no hay pedidos.'}
+                </Text>
+                {hayFiltros && <CustomButton title="Quitar filtros" variant="outline" onPress={vm.limpiarFiltros} />}
+              </View>
             )
           }
         />
@@ -116,35 +153,63 @@ export const PedidosAdminView = () => {
 };
 
 const styles = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: brandColors.background },
+  pantalla: { flex: 1, backgroundColor: surface.screen },
 
-  controles: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 6, gap: 10 },
-  input: {
-    backgroundColor: brandColors.white,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    fontSize: 14,
-    color: brandColors.primaryDark,
-    borderWidth: 1,
-    borderColor: brandTints.border,
+  buscador: {
+    height: 42,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    backgroundColor: surface.card,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
   },
-  combos: { flexDirection: 'row', gap: 10 },
-  conteo: { fontSize: 12, color: brandTints.textMuted, marginLeft: 4 },
+  input: { flex: 1, height: '100%', fontFamily: fontFamily.regular, fontSize: 14, color: textColors.primary, paddingVertical: 0 },
 
-  lista: { padding: 16, paddingTop: 8, paddingBottom: 32, gap: 10 },
-  vacio: { textAlign: 'center', color: brandTints.textMuted, paddingVertical: 32 },
+  chipsBarra: { backgroundColor: surface.card, borderBottomWidth: 1, borderBottomColor: surface.border },
+  chips: { gap: space.sm, paddingHorizontal: space.lg, paddingVertical: 10 },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 34,
+    paddingHorizontal: 12,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: surface.border,
+    backgroundColor: surface.card,
+  },
+  chipActivo: { backgroundColor: brandColors.primary, borderColor: brandColors.primary },
+  chipTexto: { fontFamily: fontFamily.medium, fontSize: 13, color: textColors.primary },
+  chipTextoActivo: { color: '#FFFFFF' },
+  chipNumero: { minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: surface.muted, alignItems: 'center', justifyContent: 'center' },
+  chipNumeroActivo: { backgroundColor: 'rgba(255,255,255,0.25)' },
+  chipNumeroTexto: { fontFamily: fontFamily.semibold, fontSize: 11, color: textColors.secondary },
 
-  card: { backgroundColor: brandColors.white, borderRadius: 16, padding: 14 },
-  cardFila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardId: { fontSize: 15, fontWeight: '800', color: brandColors.primaryDark },
-  cardTotal: { fontSize: 15, fontWeight: '800', color: brandColors.primary },
-  cardCliente: { fontSize: 13, color: brandTints.textMuted, marginTop: 2 },
-  cardFecha: { fontSize: 12, color: brandTints.textMuted },
+  lista: { padding: space.lg, paddingBottom: 40, gap: space.sm, flexGrow: 1 },
+  conteo: { fontFamily: fontFamily.regular, fontSize: 13, color: textColors.muted, marginBottom: 2 },
 
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  badgeTxt: { fontSize: 11, fontWeight: '800' },
+  card: {
+    flexDirection: 'row',
+    backgroundColor: surface.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surface.border,
+    overflow: 'hidden',
+  },
+  barraEstado: { width: 4 },
+  cardCuerpo: { flex: 1, padding: space.md, gap: 6 },
+  cardFila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
+  cardId: { fontFamily: fontFamily.bold, fontSize: 16, color: textColors.primary },
+  cardTotal: { fontFamily: fontFamily.bold, fontSize: 16, color: textColors.primary },
+  cliente: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 },
+  clienteTexto: { flex: 1, fontFamily: fontFamily.medium, fontSize: 14, color: textColors.secondary },
+  fecha: { fontFamily: fontFamily.regular, fontSize: 12, color: textColors.muted },
+  accion: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  accionTexto: { fontFamily: fontFamily.semibold, fontSize: 12, color: '#B45309' },
 
-  errorBox: { backgroundColor: brandTints.errorSoft, borderRadius: 12, padding: 12, marginBottom: 10, gap: 10 },
-  errorTxt: { color: brandColors.error, fontWeight: '600', textAlign: 'center' },
+  error: { alignItems: 'center', gap: space.sm, padding: space.lg, backgroundColor: surface.card, borderRadius: radius.lg, marginBottom: space.sm },
+  errorTexto: { fontFamily: fontFamily.medium, fontSize: 14, color: textColors.primary, textAlign: 'center' },
+  vacio: { alignItems: 'center', gap: space.sm, paddingTop: 48 },
+  vacioTexto: { fontFamily: fontFamily.regular, fontSize: 14, color: textColors.secondary, textAlign: 'center' },
 });

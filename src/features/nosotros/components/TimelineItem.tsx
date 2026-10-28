@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { FadeInView } from '@/shared/components/FadeInView';
 import { brandColors, brandTints } from '@/constants/brand';
+import { fontFamily, surface, textColors } from '@/constants/theme';
 
 interface Props {
   fechaTexto: string;
@@ -44,7 +45,9 @@ const styles = StyleSheet.create({
   linea: { flex: 1, width: 2, backgroundColor: brandTints.border, marginTop: 4 },
   card: {
     flex: 1,
-    backgroundColor: brandColors.white,
+    backgroundColor: surface.card,
+    borderWidth: 1,
+    borderColor: surface.border,
     borderRadius: 14,
     padding: 14,
     marginBottom: 14,
@@ -58,6 +61,6 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     marginBottom: 8,
   },
-  fecha: { fontSize: 12, fontWeight: '800', color: brandColors.primary },
-  descripcion: { fontSize: 14, color: brandColors.primaryDark, lineHeight: 20 },
+  fecha: { fontFamily: fontFamily.semibold, fontSize: 12, color: brandColors.primary },
+  descripcion: { fontFamily: fontFamily.regular, fontSize: 14, color: textColors.primary, lineHeight: 20 },
 });

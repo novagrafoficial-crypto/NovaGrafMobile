@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { brandColors, brandTints } from '@/constants/brand';
-import { CustomButton } from '@/shared/components/CustomButton';
+import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
 import { PressableScale } from '@/shared/components/PressableScale';
 import { resolveImageUrl } from '@/shared/utils/resolveImageUrl';
 import { esPdf } from '../utils/pedidoAdminUtils';
@@ -18,6 +19,8 @@ interface Props {
   children?: React.ReactNode;
 }
 
+const ESCALA = 1.15;
+
 // Hoja que sube desde abajo: muestra el archivo en grande y, debajo, sus datos.
 export const HojaDetalle = ({ visible, titulo, archivoUrl, onCerrar, onAbrirArchivo, children }: Props) => {
   const insets = useSafeAreaInsets();
@@ -28,40 +31,46 @@ export const HojaDetalle = ({ visible, titulo, archivoUrl, onCerrar, onAbrirArch
   // Cada vez que cambia el archivo se vuelve a intentar cargar la imagen.
   useEffect(() => setFallo(false), [url, visible]);
 
+  const BotonAbrir = ({ texto, icono }: { texto: string; icono: React.ComponentProps<typeof Ionicons>['name'] }) => (
+    <PressableScale style={styles.abrir} onPress={() => url && onAbrirArchivo(url)} scaleTo={0.97}>
+      <Ionicons name={icono} size={18} color={textColors.primary} />
+      <Text style={styles.abrirTexto} maxFontSizeMultiplier={ESCALA}>{texto}</Text>
+    </PressableScale>
+  );
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onCerrar}>
       <Pressable style={styles.fondo} onPress={onCerrar}>
         {/* Pressable interno: tocar la hoja no la cierra */}
-        <Pressable style={[styles.hoja, { paddingBottom: insets.bottom + 16 }]} onPress={() => {}}>
+        <Pressable style={[styles.hoja, { paddingBottom: insets.bottom + space.lg }]} onPress={() => {}}>
+          <View style={styles.agarradera} />
           <View style={styles.cabecera}>
-            <Text style={styles.titulo} numberOfLines={2}>
-              {titulo}
-            </Text>
-            <PressableScale onPress={onCerrar} hitSlop={12} accessibilityLabel="Cerrar">
-              <Text style={styles.cerrar}>✕</Text>
+            <Text style={styles.titulo} numberOfLines={2} maxFontSizeMultiplier={ESCALA}>{titulo}</Text>
+            <PressableScale style={styles.cerrar} onPress={onCerrar} hitSlop={10} accessibilityLabel="Cerrar">
+              <Ionicons name="close" size={20} color={textColors.primary} />
             </PressableScale>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.cuerpo}>
             {!!url &&
               (pdf ? (
-                <CustomButton title="📄 Abrir PDF" onPress={() => onAbrirArchivo(url)} />
+                <BotonAbrir texto="Abrir PDF" icono="document-outline" />
               ) : fallo ? (
-                <View style={styles.imgFallo}>
-                  <Text style={styles.imgFalloTxt}>No se pudo cargar la imagen.</Text>
-                  <CustomButton title="Intentar abrirla afuera" variant="outline" onPress={() => onAbrirArchivo(url)} />
+                <View style={styles.fallo}>
+                  <Ionicons name="image-outline" size={28} color={textColors.muted} />
+                  <Text style={styles.falloTexto} maxFontSizeMultiplier={ESCALA}>No se pudo cargar la imagen.</Text>
+                  <BotonAbrir texto="Abrir fuera de la app" icono="open-outline" />
                 </View>
               ) : (
                 <>
                   <Image
                     source={{ uri: url }}
                     style={styles.imagen}
-                    resizeMode="contain"
+                    contentFit="contain"
+                    cachePolicy="memory-disk"
                     onError={() => setFallo(true)}
                   />
-                  <PressableScale onPress={() => onAbrirArchivo(url)} scaleTo={0.95} hitSlop={8}>
-                    <Text style={styles.enlace}>Abrir en tamaño completo →</Text>
-                  </PressableScale>
+                  <BotonAbrir texto="Ver en tamaño completo" icono="expand-outline" />
                 </>
               ))}
 
@@ -74,21 +83,32 @@ export const HojaDetalle = ({ visible, titulo, archivoUrl, onCerrar, onAbrirArch
 };
 
 const styles = StyleSheet.create({
-  fondo: { flex: 1, backgroundColor: brandTints.overlay, justifyContent: 'flex-end' },
+  fondo: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
   hoja: {
-    backgroundColor: brandColors.white,
+    backgroundColor: surface.card,
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
-    paddingHorizontal: 18,
-    paddingTop: 16,
+    paddingHorizontal: space.lg,
+    paddingTop: space.sm,
     maxHeight: '88%',
   },
-  cabecera: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 },
-  titulo: { flex: 1, fontSize: 17, fontWeight: '800', color: brandColors.primaryDark },
-  cerrar: { fontSize: 20, fontWeight: '800', color: brandTints.textMuted },
-  cuerpo: { gap: 12, paddingBottom: 8 },
-  imagen: { width: '100%', height: 300, borderRadius: 12, backgroundColor: brandTints.surfaceMuted },
-  enlace: { color: brandColors.primary, fontWeight: '700', fontSize: 13, textAlign: 'center' },
-  imgFallo: { gap: 10, padding: 14, borderRadius: 12, backgroundColor: brandTints.surfaceMuted },
-  imgFalloTxt: { textAlign: 'center', color: brandTints.textMuted, fontSize: 13 },
+  agarradera: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: surface.border, marginBottom: space.md },
+  cabecera: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md, marginBottom: space.md },
+  titulo: { flex: 1, fontFamily: fontFamily.bold, fontSize: 18, color: textColors.primary },
+  cerrar: { width: 34, height: 34, borderRadius: 17, backgroundColor: surface.muted, alignItems: 'center', justifyContent: 'center' },
+  cuerpo: { gap: space.md, paddingBottom: space.sm },
+  imagen: { width: '100%', height: 300, borderRadius: radius.md, backgroundColor: surface.muted },
+  abrir: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    height: 44,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surface.border,
+  },
+  abrirTexto: { fontFamily: fontFamily.semibold, fontSize: 14, color: textColors.primary },
+  fallo: { alignItems: 'center', gap: space.sm, padding: space.lg, borderRadius: radius.md, backgroundColor: surface.muted },
+  falloTexto: { fontFamily: fontFamily.regular, fontSize: 14, color: textColors.secondary },
 });

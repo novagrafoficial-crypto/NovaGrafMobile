@@ -24,6 +24,8 @@ export const useClientesAdminViewModel = () => {
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState('');
+  // Filtro rápido por estado de la cuenta
+  const [filtro, setFiltro] = useState<'TODOS' | 'ACTIVOS' | 'INACTIVOS'>('TODOS');
   // Se guarda el id (no una copia) para que el detalle siempre muestre el estado actual.
   const [seleccionadoId, setSeleccionadoId] = useState<number | null>(null);
 
@@ -66,11 +68,14 @@ export const useClientesAdminViewModel = () => {
 
   const clientesFiltrados = useMemo(() => {
     const q = normalizar(busqueda);
-    if (!q) return clientes;
-    return clientes.filter((c) =>
-      normalizar(`${nombreCompleto(c)} ${c.correo_electronico} ${c.nombre_usuario}`).includes(q)
-    );
-  }, [clientes, busqueda]);
+    return clientes.filter((c) => {
+      const coincideFiltro = filtro === 'TODOS' || (filtro === 'ACTIVOS' ? c.activo : !c.activo);
+      const coincideTexto = !q || normalizar(`${nombreCompleto(c)} ${c.correo_electronico} ${c.nombre_usuario}`).includes(q);
+      return coincideFiltro && coincideTexto;
+    });
+  }, [clientes, busqueda, filtro]);
+
+  const activos = useMemo(() => clientes.filter((c) => c.activo).length, [clientes]);
 
   const seleccionado = useMemo(
     () => clientes.find((c) => c.id_usuario === seleccionadoId) ?? null,
@@ -112,6 +117,10 @@ export const useClientesAdminViewModel = () => {
     error,
     busqueda,
     setBusqueda,
+    filtro,
+    setFiltro,
+    activos,
+    inactivos: clientes.length - activos,
     refrescar,
     reintentar: cargar,
     seleccionado,

@@ -9,9 +9,14 @@ export interface CartItem {
   cantidad: number;
   precio_unitario: number;
   subtotal: number;
+  precio_original: number;
+  descuento_nombre: string | null;
+  ahorro: number;
+  descuento_pendiente: { nombre: string; cantidad_minima: number; faltan: number } | null;
 }
 
 export interface Cart {
   items: CartItem[];
   total: number;
+  ahorro: number;
 }

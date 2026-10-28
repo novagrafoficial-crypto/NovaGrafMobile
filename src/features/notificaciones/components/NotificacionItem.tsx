@@ -1,24 +1,23 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
 import { PressableScale } from '@/shared/components/PressableScale';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
 import type { Notificacion } from '../models/Notificacion';
 
-const ICONOS: Record<string, string> = {
-  ESTADO_CAMBIADO: '🔄',
-  PAGO_APROBADO: '✅',
-  PAGO_RECHAZADO: '❌',
-  PREVIA_ENVIADA: '🖼️',
-  MENSAJE_NUEVO: '💬',
-};
+type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const COLORES: Record<string, string> = {
-  ESTADO_CAMBIADO: '#3b82f6',
-  PAGO_APROBADO: '#16a34a',
-  PAGO_RECHAZADO: '#dc2626',
-  PREVIA_ENVIADA: '#8b5cf6',
-  MENSAJE_NUEVO: '#f59e0b',
+// Ícono y color por tipo de notificación (fondo suave + ícono del mismo tono)
+const ESTILO: Record<string, { icono: IconName; color: string; fondo: string }> = {
+  ESTADO_CAMBIADO: { icono: 'sync-outline', color: '#1A6163', fondo: '#E6F2EF' },
+  PAGO_APROBADO: { icono: 'checkmark-circle-outline', color: '#166534', fondo: '#DCFCE7' },
+  PAGO_RECHAZADO: { icono: 'close-circle-outline', color: '#B91C1C', fondo: '#FEE2E2' },
+  PREVIA_ENVIADA: { icono: 'image-outline', color: '#6D28D9', fondo: '#EDE9FE' },
+  MENSAJE_NUEVO: { icono: 'chatbubble-ellipses-outline', color: '#B45309', fondo: '#FEF3C7' },
 };
+const ESTILO_DEFAULT = { icono: 'notifications-outline' as IconName, color: '#3F3F46', fondo: '#F4F4F5' };
 
 const tiempoRelativo = (iso: string): string => {
   const t = new Date(iso).getTime();
@@ -33,55 +32,110 @@ const tiempoRelativo = (iso: string): string => {
   return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
 };
 
+// El backend guarda el título con emoji al inicio ("💬 Nuevo mensaje…").
+// Se lo quitamos porque la tarjeta ya muestra su propio ícono.
+const quitarEmoji = (texto: string) =>
+  texto.replace(/^(?:[\u2600-\u27BF]|[\uD83C-\uDBFF][\uDC00-\uDFFF]|\uFE0F|\u200D|\s)+/, '');
+
+const ESCALA = 1.15;
+
 interface Props {
   notificacion: Notificacion;
   onPress: () => void;
   onEliminar: () => void;
 }
 
-export const NotificacionItem = ({ notificacion: n, onPress, onEliminar }: Props) => (
-  <PressableScale
-    style={[styles.item, !n.leida && styles.noLeida]}
-    onPress={onPress}
-    scaleTo={0.98}
-    accessibilityLabel={`${n.titulo}. ${n.mensaje}`}
-  >
-    <View style={[styles.icono, { backgroundColor: COLORES[n.tipo] ?? '#6b7280' }]}>
-      <Text style={styles.iconoTexto}>{ICONOS[n.tipo] ?? '📢'}</Text>
-    </View>
+export const NotificacionItem = ({ notificacion: n, onPress, onEliminar }: Props) => {
+  const e = ESTILO[n.tipo] ?? ESTILO_DEFAULT;
 
-    <View style={styles.contenido}>
-      <Text style={styles.titulo} numberOfLines={2}>{n.titulo}</Text>
-      <Text style={styles.mensaje} numberOfLines={3}>{n.mensaje}</Text>
-      <Text style={styles.tiempo}>{tiempoRelativo(n.creado_en)}</Text>
-    </View>
+  return (
+    <PressableScale
+      style={[styles.item, !n.leida && styles.noLeida]}
+      onPress={onPress}
+      scaleTo={0.98}
+      accessibilityLabel={`${n.leida ? '' : 'No leída. '}${quitarEmoji(n.titulo)}. ${n.mensaje}`}
+    >
+      {/* Barra de color a la izquierda solo si no está leída */}
+      {!n.leida && <View style={[styles.acento, { backgroundColor: e.color }]} />}
 
-    {!n.leida && <View style={styles.punto} />}
+      <View style={[styles.icono, { backgroundColor: e.fondo }]}>
+        <Ionicons name={e.icono} size={22} color={e.color} />
+      </View>
 
-    <PressableScale onPress={onEliminar} hitSlop={10} scaleTo={0.85} accessibilityLabel="Eliminar notificación">
-      <Text style={styles.eliminar}>✕</Text>
+      <View style={styles.contenido}>
+        <View style={styles.filaTitulo}>
+          <Text style={[styles.titulo, !n.leida && styles.tituloNoLeido]} numberOfLines={2} maxFontSizeMultiplier={ESCALA}>
+            {quitarEmoji(n.titulo)}
+          </Text>
+          {!n.leida && <View style={[styles.punto, { backgroundColor: e.color }]} />}
+        </View>
+
+        <Text style={styles.mensaje} numberOfLines={3} maxFontSizeMultiplier={ESCALA}>{n.mensaje}</Text>
+
+        <View style={styles.pie}>
+          <View style={styles.tiempoFila}>
+            <Ionicons name="time-outline" size={13} color={textColors.muted} />
+            <Text style={styles.tiempo} maxFontSizeMultiplier={ESCALA}>{tiempoRelativo(n.creado_en)}</Text>
+          </View>
+          {!!n.pedido_id && (
+            <View style={styles.verPedido}>
+              <Text style={styles.verPedidoTexto} maxFontSizeMultiplier={ESCALA}>Ver pedido</Text>
+              <Ionicons name="chevron-forward" size={14} color={brandColors.primary} />
+            </View>
+          )}
+        </View>
+      </View>
+
+      <PressableScale
+        onPress={onEliminar}
+        hitSlop={8}
+        scaleTo={0.85}
+        style={styles.eliminar}
+        accessibilityLabel="Eliminar notificación"
+      >
+        <Ionicons name="close" size={16} color={textColors.muted} />
+      </PressableScale>
     </PressableScale>
-  </PressableScale>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   item: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: brandColors.white,
-    borderRadius: 14,
-    padding: 12,
+    alignItems: 'flex-start',
+    gap: space.md,
+    backgroundColor: surface.card,
+    borderRadius: radius.lg,
+    padding: space.md,
+    paddingLeft: space.lg,
     borderWidth: 1,
-    borderColor: brandTints.border,
+    borderColor: surface.border,
+    overflow: 'hidden',
   },
-  noLeida: { backgroundColor: brandTints.accentSoft, borderColor: brandColors.accent },
-  icono: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  iconoTexto: { fontSize: 18 },
-  contenido: { flex: 1 },
-  titulo: { fontSize: 14, fontWeight: '800', color: brandColors.primaryDark },
-  mensaje: { fontSize: 13, color: brandTints.textMuted, marginTop: 2 },
-  tiempo: { fontSize: 11, color: brandTints.textMuted, marginTop: 4 },
-  punto: { width: 8, height: 8, borderRadius: 4, backgroundColor: brandColors.accent },
-  eliminar: { fontSize: 14, fontWeight: '800', color: brandTints.textMuted, paddingHorizontal: 4 },
+  noLeida: { borderColor: '#D4D4D8' },
+  acento: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 4 },
+
+  icono: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+
+  contenido: { flex: 1, gap: 4 },
+  filaTitulo: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
+  titulo: { flex: 1, fontFamily: fontFamily.medium, fontSize: 15, lineHeight: 20, color: textColors.primary },
+  tituloNoLeido: { fontFamily: fontFamily.bold },
+  punto: { width: 9, height: 9, borderRadius: 5, marginTop: 6 },
+  mensaje: { fontFamily: fontFamily.regular, fontSize: 14, lineHeight: 20, color: textColors.secondary },
+
+  pie: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 },
+  tiempoFila: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  tiempo: { fontFamily: fontFamily.regular, fontSize: 12, color: textColors.muted },
+  verPedido: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  verPedidoTexto: { fontFamily: fontFamily.semibold, fontSize: 13, color: brandColors.primary },
+
+  eliminar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: surface.muted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

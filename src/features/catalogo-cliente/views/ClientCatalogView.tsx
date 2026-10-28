@@ -1,49 +1,35 @@
 import React from 'react';
-import { View, Text, FlatList, Image, StyleSheet, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, FlatList, StyleSheet, RefreshControl } from 'react-native';
+import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
 import { useClientCatalogViewModel } from '../viewmodels/useClientCatalogViewModel';
 import { HomeHeader } from '@/features/inicio/components/HomeHeader';
 import { Loading } from '@/shared/components/Loading';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { FadeInView } from '@/shared/components/FadeInView';
 import { PressableScale } from '@/shared/components/PressableScale';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
+
+const ESCALA = 1.15;
 
 export const ClientCatalogView = () => {
-  const router = useRouter();
   const vm = useClientCatalogViewModel();
 
-  // Paso 1 del flujo: se oculta cuando el cliente busca o filtra
-  const encabezadoLista = !vm.hayFiltros ? (
-    <FadeInView style={styles.paso}>
-      {/* Círculos decorativos de fondo */}
-      <View style={styles.pasoCirculoGrande} />
-      <View style={styles.pasoCirculoChico} />
-
-      <View style={styles.pasoFila}>
-        <View style={styles.pasoContenido}>
-          <Text style={styles.pasoTitulo}>Elige tu producto base</Text>
-          <Text style={styles.pasoTexto}>
-            Escoge sobre qué quieres plasmar tu diseño. Después pagas el anticipo del 50% y subes tus referencias.
-          </Text>
-        </View>
-        <View style={styles.pasoIcono}>
-          <Text style={styles.pasoIconoTexto}>🛍️</Text>
-        </View>
-      </View>
-
-      {/* Mini progreso del flujo: el primer paso está activo */}
-      <View style={styles.progreso}>
-        {[0, 1, 2, 3, 4].map((i) => (
-          <View key={i} style={[styles.progresoBarra, i === 0 && styles.progresoBarraActiva]} />
-        ))}
-      </View>
-    </FadeInView>
-  ) : null;
+  // Título pequeño arriba de la lista: "Todos los productos · 8"
+  const encabezadoLista = (
+    <View style={styles.encabezado}>
+      <Text style={styles.encabezadoTitulo} maxFontSizeMultiplier={ESCALA}>{vm.tituloLista}</Text>
+      <Text style={styles.encabezadoContador} maxFontSizeMultiplier={ESCALA}>
+        {vm.productosFiltrados.length} {vm.productosFiltrados.length === 1 ? 'producto' : 'productos'}
+      </Text>
+    </View>
+  );
 
   return (
     <View style={styles.pantalla}>
       <HomeHeader
+        nombre={vm.primerNombre}
         busqueda={vm.busqueda}
         onBusqueda={vm.setBusqueda}
         categorias={vm.categorias}
@@ -53,18 +39,13 @@ export const ClientCatalogView = () => {
         placeholder="Buscar producto base…"
       />
 
-      {vm.aviso && (
-        <FadeInView distance={-10} duration={250} style={styles.toast}>
-          <Text style={styles.toastTexto}>{vm.aviso}</Text>
-        </FadeInView>
-      )}
-
       {vm.loading ? (
         <Loading fullScreen />
       ) : vm.error ? (
         <View style={styles.centrado}>
-          <Text style={styles.error}>{vm.error}</Text>
-          <CustomButton title="Reintentar" onPress={vm.reintentar} style={styles.botonReintentar} />
+          <Ionicons name="cloud-offline-outline" size={40} color={textColors.muted} />
+          <Text style={styles.mensaje}>{vm.error}</Text>
+          <CustomButton title="Reintentar" variant="outline" onPress={vm.reintentar} style={styles.botonReintentar} />
         </View>
       ) : (
         <FlatList
@@ -74,6 +55,9 @@ export const ClientCatalogView = () => {
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={encabezadoLista}
           contentContainerStyle={styles.lista}
+          // Rendimiento: dibuja pocas tarjetas a la vez
+          initialNumToRender={6}
+          windowSize={7}
           refreshControl={
             <RefreshControl
               refreshing={vm.refreshing}
@@ -84,32 +68,50 @@ export const ClientCatalogView = () => {
           }
           ListEmptyComponent={
             <View style={styles.centrado}>
-              <Text style={styles.vacioIcono}>🔍</Text>
-              <Text style={styles.vacio}>No se encontraron productos base.</Text>
+              <Ionicons name="search-outline" size={40} color={textColors.muted} />
+              <Text style={styles.mensaje}>No encontramos productos con esa búsqueda.</Text>
             </View>
           }
           renderItem={({ item, index }) => (
             <FadeInView delay={Math.min(index, 6) * 60} style={styles.celda}>
               <PressableScale
                 style={styles.card}
-                onPress={() => router.push(`/(cliente)/producto/${item.producto_id}` as any)}
+                onPress={() => vm.abrirProducto(item.producto_id)}
+                scaleTo={0.97}
                 accessibilityRole="button"
                 accessibilityLabel={`Elegir ${item.producto_nombre} como producto base`}
               >
                 <View style={styles.imagenBox}>
-                  <Image
-                    source={{ uri: item.imagen_url || 'https://placehold.co/400x400?text=Sin+imagen' }}
-                    style={styles.imagen}
-                    resizeMode="cover"
-                  />
+                  {item.imagen_url ? (
+                    <Image
+                      source={{ uri: item.imagen_url }}
+                      style={styles.imagen}
+                      contentFit="cover"
+                      cachePolicy="memory-disk"
+                      recyclingKey={String(item.producto_id)}
+                      transition={200}
+                    />
+                  ) : (
+                    <Ionicons name="image-outline" size={32} color={textColors.muted} />
+                  )}
+                  {!!item.categoria && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeTexto} numberOfLines={1} maxFontSizeMultiplier={1}>{item.categoria}</Text>
+                    </View>
+                  )}
                 </View>
+
+                {/* Renglones de alto fijo: todas las tarjetas miden lo mismo */}
                 <View style={styles.info}>
-                  <Text style={styles.nombre} numberOfLines={2}>
+                  <Text style={styles.nombre} numberOfLines={2} maxFontSizeMultiplier={ESCALA}>
                     {item.producto_nombre}
                   </Text>
-                  <Text style={styles.precio}>Desde ${Number(item.precio_base || 0).toFixed(2)} MXN</Text>
-                  <View style={styles.pildora}>
-                    <Text style={styles.textoPildora}>Elegir base</Text>
+                  <Text style={styles.precio} numberOfLines={1} maxFontSizeMultiplier={ESCALA}>
+                    <Text style={styles.desde}>Desde </Text>${Number(item.precio_base || 0).toFixed(2)}
+                  </Text>
+                  <View style={styles.boton}>
+                    <Text style={styles.botonTexto} maxFontSizeMultiplier={ESCALA}>Elegir</Text>
+                    <Ionicons name="arrow-forward" size={15} color={textColors.primary} />
                   </View>
                 </View>
               </PressableScale>
@@ -122,90 +124,64 @@ export const ClientCatalogView = () => {
 };
 
 const styles = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: brandColors.background },
-  centrado: { alignItems: 'center', justifyContent: 'center', padding: 24, flex: 1 },
-  error: { color: brandColors.error, textAlign: 'center', fontWeight: '500', marginBottom: 14 },
-  botonReintentar: { paddingHorizontal: 28 },
-  vacioIcono: { fontSize: 36, marginBottom: 8 },
-  vacio: { color: brandTints.textMuted, textAlign: 'center' },
+  pantalla: { flex: 1, backgroundColor: surface.screen },
+  centrado: { alignItems: 'center', justifyContent: 'center', padding: space.xl, gap: space.sm, flex: 1 },
+  mensaje: { fontFamily: fontFamily.regular, fontSize: 14, color: textColors.secondary, textAlign: 'center' },
+  botonReintentar: { paddingHorizontal: 28, marginTop: space.sm },
 
-  toast: { marginHorizontal: 16, marginTop: 10, padding: 12, borderRadius: 12, backgroundColor: brandTints.accentSoft },
-  toastTexto: { textAlign: 'center', fontWeight: '600', color: brandColors.primary },
+  lista: { padding: 10, paddingBottom: 32, flexGrow: 1 },
+  encabezado: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    paddingHorizontal: 6,
+    paddingTop: 6,
+    paddingBottom: 4,
+  },
+  encabezadoTitulo: { fontFamily: fontFamily.bold, fontSize: 18, color: textColors.primary },
+  encabezadoContador: { fontFamily: fontFamily.regular, fontSize: 13, color: textColors.secondary },
 
-  // Bloque "Paso 1"
-  paso: {
-    backgroundColor: brandColors.primary,
-    borderRadius: 20,
-    padding: 18,
-    marginHorizontal: 6,
-    marginBottom: 8,
+  celda: { width: '50%', padding: 6 },
+  card: {
+    backgroundColor: surface.card,
+    borderRadius: radius.lg,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: surface.border,
   },
-  pasoCirculoGrande: {
-    position: 'absolute',
-    top: -40,
-    right: -30,
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: brandColors.accent,
-    opacity: 0.25,
-  },
-  pasoCirculoChico: {
-    position: 'absolute',
-    bottom: -24,
-    left: -20,
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: brandColors.accent,
-    opacity: 0.18,
-  },
-  pasoFila: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  pasoContenido: { flex: 1 },
-  pasoPildora: {
-    alignSelf: 'flex-start',
-    backgroundColor: brandColors.accent,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginBottom: 8,
-  },
-  pasoPildoraTexto: { fontSize: 11, fontWeight: '800', color: brandColors.primaryDark, letterSpacing: 0.8 },
-  pasoTitulo: { fontSize: 22, fontWeight: '800', color: brandColors.white },
-  pasoTexto: { fontSize: 13, color: brandTints.accentSoft, lineHeight: 19, marginTop: 6 },
-  pasoIcono: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: brandColors.white,
+  imagenBox: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: surface.muted,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pasoIconoTexto: { fontSize: 26 },
-  progreso: { flexDirection: 'row', gap: 6, marginTop: 16 },
-  progresoBarra: { flex: 1, height: 5, borderRadius: 3, backgroundColor: brandColors.white, opacity: 0.3 },
-  progresoBarraActiva: { backgroundColor: brandColors.accent, opacity: 1 },
-
-  lista: { padding: 10, paddingBottom: 32, flexGrow: 1 },
-  celda: { width: '50%', padding: 6 },
-  card: {
-    backgroundColor: brandColors.white,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  imagenBox: { width: '100%', aspectRatio: 1, backgroundColor: brandTints.surfaceMuted },
   imagen: { width: '100%', height: '100%' },
-  info: { padding: 12 },
-  nombre: { fontSize: 14, fontWeight: '700', color: brandColors.primaryDark, minHeight: 36 },
-  precio: { fontSize: 13, color: brandColors.primary, fontWeight: '700', marginTop: 4 },
-  pildora: {
-    alignSelf: 'flex-start',
-    backgroundColor: brandTints.accentSoft,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginTop: 10,
+  badge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    maxWidth: '85%',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: radius.pill,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
   },
-  textoPildora: { fontSize: 11, fontWeight: '700', color: brandColors.primary },
+  badgeTexto: { fontFamily: fontFamily.semibold, fontSize: 11, color: textColors.primary },
+
+  info: { paddingHorizontal: 10, paddingTop: 10, paddingBottom: 10 },
+  nombre: { fontFamily: fontFamily.medium, fontSize: 14, lineHeight: 19, height: 38, color: textColors.primary },
+  precio: { fontFamily: fontFamily.bold, fontSize: 17, lineHeight: 24, height: 24, color: textColors.primary, marginTop: 6 },
+  desde: { fontFamily: fontFamily.regular, fontSize: 12, color: textColors.secondary },
+  boton: {
+    marginTop: 10,
+    height: 36,
+    borderRadius: radius.md,
+    backgroundColor: surface.muted,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  botonTexto: { fontFamily: fontFamily.semibold, fontSize: 13, color: textColors.primary },
 });

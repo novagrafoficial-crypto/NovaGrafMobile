@@ -3,9 +3,8 @@ import { Animated, StyleProp, ViewStyle } from 'react-native';
 
 interface FadeInViewProps {
   children: React.ReactNode;
-  /** Retraso en ms: útil para que una lista aparezca escalonada. */
   delay?: number;
-  /** Cuántos px sube mientras aparece. */
+
   distance?: number;
   duration?: number;
   style?: StyleProp<ViewStyle>;

@@ -1,13 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useClientProfileViewModel } from '../viewmodels/useClientProfileViewModel';
 import { ModalConfirmacionLogout } from '@/shared/components/ModalConfirmacionLogout';
 import { ScreenHeader } from '@/shared/components/ScreenHeader';
 import { Loading } from '@/shared/components/Loading';
 import { FadeInView } from '@/shared/components/FadeInView';
 import { PressableScale } from '@/shared/components/PressableScale';
-import { getInitials } from '@/shared/utils/getInitials';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
+import { TarjetaUsuario } from '../components/TarjetaUsuario';
+import { FilaDato } from '../components/FilaDato';
+import { FilaMenu } from '../components/FilaMenu';
+import { CampoTexto } from '../components/CampoTexto';
+
+const ESCALA = 1.15;
 
 export const ClientProfileView = () => {
   const vm = useClientProfileViewModel();
@@ -30,238 +37,221 @@ export const ClientProfileView = () => {
       {vm.loading ? (
         <Loading fullScreen />
       ) : (
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          {vm.toastMsg && (
-            <FadeInView distance={-10} duration={250} style={[styles.toast, vm.toastMsg.ok ? styles.toastOk : styles.toastErr]}>
-              <Text style={[styles.toastText, vm.toastMsg.ok ? styles.toastTextOk : styles.toastTextErr]}>
-                {vm.toastMsg.text}
-              </Text>
-            </FadeInView>
-          )}
-
-          {/* TARJETA DE USUARIO */}
-          <FadeInView style={styles.userCard}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{getInitials(profile?.nombre, profile?.apellido_paterno)}</Text>
-            </View>
-            <Text style={styles.userName}>
-              {profile?.nombre} {profile?.apellido_paterno}
-            </Text>
-            <Text style={styles.userEmail}>{profile?.correo_electronico}</Text>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{vm.esGoogle ? '🌐 Cuenta Google' : '✉️ Registro tradicional'}</Text>
-            </View>
-          </FadeInView>
-
-          {/* DIRECCIÓN DE ENVÍO */}
-          {!!profile?.domicilio && (
-            <FadeInView delay={80} style={styles.bannerAddress}>
-            <Text style={styles.addressIcon}>📍</Text>
-            <View style={styles.addressInfo}>
-              <Text style={styles.addressTitle}>Enviar a {profile?.nombre}</Text>
-              <Text style={styles.addressText}>
-                {profile?.domicilio || 'Aún no tienes domicilio. Toca "Editar" para agregarlo.'}
-              </Text>
-            </View>
-          </FadeInView>
-          )}
-
-          {/* INFORMACIÓN PERSONAL */}
-          <FadeInView delay={140} style={styles.card}>
-            {vm.editing ? (
-              <>
-                <Text style={styles.cardTitle}>Editar información personal</Text>
-                <Text style={styles.cardSub}>
-                  {vm.esGoogle ? 'Cuenta Google — correo no editable' : 'Mantén tus datos actualizados'}
-                </Text>
-
-                <Text style={styles.label}>Nombre *</Text>
-                <TextInput style={styles.input} value={form.nombre || ''} onChangeText={(t) => setForm({ ...form, nombre: t })} />
-
-                <Text style={styles.label}>Apellido paterno *</Text>
-                <TextInput style={styles.input} value={form.apellido_paterno || ''} onChangeText={(t) => setForm({ ...form, apellido_paterno: t })} />
-
-                <Text style={styles.label}>Apellido materno</Text>
-                <TextInput style={styles.input} value={form.apellido_materno || ''} onChangeText={(t) => setForm({ ...form, apellido_materno: t })} />
-
-                <Text style={styles.label}>Nombre de usuario *</Text>
-                <TextInput style={styles.input} autoCapitalize="none" value={form.nombre_usuario || ''} onChangeText={(t) => setForm({ ...form, nombre_usuario: t })} />
-
-                <Text style={styles.label}>Teléfono</Text>
-                <TextInput style={styles.input} keyboardType="phone-pad" value={form.telefono || ''} onChangeText={(t) => setForm({ ...form, telefono: t })} />
-                
-                <Text style={styles.label}>Domicilio</Text>
-                <TextInput style={styles.input} placeholder="Calle, número y colonia" placeholderTextColor={brandTints.textMuted} value={form.domicilio || ''} onChangeText={(t) => setForm({ ...form, domicilio: t })} />
-
-                <Text style={styles.label}>Correo electrónico (no editable)</Text>
-                <TextInput style={[styles.input, styles.inputDisabled]} value={profile?.correo_electronico} editable={false} />
-
-                <View style={styles.actionRow}>
-                  <PressableScale style={[styles.btn, styles.btnSave, vm.saving && styles.btnDisabled]} onPress={vm.handleSaveProfile} disabled={vm.saving}>
-                    <Text style={styles.btnSaveText}>{vm.saving ? 'Guardando…' : 'Guardar'}</Text>
-                  </PressableScale>
-                  <PressableScale style={[styles.btn, styles.btnCancel]} onPress={() => vm.setEditing(false)}>
-                    <Text style={styles.btnCancelText}>Cancelar</Text>
-                  </PressableScale>
-                </View>
-              </>
-            ) : (
-              <>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>Tu información</Text>
-                  <PressableScale onPress={() => vm.setEditing(true)} scaleTo={0.9} hitSlop={10}>
-                    <Text style={styles.linkText}>Editar</Text>
-                  </PressableScale>
-                </View>
-                <FilaInfo etiqueta="Nombre" valor={nombreCompleto} />
-                <FilaInfo etiqueta="Usuario" valor={profile?.nombre_usuario} />
-                <FilaInfo etiqueta="Correo" valor={profile?.correo_electronico} />
-                <FilaInfo etiqueta="Teléfono" valor={profile?.telefono} />
-                <FilaInfo etiqueta="Domicilio" valor={profile?.domicilio} />
-              </>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView
+            contentContainerStyle={styles.scroll}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {/* AVISO (guardado / error) */}
+            {vm.toastMsg && (
+              <FadeInView distance={-10} duration={250} style={[styles.aviso, vm.toastMsg.ok ? styles.avisoOk : styles.avisoError]}>
+                <Ionicons
+                  name={vm.toastMsg.ok ? 'checkmark-circle' : 'alert-circle'}
+                  size={20}
+                  color={vm.toastMsg.ok ? '#166534' : brandColors.error}
+                />
+                <Text style={styles.avisoTexto} maxFontSizeMultiplier={ESCALA}>{vm.toastMsg.text}</Text>
+              </FadeInView>
             )}
-          </FadeInView>
 
-          {/* SEGURIDAD (solo cuentas tradicionales) */}
-          {!vm.esGoogle && (
-            <FadeInView delay={200} style={styles.card}>
+            {/* 1. USUARIO */}
+            <FadeInView>
+              <TarjetaUsuario
+                nombre={profile?.nombre}
+                apellido={profile?.apellido_paterno}
+                correo={profile?.correo_electronico}
+                esGoogle={vm.esGoogle}
+              />
+            </FadeInView>
+
+            {/* 2. ACCESOS RÁPIDOS */}
+            <FadeInView delay={60} style={styles.card}>
+              <FilaMenu icono="notifications-outline" titulo="Notificaciones" contador={vm.noLeidas} onPress={vm.irANotificaciones} />
+              <FilaMenu icono="receipt-outline" titulo="Mis pedidos" onPress={vm.irAPedidos} ultima />
+            </FadeInView>
+
+            {/* 3. DATOS PERSONALES */}
+            <FadeInView delay={120} style={styles.card}>
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>Seguridad</Text>
-                <PressableScale onPress={vm.alternarPwForm} scaleTo={0.9} hitSlop={10}>
-                  <Text style={styles.linkText}>{vm.showPwForm ? 'Ocultar' : 'Cambiar contraseña'}</Text>
-                </PressableScale>
+                <Text style={styles.cardTitulo} maxFontSizeMultiplier={ESCALA}>
+                  {vm.editing ? 'Editar datos' : 'Datos personales'}
+                </Text>
+                {!vm.editing && (
+                  <PressableScale style={styles.botonEditar} onPress={() => vm.setEditing(true)} scaleTo={0.92} hitSlop={8}>
+                    <Ionicons name="create-outline" size={16} color={textColors.primary} />
+                    <Text style={styles.botonEditarTexto} maxFontSizeMultiplier={ESCALA}>Editar</Text>
+                  </PressableScale>
+                )}
               </View>
 
-              {vm.showPwForm && (
-                <FadeInView distance={-8} duration={240}>
-                  <TextInput style={styles.input} secureTextEntry placeholder="Contraseña actual" placeholderTextColor={brandTints.textMuted} value={pwForm.actual} onChangeText={(t) => setPwForm({ ...pwForm, actual: t })} />
-                  <TextInput style={styles.input} secureTextEntry placeholder="Nueva contraseña" placeholderTextColor={brandTints.textMuted} value={pwForm.nueva} onChangeText={(t) => setPwForm({ ...pwForm, nueva: t })} />
-                  <TextInput style={styles.input} secureTextEntry placeholder="Confirmar nueva contraseña" placeholderTextColor={brandTints.textMuted} value={pwForm.confirmar} onChangeText={(t) => setPwForm({ ...pwForm, confirmar: t })} />
+              {vm.editing ? (
+                <View style={styles.formulario}>
+                  <CampoTexto etiqueta="Nombre" icono="person-outline" value={form.nombre || ''} onChangeText={(t) => setForm({ ...form, nombre: t })} />
+                  <CampoTexto etiqueta="Apellido paterno" icono="person-outline" value={form.apellido_paterno || ''} onChangeText={(t) => setForm({ ...form, apellido_paterno: t })} />
+                  <CampoTexto etiqueta="Apellido materno" icono="person-outline" value={form.apellido_materno || ''} onChangeText={(t) => setForm({ ...form, apellido_materno: t })} />
+                  <CampoTexto etiqueta="Nombre de usuario" icono="at-outline" autoCapitalize="none" value={form.nombre_usuario || ''} onChangeText={(t) => setForm({ ...form, nombre_usuario: t })} />
+                  <CampoTexto etiqueta="Teléfono" icono="call-outline" keyboardType="phone-pad" value={form.telefono || ''} onChangeText={(t) => setForm({ ...form, telefono: t })} />
+                  <CampoTexto etiqueta="Domicilio" icono="location-outline" placeholder="Calle, número y colonia" value={form.domicilio || ''} onChangeText={(t) => setForm({ ...form, domicilio: t })} />
+                  <CampoTexto etiqueta="Correo electrónico" icono="mail-outline" value={profile?.correo_electronico || ''} bloqueado />
 
-                  {vm.pwMsg && (
-                    <Text style={[styles.msgText, vm.pwMsg.ok ? styles.okText : styles.errText]}>{vm.pwMsg.text}</Text>
-                  )}
-
-                  <PressableScale style={[styles.btn, styles.btnSave, styles.btnFull, vm.pwSaving && styles.btnDisabled]} onPress={vm.handleSavePassword} disabled={vm.pwSaving}>
-                    <Text style={styles.btnSaveText}>{vm.pwSaving ? 'Guardando…' : 'Guardar contraseña'}</Text>
-                  </PressableScale>
-                </FadeInView>
+                  <View style={styles.botones}>
+                    <PressableScale style={[styles.boton, styles.botonSecundario]} onPress={vm.cancelarEdicion} disabled={vm.saving}>
+                      <Text style={styles.botonSecundarioTexto} maxFontSizeMultiplier={ESCALA}>Cancelar</Text>
+                    </PressableScale>
+                    <PressableScale
+                      style={[styles.boton, styles.botonPrincipal, vm.saving && styles.deshabilitado]}
+                      onPress={vm.handleSaveProfile}
+                      disabled={vm.saving}
+                    >
+                      <Text style={styles.botonPrincipalTexto} maxFontSizeMultiplier={ESCALA}>{vm.saving ? 'Guardando…' : 'Guardar'}</Text>
+                    </PressableScale>
+                  </View>
+                </View>
+              ) : (
+                <>
+                  <FilaDato icono="person-outline" etiqueta="Nombre completo" valor={nombreCompleto} />
+                  <FilaDato icono="at-outline" etiqueta="Usuario" valor={profile?.nombre_usuario} />
+                  <FilaDato icono="mail-outline" etiqueta="Correo" valor={profile?.correo_electronico} />
+                  <FilaDato icono="call-outline" etiqueta="Teléfono" valor={profile?.telefono} />
+                  <FilaDato icono="location-outline" etiqueta="Domicilio de envío" valor={profile?.domicilio} ultima />
+                </>
               )}
             </FadeInView>
-          )}
 
-          {/* CERRAR SESIÓN */}
-          <FadeInView delay={260}>
-            <PressableScale style={styles.logoutBtn} onPress={vm.pedirLogout}>
-              <Text style={styles.logoutBtnText}>Cerrar sesión</Text>
-            </PressableScale>
-          </FadeInView>
-        </ScrollView>
+            {/* 4. CUENTA: contraseña (solo cuentas con correo) + cerrar sesión */}
+            <FadeInView delay={180} style={styles.card}>
+              {!vm.esGoogle && (
+                <>
+                  <FilaMenu
+                    icono="lock-closed-outline"
+                    titulo="Cambiar contraseña"
+                    flecha={vm.showPwForm ? 'arriba' : 'abajo'}
+                    onPress={vm.alternarPwForm}
+                  />
+
+                  {vm.showPwForm && (
+                    <FadeInView distance={-8} duration={240} style={styles.formularioPw}>
+                      <CampoTexto
+                        etiqueta="Contraseña actual"
+                        icono="key-outline"
+                        secureTextEntry={!vm.verPw}
+                        value={pwForm.actual}
+                        onChangeText={(t) => setPwForm({ ...pwForm, actual: t })}
+                        onAlternarVer={vm.alternarVerPw}
+                        visible={vm.verPw}
+                      />
+                      <CampoTexto
+                        etiqueta="Nueva contraseña"
+                        icono="lock-closed-outline"
+                        placeholder="Mínimo 6 caracteres"
+                        secureTextEntry={!vm.verPw}
+                        value={pwForm.nueva}
+                        onChangeText={(t) => setPwForm({ ...pwForm, nueva: t })}
+                      />
+                      <CampoTexto
+                        etiqueta="Confirmar contraseña"
+                        icono="lock-closed-outline"
+                        secureTextEntry={!vm.verPw}
+                        value={pwForm.confirmar}
+                        onChangeText={(t) => setPwForm({ ...pwForm, confirmar: t })}
+                      />
+
+                      {vm.pwMsg && (
+                        <View style={styles.pwMensaje}>
+                          <Ionicons
+                            name={vm.pwMsg.ok ? 'checkmark-circle' : 'alert-circle'}
+                            size={16}
+                            color={vm.pwMsg.ok ? '#166534' : brandColors.error}
+                          />
+                          <Text style={[styles.pwMensajeTexto, { color: vm.pwMsg.ok ? '#166534' : brandColors.error }]} maxFontSizeMultiplier={ESCALA}>
+                            {vm.pwMsg.text}
+                          </Text>
+                        </View>
+                      )}
+
+                      <PressableScale
+                        style={[styles.boton, styles.botonCompleto, styles.botonPrincipal, vm.pwSaving && styles.deshabilitado]}
+                        onPress={vm.handleSavePassword}
+                        disabled={vm.pwSaving}
+                      >
+                        <Text style={styles.botonPrincipalTexto} maxFontSizeMultiplier={ESCALA}>
+                          {vm.pwSaving ? 'Guardando…' : 'Guardar contraseña'}
+                        </Text>
+                      </PressableScale>
+                    </FadeInView>
+                  )}
+                </>
+              )}
+
+              <FilaMenu icono="document-text-outline" titulo="Políticas y privacidad" onPress={vm.irAPoliticas} />
+              <FilaMenu icono="trash-outline" titulo="Eliminar mi cuenta" onPress={vm.irAEliminarCuenta} />
+              <FilaMenu icono="log-out-outline" titulo="Cerrar sesión" flecha="ninguna" peligro onPress={vm.pedirLogout} ultima />
+            </FadeInView>
+          </ScrollView>
+        </KeyboardAvoidingView>
       )}
     </View>
   );
 };
 
-const FilaInfo = ({ etiqueta, valor, ultima }: { etiqueta: string; valor?: string | null; ultima?: boolean }) => (
-  <View style={[styles.infoRow, ultima && styles.infoRowLast]}>
-    <Text style={styles.infoLabel}>{etiqueta}</Text>
-    <Text style={styles.infoValue} numberOfLines={1}>
-      {valor || '—'}
-    </Text>
-  </View>
-);
-
 const styles = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: brandColors.background },
-  scroll: { padding: 16, paddingBottom: 32, gap: 14 },
+  pantalla: { flex: 1, backgroundColor: surface.screen },
+  scroll: { padding: space.lg, paddingBottom: 40, gap: space.md },
 
-  toast: { padding: 12, borderRadius: 12 },
-  toastOk: { backgroundColor: brandTints.accentSoft },
-  toastErr: { backgroundColor: brandTints.errorSoft },
-  toastText: { textAlign: 'center', fontWeight: '600' },
-  toastTextOk: { color: brandColors.primary },
-  toastTextErr: { color: brandColors.error },
-
-  userCard: { backgroundColor: brandColors.white, padding: 20, borderRadius: 18, alignItems: 'center' },
-  avatar: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: brandColors.accent,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  avatarText: { color: brandColors.white, fontSize: 24, fontWeight: '800' },
-  userName: { fontSize: 19, fontWeight: '800', color: brandColors.primaryDark },
-  userEmail: { fontSize: 13, color: brandTints.textMuted, marginTop: 2, marginBottom: 10 },
-  badge: { backgroundColor: brandTints.accentSoft, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10 },
-  badgeText: { fontSize: 12, color: brandColors.primary, fontWeight: '700' },
-
-  bannerAddress: {
-    backgroundColor: brandColors.primary,
-    padding: 14,
-    borderRadius: 14,
+  // Aviso arriba
+  aviso: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: space.sm,
+    padding: space.md,
+    borderRadius: radius.md,
   },
-  addressIcon: { fontSize: 20 },
-  addressInfo: { flex: 1, marginLeft: 10 },
-  addressTitle: { fontWeight: '700', color: brandColors.white },
-  addressText: { color: brandTints.accentSoft, fontSize: 13, marginTop: 2 },
+  avisoOk: { backgroundColor: '#DCFCE7' },
+  avisoError: { backgroundColor: '#FEE2E2' },
+  avisoTexto: { flex: 1, fontFamily: fontFamily.medium, fontSize: 14, color: textColors.primary },
 
-  card: { backgroundColor: brandColors.white, borderRadius: 16, padding: 16 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  cardTitle: { fontSize: 16, fontWeight: '800', color: brandColors.primaryDark },
-  cardSub: { fontSize: 12, color: brandTints.textMuted, marginTop: 2, marginBottom: 8 },
-  linkText: { color: brandColors.primary, fontWeight: '700', fontSize: 13 },
-
-  label: { fontSize: 12, fontWeight: '700', color: brandTints.textMuted, marginTop: 10, marginBottom: 4 },
-  input: {
-    backgroundColor: brandTints.surfaceMuted,
-    borderWidth: 1.5,
-    borderColor: brandTints.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: brandColors.primaryDark,
-    marginBottom: 8,
+  // Tarjetas
+  card: {
+    backgroundColor: surface.card,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.xs,
+    borderWidth: 1,
+    borderColor: surface.border,
   },
-  inputDisabled: { opacity: 0.6 },
-
-  actionRow: { flexDirection: 'row', gap: 10, marginTop: 14 },
-  btn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
-  btnFull: { flex: 0, marginTop: 4 },
-  btnDisabled: { opacity: 0.5 },
-  btnSave: { backgroundColor: brandColors.primary },
-  btnSaveText: { color: brandColors.white, fontWeight: '700' },
-  btnCancel: { backgroundColor: brandTints.surfaceMuted },
-  btnCancelText: { color: brandColors.primaryDark, fontWeight: '600' },
-
-  infoRow: {
+  cardHeader: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: brandTints.surfaceMuted,
-    gap: 12,
+    paddingTop: space.md,
+    paddingBottom: space.xs,
   },
-  infoRowLast: { borderBottomWidth: 0 },
-  infoLabel: { color: brandTints.textMuted, fontSize: 13 },
-  infoValue: { color: brandColors.primaryDark, fontWeight: '600', fontSize: 13, flexShrink: 1 },
-
-  msgText: { fontSize: 12, marginBottom: 6, textAlign: 'center', fontWeight: '600' },
-  okText: { color: brandColors.primary },
-  errText: { color: brandColors.error },
-
-  logoutBtn: {
-    backgroundColor: brandColors.white,
-    borderWidth: 1.5,
-    borderColor: brandColors.error,
-    paddingVertical: 14,
-    borderRadius: 12,
+  cardTitulo: { fontFamily: fontFamily.semibold, fontSize: 16, color: textColors.primary },
+  botonEditar: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    height: 32,
+    borderRadius: radius.pill,
+    backgroundColor: surface.muted,
   },
-  logoutBtnText: { color: brandColors.error, fontWeight: '800' },
+  botonEditarTexto: { fontFamily: fontFamily.medium, fontSize: 13, color: textColors.primary },
+
+  // Formularios
+  formulario: { gap: space.md, paddingTop: space.sm, paddingBottom: space.lg },
+  formularioPw: { gap: space.md, paddingBottom: space.lg },
+  pwMensaje: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  pwMensajeTexto: { fontFamily: fontFamily.medium, fontSize: 13 },
+
+  // Botones
+  botones: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },
+  boton: { flex: 1, height: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  botonCompleto: { flex: 0 },
+  botonPrincipal: { backgroundColor: brandColors.primary },
+  botonPrincipalTexto: { fontFamily: fontFamily.semibold, fontSize: 15, color: '#FFFFFF' },
+  botonSecundario: { borderWidth: 1, borderColor: surface.border, backgroundColor: surface.card },
+  botonSecundarioTexto: { fontFamily: fontFamily.semibold, fontSize: 15, color: textColors.primary },
+  deshabilitado: { opacity: 0.6 },
 });

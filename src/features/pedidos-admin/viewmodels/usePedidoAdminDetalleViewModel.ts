@@ -3,7 +3,7 @@ import { Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { pedidosAdminService } from '../services/pedidosAdminService';
-import { estadoPrevia, type EstadoPrevia } from '../utils/pedidoAdminUtils';
+import { estadoPrevia, textoTipoPago, type EstadoPrevia, type IconoAdmin } from '../utils/pedidoAdminUtils';
 import type {
   ArchivoPrevia,
   DetalleSeleccionado,
@@ -22,7 +22,19 @@ export interface Confirmacion {
   mensaje: string;
   icono?: string;
   textoConfirmar: string;
+  tono?: 'peligro' | 'normal';
   onConfirmar: () => void;
+}
+
+// Tarjeta "Próximo paso": qué le toca hacer al admin con este pedido.
+export interface ProximoPaso {
+  tono: 'accion' | 'espera' | 'listo' | 'cancelado';
+  icono: IconoAdmin;
+  titulo: string;
+  texto: string;
+  boton?: { texto: string; icono: IconoAdmin; onPress: () => void };
+  /** Sección a la que se baja con el botón (en lugar de onPress) */
+  destino?: 'pagos' | 'previas';
 }
 
 // Mensaje que se muestra arriba de las previas según cómo va la revisión del cliente.
@@ -114,21 +126,41 @@ export const usePedidoAdminDetalleViewModel = () => {
 
   const pedirResolverPago = (pago: PagoAdmin, estado: 'APROBADO' | 'RECHAZADO') => {
     const aprobar = estado === 'APROBADO';
-    // Si el admin no escribe nada, se conserva la nota que ya tenía el pago.
-    const nota = (notasPago[pago.id] ?? '').trim() || pago.notas_admin || '';
+    const notaEscrita = (notasPago[pago.id] ?? '').trim();
+    // Al rechazar, el motivo es obligatorio: es lo que el cliente ve para corregir su pago.
+    if (!aprobar && !notaEscrita) {
+      mostrarAviso('Escribe el motivo del rechazo para que el cliente sepa qué corregir.', false);
+      return;
+    }
+    // Al aprobar sin escribir nada, se conserva la nota que ya tenía el pago.
+    const nota = notaEscrita || pago.notas_admin || '';
+    const tipo = textoTipoPago(pago.tipo_pago).toLowerCase();
     setConfirmacion({
       titulo: aprobar ? 'Aprobar pago' : 'Rechazar pago',
       mensaje: aprobar
-        ? `¿Confirmas que el comprobante de ${pago.tipo_pago} es válido?`
-        : `¿Seguro que quieres rechazar el comprobante de ${pago.tipo_pago}?`,
-      icono: aprobar ? '✅' : '❌',
+        ? `¿Confirmas que el comprobante del ${tipo} es válido?`
+        : `El cliente verá tu motivo y podrá subir otro comprobante del ${tipo}.`,
+      icono: aprobar ? 'checkmark-circle-outline' : 'close-circle-outline',
+      tono: aprobar ? 'normal' : 'peligro',
       textoConfirmar: aprobar ? 'Sí, aprobar' : 'Sí, rechazar',
       onConfirmar: () => {
         setConfirmacion(null);
-        ejecutar(
-          () => pedidosAdminService.resolverPago(pago.id, estado, nota),
-          aprobar ? 'Pago aprobado correctamente' : 'Pago rechazado correctamente'
-        );
+        ejecutar(async () => {
+          await pedidosAdminService.resolverPago(pago.id, estado, nota);
+          setNotasPago((n) => ({ ...n, [pago.id]: '' }));
+
+          // Respaldo del flujo por si la base de datos no mueve el estado sola:
+          const actual = (await pedidosAdminService.getPedido(pedidoId)).pedido.estado;
+          // 1) Anticipo aprobado → el cliente ya puede subir su diseño.
+          if (aprobar && pago.tipo_pago === 'ANTICIPO' && actual === 'PENDIENTE_VERIFICACION') {
+            await pedidosAdminService.cambiarEstado(pedidoId, 'EN_DISENO');
+          }
+          // 2) Pago final rechazado → regresa a "Pendiente de pago final" para que el
+          //    cliente pueda volver a pagar (el backend solo acepta el pago en ese estado).
+          if (!aprobar && pago.tipo_pago !== 'ANTICIPO' && actual === 'VERIFICANDO_PAGO_FINAL') {
+            await pedidosAdminService.cambiarEstado(pedidoId, 'PENDIENTE_PAGO_FINAL');
+          }
+        }, aprobar ? 'Pago aprobado correctamente' : 'Pago rechazado. El cliente podrá subir otro comprobante.');
       },
     });
   };
@@ -137,8 +169,9 @@ export const usePedidoAdminDetalleViewModel = () => {
   const pedirMarcarListo = () =>
     setConfirmacion({
       titulo: 'Marcar como listo',
-      mensaje: 'El pedido pasará a "Pendiente de pago final".',
-      icono: '📦',
+      mensaje: 'El pedido está terminado. Pasará a "Esperando pago final" y el cliente podrá pagar su saldo.',
+      icono: 'cube-outline',
+      tono: 'normal',
       textoConfirmar: 'Sí, marcar',
       onConfirmar: () => {
         setConfirmacion(null);
@@ -152,12 +185,25 @@ export const usePedidoAdminDetalleViewModel = () => {
   const pedirCancelar = () =>
     setConfirmacion({
       titulo: 'Cancelar pedido',
-      mensaje: '¿Seguro que quieres cancelar este pedido?',
-      icono: '⚠️',
+      mensaje: '¿Seguro que quieres cancelar este pedido? Esta acción no se puede deshacer.',
+      icono: 'close-circle-outline',
       textoConfirmar: 'Sí, cancelar',
       onConfirmar: () => {
         setConfirmacion(null);
         ejecutar(() => pedidosAdminService.cambiarEstado(pedidoId, 'CANCELADO'), 'Pedido cancelado');
+      },
+    });
+
+  const pedirMarcarEnviado = () =>
+    setConfirmacion({
+      titulo: 'Marcar como enviado',
+      mensaje: 'El pago está completo. El pedido se marcará como enviado / entregado al cliente.',
+      icono: 'paper-plane-outline',
+      tono: 'normal',
+      textoConfirmar: 'Sí, marcar',
+      onConfirmar: () => {
+        setConfirmacion(null);
+        ejecutar(() => pedidosAdminService.cambiarEstado(pedidoId, 'ENVIADO'), 'Pedido marcado como enviado');
       },
     });
 
@@ -216,7 +262,8 @@ export const usePedidoAdminDetalleViewModel = () => {
     setConfirmacion({
       titulo: `Enviar previa ${numero}`,
       mensaje: 'Se enviará al cliente para que la apruebe o la rechace.',
-      icono: '📤',
+      icono: 'send-outline',
+      tono: 'normal',
       textoConfirmar: 'Sí, enviar',
       onConfirmar: () => {
         setConfirmacion(null);
@@ -228,15 +275,69 @@ export const usePedidoAdminDetalleViewModel = () => {
     });
   };
 
+  // ---- Próximo paso: qué le toca al admin ----
+  const pagosOrdenados = useMemo(() => [...(data?.pagos ?? [])].sort((a, b) => b.id - a.id), [data]);
+  const ultimoAnticipo = pagosOrdenados.find((p) => p.tipo_pago === 'ANTICIPO') ?? null;
+  const ultimoFinal = pagosOrdenados.find((p) => p.tipo_pago !== 'ANTICIPO') ?? null;
+
+  const proximoPaso = useMemo<ProximoPaso | null>(() => {
+    if (!data) return null;
+    switch (data.pedido.estado) {
+      case 'PENDIENTE_VERIFICACION':
+        if (ultimoAnticipo?.estado_pago === 'PENDIENTE') {
+          return { tono: 'accion', icono: 'receipt-outline', titulo: 'Revisa el anticipo', texto: 'El cliente subió su comprobante. Apruébalo o recházalo.', destino: 'pagos' };
+        }
+        return ultimoAnticipo?.estado_pago === 'RECHAZADO'
+          ? { tono: 'espera', icono: 'time-outline', titulo: 'Esperando nuevo comprobante', texto: 'Rechazaste el anticipo. El cliente debe subir otro.' }
+          : { tono: 'espera', icono: 'time-outline', titulo: 'Esperando el anticipo', texto: 'El cliente todavía no paga el 50%.' };
+      case 'EN_DISENO':
+        return { tono: 'espera', icono: 'color-palette-outline', titulo: 'Esperando el diseño', texto: 'El cliente debe subir su logo o idea para cada producto.' };
+      case 'EN_REVISION':
+        return { tono: 'accion', icono: 'brush-outline', titulo: `Envía la previa ${siguientePrevia}`, texto: 'El cliente ya mandó su diseño. Prepara la propuesta y súbela.', destino: 'previas' };
+      case 'PREVIAS_ENVIADAS':
+        return ultimaRechazada
+          ? { tono: 'accion', icono: 'refresh-outline', titulo: `El cliente pidió cambios`, texto: `Revisa su comentario y envía la previa ${siguientePrevia}.`, destino: 'previas' }
+          : { tono: 'espera', icono: 'eye-outline', titulo: 'Esperando respuesta', texto: `El cliente está revisando la previa ${ultimaPrevia?.numero_previa ?? ''}.` };
+      case 'EN_PRODUCCION':
+        return {
+          tono: 'accion', icono: 'construct-outline', titulo: 'En producción',
+          texto: 'Cuando el pedido esté terminado, márcalo como listo para cobrar el saldo.',
+          boton: { texto: 'Marcar como listo', icono: 'cube-outline', onPress: pedirMarcarListo },
+        };
+      case 'PENDIENTE_PAGO_FINAL':
+      case 'VERIFICANDO_PAGO_FINAL':
+        if (ultimoFinal?.estado_pago === 'PENDIENTE') {
+          return { tono: 'accion', icono: 'cash-outline', titulo: 'Revisa el pago final', texto: 'El cliente subió el comprobante de su saldo.', destino: 'pagos' };
+        }
+        if (ultimoFinal?.estado_pago === 'APROBADO') {
+          return {
+            tono: 'accion', icono: 'paper-plane-outline', titulo: 'Pago completo',
+            texto: 'Ya se pagó todo. Entrega o envía el pedido y márcalo como enviado.',
+            boton: { texto: 'Marcar como enviado', icono: 'paper-plane-outline', onPress: pedirMarcarEnviado },
+          };
+        }
+        return { tono: 'espera', icono: 'cash-outline', titulo: 'Esperando el pago final', texto: 'El cliente debe pagar el saldo restante.' };
+      case 'ENVIADO':
+        return { tono: 'listo', icono: 'checkmark-done-circle-outline', titulo: 'Pedido enviado', texto: 'Este pedido ya se completó.' };
+      case 'CANCELADO':
+        return { tono: 'cancelado', icono: 'close-circle-outline', titulo: 'Pedido cancelado', texto: 'No hay acciones pendientes.' };
+      default:
+        return null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, ultimoAnticipo, ultimoFinal, ultimaRechazada, siguientePrevia, ultimaPrevia]);
+
   return {
     pedidoId,
+    proximoPaso,
+    pagosOrdenados,
     data,
     cargando,
     refrescando,
     error,
     refrescar,
     reintentar: cargar,
-    volver: () => router.back(),
+    volver: () => (router.canGoBack() ? router.back() : router.replace('/(admin)/pedidos' as any)),
     abrirUrl: (url: string) => Linking.openURL(url).catch(() => mostrarAviso('No se pudo abrir el archivo.', false)),
 
     trabajando,
@@ -253,7 +354,9 @@ export const usePedidoAdminDetalleViewModel = () => {
     pedirResolverPago,
 
     pedirMarcarListo,
+    pedirMarcarEnviado,
     pedirCancelar,
+    puedeCancelar: !!estadoPedido && estadoPedido !== 'CANCELADO' && estadoPedido !== 'ENVIADO',
 
     previa,
     siguientePrevia,

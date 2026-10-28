@@ -5,13 +5,16 @@ import type { Oferta, OfertaTarjeta } from '@/features/ofertas';
 import { usePortfolioViewModel } from '@/features/portafolio';
 import type { PortfolioItem } from '@/features/portafolio';
 import { clientProductService } from '@/features/catalogo-cliente';
+import { useAuth } from '@/shared/hooks/useAuth';
 
-const LIMITE_OFERTAS = 6; // cuántas promociones se ven antes de "Ver todo"
+const LIMITE_OFERTAS = 6; 
+const LOTE_PORTAFOLIO = 6;
 
 const norm = (s: string | null | undefined) => (s ?? '').trim().toLowerCase();
 
 export const useClientHomeViewModel = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const portafolio = usePortfolioViewModel(); // trabajos personalizados (inspiración)
 
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
@@ -126,6 +129,12 @@ export const useClientHomeViewModel = () => {
       ),
     [portafolio.items, coincide]
   );
+    // Se muestran de 6 en 6: muchas fotos a la vez hacen que el scroll se trabe
+  const [cantidadPortafolio, setCantidadPortafolio] = useState<number>(LOTE_PORTAFOLIO);
+  useEffect(() => { setCantidadPortafolio(LOTE_PORTAFOLIO); }, [busqueda, categoria]);
+  const portafolioVisible = portafolioFiltrado.slice(0, cantidadPortafolio);
+  const hayMasPortafolio = portafolioFiltrado.length > cantidadPortafolio;
+  const verMasPortafolio = () => setCantidadPortafolio((n) => n + LOTE_PORTAFOLIO);
 
   const avisar = (texto: string) => {
     setAviso(texto);
@@ -140,6 +149,7 @@ export const useClientHomeViewModel = () => {
 
   return {
     // búsqueda y categorías
+    primerNombre: user?.nombre?.trim().split(/\s+/)[0] ?? '',
     busqueda,
     setBusqueda,
     categorias,
@@ -157,6 +167,9 @@ export const useClientHomeViewModel = () => {
     sinOfertasActivas: tarjetas.length === 0,
     // inspiración
     portafolioFiltrado,
+        portafolioVisible,
+    hayMasPortafolio,
+    verMasPortafolio,
     portafolioCargando: portafolio.isLoading,
     portafolioError: portafolio.error,
     recargarPortafolio: portafolio.reload,
@@ -178,6 +191,6 @@ export const useClientHomeViewModel = () => {
         ? router.push(`/(cliente)/producto/${item.productoId}` as any)
         : router.push('/(cliente)/productos-base' as any),
     abrirNotificaciones: () => router.push('/(cliente)/notificaciones' as any),
-    abrirChat: () => avisar('El chat estará disponible pronto.'),
+    abrirChat: () => avisar('Chat disponible en pedidos.'),
   };
 };

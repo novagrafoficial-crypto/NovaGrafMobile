@@ -70,6 +70,7 @@ export const pedidosAdminService = {
           fecha_subida: p.fecha_subida ?? null,
           fecha_vista: p.fecha_vista ?? null,
           fecha_aprobacion: p.fecha_aprobacion ?? null,
+          comentario_cliente: p.comentario_cliente ?? null,
         }))
         // Siempre de la primera a la última, sin depender del orden del backend.
         .sort((a, b) => a.numero_previa - b.numero_previa),

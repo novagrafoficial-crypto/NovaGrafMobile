@@ -1,5 +1,6 @@
 export type CategoriaKey = 'TIENDA' | 'PUNTO_MEDIO' | 'ENVIO_LOCAL';
 export type TipoEntrega = 'RECOGIDA_FISICA' | 'PUNTO_MEDIO' | 'ENVIO_LOCAL';
+export type IconoNombre = 'storefront-outline' | 'location-outline' | 'bicycle-outline';
 
 export interface OpcionEntrega {
   id: number;
@@ -33,12 +34,13 @@ export interface NuevoPedido {
 export interface CategoriaEntrega {
   key: CategoriaKey;
   label: string;
-  icono: string;
+  icono: IconoNombre;
   opciones: OpcionEntrega[];
 }
 
-export const CATEGORIAS_BASE: { key: CategoriaKey; label: string; icono: string }[] = [
-  { key: 'TIENDA', label: 'Recoger en tienda', icono: '🏬' },
-  { key: 'PUNTO_MEDIO', label: 'Punto medio', icono: '📍' },
-  { key: 'ENVIO_LOCAL', label: 'A domicilio', icono: '🚚' },
+export const CATEGORIAS_BASE: { key: CategoriaKey; label: string; icono: IconoNombre }[] = [
+  { key: 'TIENDA', label: 'En tienda', icono: 'storefront-outline' },
+  { key: 'PUNTO_MEDIO', label: 'Punto medio', icono: 'location-outline' },
+  { key: 'ENVIO_LOCAL', label: 'A domicilio', icono: 'bicycle-outline' },
 ];
+export const PASOS_CHECKOUT = ['Compra', 'Entrega', 'Pago', 'Confirmar'] as const;
