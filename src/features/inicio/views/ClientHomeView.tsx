@@ -65,8 +65,10 @@ export const ClientHomeView = () => {
         {/* 2. OFERTAS */}
         <View>
           <SeccionTitulo
-            titulo="Ofertas"
-            subtitulo="Descuentos en productos para personalizar"
+            titulo="Ofertas del momento"
+            subtitulo="Precios especiales por tiempo limitado"
+            icono="flame"
+            colorIcono="#DC2626"
             accion={vm.hayMasOfertas ? (vm.verTodas ? 'Ver menos' : 'Ver todo') : undefined}
             onAccion={vm.alternarVerTodas}
           />
@@ -98,7 +100,12 @@ export const ClientHomeView = () => {
 
         {/* 3. INSPIRACIÓN — trabajos de otros clientes */}
         <View>
-          <SeccionTitulo titulo="Inspiración" subtitulo="Ideas que otros clientes ya personalizaron" />
+          <SeccionTitulo
+            titulo="Realizados por Nova Graf"
+            subtitulo="Toca uno y pide el tuyo igual"
+            icono="heart"
+            colorIcono="#1A6163"
+          />
 
           {vm.portafolioCargando ? (
             <Loading />
