@@ -91,15 +91,22 @@ export const TIENDA_FISICA = 'TIENDA_FISICA';
 export const esPdf = (url: string) => /\.pdf(\?|$)/i.test(url);
 
 // $1,234.50 (sin depender de Intl, que varía entre dispositivos)
-export const formatMoney = (n: number): string =>
-  '$' + Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+export const formatMoney = (n: number): string => {
+  const [entero, decimales] = Math.abs(Number(n || 0)).toFixed(2).split('.');
+  let conComas = '';
+  for (let i = 0; i < entero.length; i++) {
+    if (i > 0 && (entero.length - i) % 3 === 0) conComas += ',';
+    conComas += entero[i];
+  }
+  return `${Number(n) < 0 ? '-' : ''}$${conComas}.${decimales}`;
+};
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
 export const formatFecha = (valor?: string | null, conHora = false): string => {
   if (!valor) return '—';
   const f = new Date(valor);
-  if (isNaN(f.getTime())) return '—';
+  if (Number.isNaN(f.getTime())) return '—';
   const base = `${String(f.getDate()).padStart(2, '0')} ${MESES[f.getMonth()]} ${f.getFullYear()}`;
   if (!conHora) return base;
   return `${base}, ${String(f.getHours()).padStart(2, '0')}:${String(f.getMinutes()).padStart(2, '0')}`;

@@ -39,7 +39,7 @@ export const usePedidoDetalleViewModel = (pedidoId: number) => {
     }
   }, [pedidoId]);
 
-  useFocusEffect(useCallback(() => { cargar(); }, [cargar]));
+  useFocusEffect(useCallback(() => { void cargar(); }, [cargar]));
 
   const previas = pedido?.previas ?? [];
   const hayAprobada = previas.some((p) => p.aprobada);

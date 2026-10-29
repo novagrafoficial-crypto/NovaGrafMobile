@@ -65,7 +65,7 @@ export const useClientHomeViewModel = () => {
   }, []);
 
   useEffect(() => {
-    cargar();
+    void cargar();
   }, [cargar]);
 
   // ── Promociones: una tarjeta por variante, ya filtradas ──

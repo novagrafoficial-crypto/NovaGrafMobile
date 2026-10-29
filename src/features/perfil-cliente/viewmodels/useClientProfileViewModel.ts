@@ -56,7 +56,7 @@ export const useClientProfileViewModel = () => {
   }, [userId]);
 
   useEffect(() => {
-    fetchProfile();
+    void fetchProfile();
   }, [fetchProfile]);
 
   const handleSaveProfile = async () => {

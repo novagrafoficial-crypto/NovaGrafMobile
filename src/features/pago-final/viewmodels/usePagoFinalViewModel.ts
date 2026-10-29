@@ -49,7 +49,7 @@ export const usePagoFinalViewModel = (pedidoId: number) => {
   }, [pedidoId]);
 
   // Se recarga cada vez que entras (por si el admin aprobó o rechazó algo mientras tanto)
-  useFocusEffect(useCallback(() => { cargar(); }, [cargar]));
+  useFocusEffect(useCallback(() => { void cargar(); }, [cargar]));
 
   const modo = modoDePago(pantalla?.metodo ?? null);
   const esTienda = modo === 'TIENDA';

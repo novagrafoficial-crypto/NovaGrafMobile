@@ -25,7 +25,7 @@ export const usePublicHomeViewModel = () => {
     }
   }, []);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { void cargar(); }, [cargar]);
 
   const ir = (ruta: string) => {
     setSeleccionado(null);
@@ -46,7 +46,7 @@ export const usePublicHomeViewModel = () => {
     },
     reintentar: () => {
       setCargando(true);
-      cargar();
+      void cargar();
     },
     seleccionado,
     abrirTrabajo: setSeleccionado,

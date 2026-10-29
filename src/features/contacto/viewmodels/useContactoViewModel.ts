@@ -37,7 +37,7 @@ export const useContactoViewModel = () => {
   }, []);
 
   useEffect(() => {
-    cargar();
+    void cargar();
   }, [cargar]);
 
   // ── Datos derivados, listos para la vista ──

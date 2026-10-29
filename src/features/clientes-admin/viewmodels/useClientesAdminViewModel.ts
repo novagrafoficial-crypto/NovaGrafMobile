@@ -56,7 +56,7 @@ export const useClientesAdminViewModel = () => {
   // Se recarga cada vez que el admin vuelve a esta pestaña.
   useFocusEffect(
     useCallback(() => {
-      cargar();
+      void cargar();
     }, [cargar])
   );
 
@@ -100,13 +100,13 @@ export const useClientesAdminViewModel = () => {
   const alternarActivo = (c: Cliente) => {
     if (procesando.includes(c.id_usuario)) return;
     if (c.activo) setPorDesactivar(c);
-    else aplicarActivo(c, true);
+    else void aplicarActivo(c, true);
   };
 
   const confirmarDesactivar = () => {
     const c = porDesactivar;
     setPorDesactivar(null);
-    if (c) aplicarActivo(c, false);
+    if (c) void aplicarActivo(c, false);
   };
 
   return {

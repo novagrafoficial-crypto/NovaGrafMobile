@@ -46,10 +46,10 @@ export const NotificacionesAdminProvider = ({ children }: { children: React.Reac
   );
 
   useEffect(() => {
-    refrescar(false);
+    void refrescar(false);
     const timer = setInterval(() => refrescar(true), INTERVALO_MS);
     const sub = AppState.addEventListener('change', (estado) => {
-      if (estado === 'active') refrescar(true);
+      if (estado === 'active') void refrescar(true);
     });
     return () => {
       clearInterval(timer);
@@ -65,7 +65,7 @@ export const NotificacionesAdminProvider = ({ children }: { children: React.Reac
       try {
         await notificacionesAdminService.marcarLeida(id);
       } catch {
-        refrescar(true);
+        void refrescar(true);
       }
     },
     [refrescar]
@@ -78,7 +78,7 @@ export const NotificacionesAdminProvider = ({ children }: { children: React.Reac
     try {
       await notificacionesAdminService.marcarTodas(ids);
     } catch {
-      refrescar(true);
+      void refrescar(true);
     }
   }, [notificaciones, refrescar]);
 

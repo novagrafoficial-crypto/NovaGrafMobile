@@ -24,10 +24,10 @@ export const useTrabajosPublicosViewModel = () => {
     }
   }, []);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { void cargar(); }, [cargar]);
 
   const categorias = useMemo(
-    () => Array.from(new Set(trabajos.map((t) => t.categoriaNombre).filter(Boolean) as string[])).sort(),
+    () => Array.from(new Set(trabajos.map((t) => t.categoriaNombre).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b)),
     [trabajos]
   );
   const filtrados = useMemo(
@@ -55,7 +55,7 @@ export const useTrabajosPublicosViewModel = () => {
     },
     reintentar: () => {
       setCargando(true);
-      cargar();
+      void cargar();
     },
     seleccionado,
     abrir: setSeleccionado,

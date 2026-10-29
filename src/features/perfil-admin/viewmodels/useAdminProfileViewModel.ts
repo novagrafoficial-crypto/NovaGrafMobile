@@ -67,7 +67,7 @@ export const useAdminProfileViewModel = () => {
     }
   }, [userId]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { void cargar(); }, [cargar]);
 
   const editarCampo = (campo: keyof AdminProfileForm, valor: string) =>
     setForm((f) => ({ ...f, [campo]: valor }));

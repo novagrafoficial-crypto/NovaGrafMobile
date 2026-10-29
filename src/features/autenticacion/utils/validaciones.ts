@@ -2,7 +2,8 @@ import type { RegistroForm } from '../models/Registro';
 
 const REQUERIDO = 'Este campo es obligatorio';
 const LETRAS = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/;
-const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// Usuario @ dominio(s) separados por punto: sin partes que se traslapen (evita backtracking)
+const CORREO = /^[^\s@]+@(?:[^\s@.]+\.)+[^\s@.]{2,}$/;
 
 export const EDAD_MINIMA = 13;
 

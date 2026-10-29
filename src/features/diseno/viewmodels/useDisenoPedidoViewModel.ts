@@ -39,7 +39,7 @@ export const useDisenoPedidoViewModel = (pedidoId: number) => {
     }
   }, [pedidoId]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { void cargar(); }, [cargar]);
 
   const aceptar = (varianteId: number, a: ArchivoDiseno) => {
     if (a.size && a.size > MAX_BYTES) return setErrorEnvio('El archivo no debe superar los 10 MB.');

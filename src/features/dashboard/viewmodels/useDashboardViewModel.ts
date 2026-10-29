@@ -13,7 +13,7 @@ const CERRADOS = ['ENVIADO', 'CANCELADO'];
 const esDeEsteMes = (fecha: string) => {
   const f = new Date(fecha);
   const hoy = new Date();
-  return !isNaN(f.getTime()) && f.getMonth() === hoy.getMonth() && f.getFullYear() === hoy.getFullYear();
+  return !Number.isNaN(f.getTime()) && f.getMonth() === hoy.getMonth() && f.getFullYear() === hoy.getFullYear();
 };
 
 // Inicio del administrador: resumen del negocio calculado con los pedidos y clientes.
@@ -45,7 +45,7 @@ export const useDashboardViewModel = () => {
   }, []);
 
   // Se actualiza cada vez que el admin vuelve al inicio
-  useFocusEffect(useCallback(() => { cargar(); }, [cargar]));
+  useFocusEffect(useCallback(() => { void cargar(); }, [cargar]));
 
   const refrescar = async () => {
     setRefrescando(true);

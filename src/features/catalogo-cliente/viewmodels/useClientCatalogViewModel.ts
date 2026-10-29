@@ -32,7 +32,7 @@ export const useClientCatalogViewModel = () => {
   }, []);
 
   useEffect(() => {
-    fetchProducts();
+    void fetchProducts();
   }, [fetchProducts]);
 
   const categorias = useMemo(() => {
