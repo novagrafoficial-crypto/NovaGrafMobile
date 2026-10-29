@@ -32,8 +32,11 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Ejecutar pruebas unitarias
-        run: npm test -- --runInBand
+      - name: Análisis estático (ESLint)
+        run: npm run lint
+
+      - name: Ejecutar pruebas unitarias con cobertura
+        run: npm test -- --runInBand --coverage
 
       - name: Verificar TypeScript
         run: npx tsc --noEmit
