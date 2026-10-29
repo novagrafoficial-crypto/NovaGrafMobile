@@ -39,6 +39,7 @@ export const TrabajoCard = memo(({ trabajo, onPress }: { trabajo: PortfolioItem;
     <Text style={styles.titulo} numberOfLines={2} maxFontSizeMultiplier={ESCALA}>{tituloTrabajo(trabajo)}</Text>
   </PressableScale>
 ));
+TrabajoCard.displayName = 'TrabajoCard';
 
 const styles = StyleSheet.create({
   card: { flex: 1, backgroundColor: surface.card, borderRadius: radius.lg, borderWidth: 1, borderColor: surface.border, overflow: 'hidden' },

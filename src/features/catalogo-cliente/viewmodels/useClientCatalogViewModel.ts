@@ -19,7 +19,8 @@ export const useClientCatalogViewModel = () => {
 
   const fetchProducts = useCallback(async (isRefresh = false) => {
     try {
-      isRefresh ? setRefreshing(true) : setLoading(true);
+      if (isRefresh) setRefreshing(true);
+      else setLoading(true);
       setError(null);
       setProducts(await clientProductService.getProducts());
     } catch {
