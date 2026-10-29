@@ -61,7 +61,7 @@ export const useLoginViewModel = () => {
       (response.params as any)?.id_token ?? response.authentication?.idToken;
 
     if (idToken) {
-      run(
+      void run(
         () => authService.login({ type: "google", idToken }),
         "Error al autenticar con Google",
       );
@@ -80,7 +80,7 @@ export const useLoginViewModel = () => {
     setErrorEmail(eEmail);
     setErrorPassword(ePass);
     if (eEmail || ePass) return;
-    run(
+    void run(
       () =>
         authService.login({
           type: "credentials",
