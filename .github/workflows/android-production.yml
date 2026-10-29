@@ -1,21 +1,26 @@
-name: Android - Producción EAS
+name: Android - Compilación y versión
 
+# release → APK de prueba (perfil preview) para validar antes de producción
+# main    → AAB firmado y ofuscado (perfil production) para Google Play + tag de versión
 on:
   push:
     branches:
       - release
       - main
-
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   validar:
     name: Validar antes de compilar
     runs-on: ubuntu-latest
-
     steps:
       - name: Descargar el código
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # necesario para revisar los tags existentes
 
       - name: Configurar Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -26,17 +31,31 @@ jobs:
       - name: Instalar dependencias
         run: npm ci --ignore-scripts
 
-      - name: Ejecutar pruebas unitarias
+      - name: Pruebas de regresión (unitarias + integración)
         run: npm test -- --runInBand
 
       - name: Verificar TypeScript
         run: npm run typecheck
 
+      - name: Verificar que la versión sea nueva (solo main)
+        if: github.ref_name == 'main'
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          VERSION_APP=$(node -p "require('./app.json').expo.version")
+          if [ "$VERSION" != "$VERSION_APP" ]; then
+            echo "::error::package.json ($VERSION) y app.json ($VERSION_APP) tienen versiones distintas."
+            exit 1
+          fi
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "::error::La versión v$VERSION ya existe. Sube la versión en release antes de pasar a main."
+            exit 1
+          fi
+          echo "Versión nueva: v$VERSION"
+
   build-android:
-    name: Compilar Android AAB
+    name: Compilar Android
     needs: validar
     runs-on: ubuntu-latest
-
     steps:
       - name: Descargar el código
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -56,5 +75,51 @@ jobs:
           eas-version: 27.1.0
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Iniciar compilación Android de producción
-        run: eas build --platform android --profile production --non-interactive
+      - name: Elegir tipo de compilación según la rama
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "PERFIL=production" >> "$GITHUB_ENV"
+            echo "ARCHIVO=NovaGraf-produccion.aab" >> "$GITHUB_ENV"
+          else
+            echo "PERFIL=preview" >> "$GITHUB_ENV"
+            echo "ARCHIVO=NovaGraf-prueba.apk" >> "$GITHUB_ENV"
+          fi
+
+      - name: Compilar en EAS (firmado y ofuscado con R8)
+        run: eas build --platform android --profile "$PERFIL" --non-interactive --wait --json > build.json
+
+      - name: Descargar el archivo compilado
+        run: |
+          URL=$(jq -r '.[0].artifacts.buildUrl' build.json)
+          echo "Descargando $URL"
+          curl -fL -o "$ARCHIVO" "$URL"
+          ls -lh "$ARCHIVO"
+
+      - name: Guardar como artefacto del workflow
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: NovaGraf-${{ github.ref_name }}-${{ github.run_number }}
+          path: ${{ env.ARCHIVO }}
+          retention-days: 30
+
+  etiquetar-version:
+    name: Crear tag y Release de la versión
+    needs: build-android
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Crear tag y Release en GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          gh release create "v$VERSION" \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Nova Graf Mobile v$VERSION" \
+            --generate-notes
