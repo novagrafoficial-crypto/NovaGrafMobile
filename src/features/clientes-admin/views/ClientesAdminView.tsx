@@ -17,7 +17,7 @@ const ESCALA = 1.15;
 const formatFecha = (valor?: string | null): string => {
   if (!valor) return '—';
   const f = new Date(valor);
-  if (isNaN(f.getTime())) return '—';
+  if (Number.isNaN(f.getTime())) return '—';
   return `${String(f.getDate()).padStart(2, '0')}/${String(f.getMonth() + 1).padStart(2, '0')}/${f.getFullYear()}`;
 };
 

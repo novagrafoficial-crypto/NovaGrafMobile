@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { legalService } from '../services/legalService';
 
-const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// Usuario @ dominio(s) separados por punto: sin partes que se traslapen (evita backtracking)
+const CORREO = /^[^\s@]+@(?:[^\s@.]+\.)+[^\s@.]{2,}$/;
 
 export const useEliminarCuentaViewModel = () => {
   const router = useRouter();

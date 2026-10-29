@@ -52,13 +52,13 @@ export const NotificacionesProvider = ({ children }: { children: React.ReactNode
       return;
     }
     setCargando(true);
-    refrescar().finally(() => setCargando(false));
+    void refrescar().finally(() => setCargando(false));
 
     const intervalo = setInterval(() => {
-      if (AppState.currentState === 'active') refrescar();
+      if (AppState.currentState === 'active') void refrescar();
     }, INTERVALO_MS);
     const sub = AppState.addEventListener('change', (estado) => {
-      if (estado === 'active') refrescar(); 
+      if (estado === 'active') void refrescar(); 
     });
 
     return () => {
@@ -75,7 +75,7 @@ export const NotificacionesProvider = ({ children }: { children: React.ReactNode
       await notificacionesService.marcarLeida(id);
     } catch (e) {
       console.error('Error al marcar como leída:', e);
-      refrescar(); 
+      void refrescar(); 
     }
   }, [notificaciones, refrescar]);
 
@@ -86,7 +86,7 @@ export const NotificacionesProvider = ({ children }: { children: React.ReactNode
       await notificacionesService.marcarTodasLeidas();
     } catch (e) {
       console.error('Error al marcar todas como leídas:', e);
-      refrescar();
+      void refrescar();
     }
   }, [refrescar]);
 
@@ -98,7 +98,7 @@ export const NotificacionesProvider = ({ children }: { children: React.ReactNode
       await notificacionesService.eliminar(id);
     } catch (e) {
       console.error('Error al eliminar notificación:', e);
-      refrescar();
+      void refrescar();
     }
   }, [notificaciones, refrescar]);
 

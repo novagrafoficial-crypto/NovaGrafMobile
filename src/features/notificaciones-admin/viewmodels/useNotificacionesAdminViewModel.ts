@@ -11,7 +11,7 @@ export const useNotificacionesAdminViewModel = () => {
   // Al entrar a la pestaña se actualiza sin spinner.
   useFocusEffect(
     useCallback(() => {
-      refrescar(true);
+      void refrescar(true);
     }, [refrescar])
   );
 
@@ -25,7 +25,7 @@ export const useNotificacionesAdminViewModel = () => {
   // se manda ?chat=1 para que el detalle baje directo al chat.
   // (El campo "enlace" es de la web; en el móvil se navega con pedido_id.)
   const abrir = (n: NotificacionAdmin) => {
-    marcarLeida(n.id);
+    void marcarLeida(n.id);
     if (!n.pedido_id) return;
     const esChat = /chat|mensaje/i.test(n.tipo);
     router.push(`/(admin)/pedido/${n.pedido_id}${esChat ? '?chat=1' : ''}` as any);

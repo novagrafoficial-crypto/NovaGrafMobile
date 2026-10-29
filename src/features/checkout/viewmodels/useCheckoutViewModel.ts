@@ -36,7 +36,7 @@ export const useCheckoutViewModel = () => {
   }, []);
 
   useEffect(() => {
-    cargar();
+    void cargar();
   }, [cargar]);
 
   // Solo categorías que tengan opciones (igual que la web)
@@ -121,7 +121,7 @@ export const useCheckoutViewModel = () => {
 
       // Primero navegamos, luego vaciamos el estado local (evita ver "carrito vacío" un instante)
       router.replace(`/(cliente)/pago-pedido/${pedidoId}` as any);
-      refreshCart(true);
+      void refreshCart(true);
        } catch (e: any) {
       setErrorEnvio(e?.response?.data?.message ?? 'No se pudo crear el pedido. Intenta de nuevo.');
     } finally {

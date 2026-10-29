@@ -89,7 +89,7 @@ export const usePedidoAdminDetalleViewModel = () => {
 
   useFocusEffect(
     useCallback(() => {
-      cargar();
+      void cargar();
     }, [cargar])
   );
 
@@ -145,7 +145,7 @@ export const usePedidoAdminDetalleViewModel = () => {
       textoConfirmar: aprobar ? 'Sí, aprobar' : 'Sí, rechazar',
       onConfirmar: () => {
         setConfirmacion(null);
-        ejecutar(async () => {
+        void ejecutar(async () => {
           await pedidosAdminService.resolverPago(pago.id, estado, nota);
           setNotasPago((n) => ({ ...n, [pago.id]: '' }));
 
@@ -175,7 +175,7 @@ export const usePedidoAdminDetalleViewModel = () => {
       textoConfirmar: 'Sí, marcar',
       onConfirmar: () => {
         setConfirmacion(null);
-        ejecutar(
+        void ejecutar(
           () => pedidosAdminService.cambiarEstado(pedidoId, 'PENDIENTE_PAGO_FINAL'),
           'Estado actualizado correctamente'
         );
@@ -190,7 +190,7 @@ export const usePedidoAdminDetalleViewModel = () => {
       textoConfirmar: 'Sí, cancelar',
       onConfirmar: () => {
         setConfirmacion(null);
-        ejecutar(() => pedidosAdminService.cambiarEstado(pedidoId, 'CANCELADO'), 'Pedido cancelado');
+        void ejecutar(() => pedidosAdminService.cambiarEstado(pedidoId, 'CANCELADO'), 'Pedido cancelado');
       },
     });
 
@@ -203,7 +203,7 @@ export const usePedidoAdminDetalleViewModel = () => {
       textoConfirmar: 'Sí, marcar',
       onConfirmar: () => {
         setConfirmacion(null);
-        ejecutar(() => pedidosAdminService.cambiarEstado(pedidoId, 'ENVIADO'), 'Pedido marcado como enviado');
+        void ejecutar(() => pedidosAdminService.cambiarEstado(pedidoId, 'ENVIADO'), 'Pedido marcado como enviado');
       },
     });
 
@@ -267,7 +267,7 @@ export const usePedidoAdminDetalleViewModel = () => {
       textoConfirmar: 'Sí, enviar',
       onConfirmar: () => {
         setConfirmacion(null);
-        ejecutar(async () => {
+        void ejecutar(async () => {
           await pedidosAdminService.enviarPrevia(pedidoId, archivo, numero);
           setPrevia(null);
         }, `Previa ${numero} enviada correctamente`);

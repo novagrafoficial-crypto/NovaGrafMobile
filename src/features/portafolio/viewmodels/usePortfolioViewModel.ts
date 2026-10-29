@@ -24,7 +24,7 @@ export const usePortfolioViewModel = (scope: Scope = 'client') => {
   }, [scope]);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   return { items, isLoading, error, reload: load };

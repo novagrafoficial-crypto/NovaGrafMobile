@@ -12,7 +12,7 @@ const normalizar = (t: string) =>
 
 const tiempo = (fecha: string) => {
   const t = new Date(fecha).getTime();
-  return isNaN(t) ? 0 : t;
+  return Number.isNaN(t) ? 0 : t;
 };
 
 export const usePedidosAdminViewModel = () => {
@@ -41,7 +41,7 @@ export const usePedidosAdminViewModel = () => {
   // Se recarga cada vez que el admin vuelve a esta pestaña.
   useFocusEffect(
     useCallback(() => {
-      cargar();
+      void cargar();
     }, [cargar])
   );
 

@@ -28,7 +28,7 @@ export const usePedidosViewModel = () => {
   }, []);
 
   // Se recarga cada vez que vuelves a la pestaña (p. ej. después de subir un comprobante)
-  useFocusEffect(useCallback(() => { cargar(); }, [cargar]));
+  useFocusEffect(useCallback(() => { void cargar(); }, [cargar]));
 
   const refrescar = async () => {
     setRefrescando(true);

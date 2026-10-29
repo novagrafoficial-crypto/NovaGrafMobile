@@ -43,7 +43,7 @@ export const usePagoPedidoViewModel = (pedidoId: number) => {
     }
   }, [pedidoId]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { void cargar(); }, [cargar]);
 
   const modo = modoDePago(pantalla?.metodo ?? null);
   const esTienda = modo === 'TIENDA';

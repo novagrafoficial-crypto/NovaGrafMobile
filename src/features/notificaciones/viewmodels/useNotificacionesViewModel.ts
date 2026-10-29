@@ -45,7 +45,7 @@ export const useNotificacionesViewModel = () => {
   }, [notificaciones, filtro]);
 
   const abrir = (n: Notificacion) => {
-    if (!n.leida) marcarLeida(n.id);
+    if (!n.leida) void marcarLeida(n.id);
     if (n.pedido_id) router.push(`/(cliente)/pedido/${n.pedido_id}` as any);
   };
 

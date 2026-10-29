@@ -18,7 +18,7 @@ export const usePoliticasViewModel = () => {
     }
   }, []);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { void cargar(); }, [cargar]);
 
   return {
     politicas,

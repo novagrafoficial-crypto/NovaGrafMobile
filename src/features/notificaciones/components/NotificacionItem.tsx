@@ -21,7 +21,7 @@ const ESTILO_DEFAULT = { icono: 'notifications-outline' as IconName, color: '#3F
 
 const tiempoRelativo = (iso: string): string => {
   const t = new Date(iso).getTime();
-  if (isNaN(t)) return '';
+  if (Number.isNaN(t)) return '';
   const min = Math.floor((Date.now() - t) / 60000);
   if (min < 1) return 'Ahora';
   if (min < 60) return `Hace ${min} min`;

@@ -58,7 +58,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Carga al iniciar sesión y limpia al cerrarla
   useEffect(() => {
-    refreshCart();
+    void refreshCart();
   }, [refreshCart, userId]);
 
   const addToCart = useCallback(

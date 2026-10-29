@@ -39,7 +39,7 @@ export const useChatPedidoViewModel = (pedidoId: number) => {
 
   useFocusEffect(
     useCallback(() => {
-      cargar();
+      void cargar();
       const timer = setInterval(cargar, INTERVALO_MS);
       return () => clearInterval(timer);
     }, [cargar])
