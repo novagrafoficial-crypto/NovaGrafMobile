@@ -21,6 +21,16 @@ interface Props {
 
 const ESCALA = 1.15;
 
+type IconoNombre = React.ComponentProps<typeof Ionicons>['name'];
+
+// Botón para abrir el archivo fuera de la app (definido fuera del componente para no recrearlo en cada render).
+const BotonAbrir = ({ texto, icono, onPress }: { texto: string; icono: IconoNombre; onPress: () => void }) => (
+  <PressableScale style={styles.abrir} onPress={onPress} scaleTo={0.97}>
+    <Ionicons name={icono} size={18} color={textColors.primary} />
+    <Text style={styles.abrirTexto} maxFontSizeMultiplier={ESCALA}>{texto}</Text>
+  </PressableScale>
+);
+
 // Hoja que sube desde abajo: muestra el archivo en grande y, debajo, sus datos.
 export const HojaDetalle = ({ visible, titulo, archivoUrl, onCerrar, onAbrirArchivo, children }: Props) => {
   const insets = useSafeAreaInsets();
@@ -30,13 +40,8 @@ export const HojaDetalle = ({ visible, titulo, archivoUrl, onCerrar, onAbrirArch
 
   // Cada vez que cambia el archivo se vuelve a intentar cargar la imagen.
   useEffect(() => setFallo(false), [url, visible]);
+  const abrir = () => url && onAbrirArchivo(url);
 
-  const BotonAbrir = ({ texto, icono }: { texto: string; icono: React.ComponentProps<typeof Ionicons>['name'] }) => (
-    <PressableScale style={styles.abrir} onPress={() => url && onAbrirArchivo(url)} scaleTo={0.97}>
-      <Ionicons name={icono} size={18} color={textColors.primary} />
-      <Text style={styles.abrirTexto} maxFontSizeMultiplier={ESCALA}>{texto}</Text>
-    </PressableScale>
-  );
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onCerrar}>
@@ -54,12 +59,12 @@ export const HojaDetalle = ({ visible, titulo, archivoUrl, onCerrar, onAbrirArch
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.cuerpo}>
             {!!url &&
               (pdf ? (
-                <BotonAbrir texto="Abrir PDF" icono="document-outline" />
+                <BotonAbrir texto="Abrir PDF" icono="document-outline" onPress={abrir} />
               ) : fallo ? (
                 <View style={styles.fallo}>
                   <Ionicons name="image-outline" size={28} color={textColors.muted} />
                   <Text style={styles.falloTexto} maxFontSizeMultiplier={ESCALA}>No se pudo cargar la imagen.</Text>
-                  <BotonAbrir texto="Abrir fuera de la app" icono="open-outline" />
+                  <BotonAbrir texto="Abrir fuera de la app" icono="open-outline" onPress={abrir} />
                 </View>
               ) : (
                 <>
@@ -70,7 +75,7 @@ export const HojaDetalle = ({ visible, titulo, archivoUrl, onCerrar, onAbrirArch
                     cachePolicy="memory-disk"
                     onError={() => setFallo(true)}
                   />
-                  <BotonAbrir texto="Ver en tamaño completo" icono="expand-outline" />
+                  <BotonAbrir texto="Ver en tamaño completo" icono="expand-outline" onPress={abrir} />
                 </>
               ))}
 

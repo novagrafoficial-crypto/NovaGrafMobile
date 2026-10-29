@@ -84,7 +84,7 @@ export const CartItemCard = ({ item, index, ocupado, onMas, onMenos, onEliminar 
         <View style={styles.pendiente}>
           <Ionicons name="information-circle-outline" size={14} color="#B45309" />
           <Text style={styles.pendienteTexto} numberOfLines={2} maxFontSizeMultiplier={ESCALA}>
-            Agrega {item.descuento_pendiente.faltan} más para la oferta "{item.descuento_pendiente.nombre}"
+            Agrega {item.descuento_pendiente.faltan} más para la oferta &quot;{item.descuento_pendiente.nombre}&quot;
           </Text>
         </View>
       )}
