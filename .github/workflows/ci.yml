@@ -16,12 +16,15 @@ on:
 
 jobs:
   pruebas:
+    # No cambiar este nombre: es el check obligatorio del ruleset
     name: Pruebas y TypeScript
     runs-on: ubuntu-latest
 
     steps:
       - name: Descargar el codigo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Sonar necesita el historial completo
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
@@ -40,3 +43,8 @@ jobs:
 
       - name: Verificar TypeScript
         run: npx tsc --noEmit
+
+      - name: Análisis de calidad (SonarQube Cloud)
+        uses: SonarSource/sonarqube-scan-action@v8.4.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
