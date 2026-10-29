@@ -1,2 +1,12 @@
 export { LoginView } from './views/LoginView';
+export { RegisterView } from './views/RegisterView';
+export { VerifyAccountView } from './views/VerifyAccountView';
 export { useLoginViewModel } from './viewmodels/useLoginViewModel';
+export { useRegisterViewModel } from './viewmodels/useRegisterViewModel';
+export { useVerifyAccountViewModel } from './viewmodels/useVerifyAccountViewModel';
+export { ForgotPasswordView } from './views/ForgotPasswordView';
+export { VerifyRecoveryView } from './views/VerifyRecoveryView';
+export { ResetPasswordView } from './views/ResetPasswordView';
+export { useForgotPasswordViewModel } from './viewmodels/useForgotPasswordViewModel';
+export { useVerifyRecoveryViewModel } from './viewmodels/useVerifyRecoveryViewModel';
+export { useResetPasswordViewModel } from './viewmodels/useResetPasswordViewModel';

@@ -1,6 +1,5 @@
 import apiClient from './ApiClient';
 
-// OJO: la baseURL (EXPO_PUBLIC_API_URL) ya termina en /api, por eso aquí
 // las rutas empiezan en /users/... igual que el login (/users/login).
 export const profileApi = {
   getProfile: async (userId: number) => {

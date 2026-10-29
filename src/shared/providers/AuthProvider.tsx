@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(false);
       }
     }
-    loadStorageData();
+    void loadStorageData();
   }, []);
 
   const saveSession = async (userData: User) => {

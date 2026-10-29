@@ -1,34 +1,26 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/shared/hooks/useAuth';
 import type { ClientProduct } from '../models/ClientProduct';
 import { clientProductService } from '../services/clientProductService';
 
 export const useClientCatalogViewModel = () => {
+  const router = useRouter();
+  const { user } = useAuth();
+
   const [products, setProducts] = useState<ClientProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Estado de filtros (antes vivía en la vista)
+  // Filtros
   const [busqueda, setBusqueda] = useState<string>('');
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>('');
-  const [menuAbierto, setMenuAbierto] = useState<boolean>(false);
-
-  // Aviso temporal (toast) para la campana de notificaciones
-  const [aviso, setAviso] = useState<string | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => {
-    if (timer.current) clearTimeout(timer.current);
-  }, []);
-
-  const avisar = (texto: string) => {
-    setAviso(texto);
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setAviso(null), 2500);
-  };
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>(''); // '' = Todo
 
   const fetchProducts = useCallback(async (isRefresh = false) => {
     try {
-      isRefresh ? setRefreshing(true) : setLoading(true);
+      if (isRefresh) setRefreshing(true);
+      else setLoading(true);
       setError(null);
       setProducts(await clientProductService.getProducts());
     } catch {
@@ -40,7 +32,7 @@ export const useClientCatalogViewModel = () => {
   }, []);
 
   useEffect(() => {
-    fetchProducts();
+    void fetchProducts();
   }, [fetchProducts]);
 
   const categorias = useMemo(() => {
@@ -60,12 +52,9 @@ export const useClientCatalogViewModel = () => {
     });
   }, [products, busqueda, categoriaSeleccionada]);
 
-  const elegirCategoria = (categoria: string) => {
-    setCategoriaSeleccionada(categoria);
-    setMenuAbierto(false);
-  };
-
   return {
+    // Saludo del header (igual que en Inicio)
+    primerNombre: user?.nombre?.trim().split(/\s+/)[0] ?? '',
     productosFiltrados,
     categorias,
     loading,
@@ -74,12 +63,11 @@ export const useClientCatalogViewModel = () => {
     busqueda,
     setBusqueda,
     categoriaSeleccionada,
-    elegirCategoria,
-    menuAbierto,
-    alternarMenu: () => setMenuAbierto((v) => !v),
-    hayFiltros: busqueda.trim() !== '' || categoriaSeleccionada !== '',
-    aviso,
-    abrirNotificaciones: () => avisar('Las notificaciones estarán disponibles pronto.'),
+    elegirCategoria: setCategoriaSeleccionada,
+    // Título de la lista según el filtro activo
+    tituloLista: categoriaSeleccionada || 'Todos los productos',
+    abrirNotificaciones: () => router.push('/(cliente)/notificaciones' as any),
+    abrirProducto: (id: number | string) => router.push(`/(cliente)/producto/${id}` as any),
     reintentar: () => fetchProducts(),
     refrescar: () => fetchProducts(true),
   };

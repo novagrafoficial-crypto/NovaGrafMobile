@@ -27,5 +27,5 @@ export const mejorOferta = (ofertas: Oferta[]): Oferta | null => {
   if (ofertas.length === 0) return null;
   const porcentajes = ofertas.filter((o) => o.tipo === 'porcentaje');
   const base = porcentajes.length > 0 ? porcentajes : ofertas;
-  return base.reduce((a, b) => (b.valor > a.valor ? b : a));
+  return base.reduce((a, b) => (b.valor > a.valor ? b : a), base[0]);
 };

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useCart } from '@/features/carrito';
 import { checkoutService } from '../services/checkoutService';
-import { CATEGORIAS_BASE } from '../models/Checkout';
+import { CATEGORIAS_BASE, PASOS_CHECKOUT } from '../models/Checkout';
 import type { CategoriaEntrega, CategoriaKey, CheckoutOptions } from '../models/Checkout';
 
 export const useCheckoutViewModel = () => {
@@ -18,6 +18,7 @@ export const useCheckoutViewModel = () => {
   const [pagoId, setPagoId] = useState<number | null>(null);
   const [direccion, setDireccion] = useState('');
 
+  const [paso, setPaso] = useState(0);
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
 
@@ -35,7 +36,7 @@ export const useCheckoutViewModel = () => {
   }, []);
 
   useEffect(() => {
-    cargar();
+    void cargar();
   }, [cargar]);
 
   // Solo categorías que tengan opciones (igual que la web)
@@ -69,13 +70,34 @@ export const useCheckoutViewModel = () => {
     setErrorEnvio(null);
   };
 
-  const validar = (): string | null => {
+    // Validación por paso: no deja avanzar si falta algo de ese paso
+  const validarEntrega = (): string | null => {
     if (!categoria) return 'Elige cómo quieres recibir tu pedido.';
     if (!entrega) return 'Selecciona una opción de entrega.';
     if (esEnvioLocal && direccion.trim().length < 5)
       return 'Escribe una dirección completa (mínimo 5 caracteres).';
-    if (!pago) return 'Selecciona un método de pago.';
     return null;
+  };
+  const validarPago = (): string | null => (!pago ? 'Selecciona un método de pago.' : null);
+  const validar = (): string | null => validarEntrega() ?? validarPago();
+
+  const siguiente = () => {
+    const msg = paso === 1 ? validarEntrega() : paso === 2 ? validarPago() : null;
+    if (msg) return setErrorEnvio(msg);
+    setErrorEnvio(null);
+    setPaso((p) => Math.min(p + 1, PASOS_CHECKOUT.length - 1));
+  };
+
+  const atras = () => {
+    setErrorEnvio(null);
+    if (paso > 0) setPaso((p) => p - 1);
+    else router.back();
+  };
+
+  // Desde el resumen se puede saltar a corregir un paso
+  const irAPaso = (n: number) => {
+    setErrorEnvio(null);
+    setPaso(n);
   };
 
   const confirmar = async () => {
@@ -99,7 +121,7 @@ export const useCheckoutViewModel = () => {
 
       // Primero navegamos, luego vaciamos el estado local (evita ver "carrito vacío" un instante)
       router.replace(`/(cliente)/pago-pedido/${pedidoId}` as any);
-      refreshCart(true);
+      void refreshCart(true);
        } catch (e: any) {
       setErrorEnvio(e?.response?.data?.message ?? 'No se pudo crear el pedido. Intenta de nuevo.');
     } finally {
@@ -115,7 +137,10 @@ export const useCheckoutViewModel = () => {
     esEnvioLocal, direccion, setDireccion,
     costoEnvio, totalGeneral, montoAnticipo, montoRestante,
     enviando, errorEnvio, confirmar,
-    volver: () => router.back(),
+    paso, pasos: PASOS_CHECKOUT, siguiente, atras, irAPaso,
+    esUltimoPaso: paso === PASOS_CHECKOUT.length - 1,
+    entrega, pago,
+    volver: atras,
     irAlCatalogo: () => router.replace('/(cliente)/productos-base' as any),
   };
 };

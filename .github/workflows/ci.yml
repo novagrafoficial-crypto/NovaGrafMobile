@@ -16,24 +16,38 @@ on:
 
 jobs:
   pruebas:
+    # No cambiar este nombre: es el check obligatorio del ruleset
     name: Pruebas y TypeScript
     runs-on: ubuntu-latest
 
     steps:
       - name: Descargar el codigo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # Sonar necesita el historial completo
 
       - name: Configurar Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
 
       - name: Instalar dependencias
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      - name: Ejecutar pruebas unitarias
-        run: npm test -- --runInBand
+      - name: Análisis estático (ESLint)
+        run: npm run lint
+
+      - name: Pruebas unitarias
+        run: npm run test:unit -- --runInBand --coverage --coverageDirectory=coverage/unit
+
+      - name: Pruebas de integración
+        run: npm run test:integration -- --runInBand --coverage --coverageDirectory=coverage/integracion
 
       - name: Verificar TypeScript
-        run: npx tsc --noEmit
+        run: npm run typecheck
+
+      - name: Análisis de calidad (SonarQube Cloud)
+        uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

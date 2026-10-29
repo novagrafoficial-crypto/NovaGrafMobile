@@ -7,6 +7,7 @@ import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import type { User } from "../models/User";
 import { authService } from "../services/authService";
+import { isValidEmail } from "../utils/validaciones";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -18,6 +19,9 @@ export const useLoginViewModel = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Errores debajo de cada campo
+  const [errorEmail, setErrorEmail] = useState<string | null>(null);
+  const [errorPassword, setErrorPassword] = useState<string | null>(null);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
@@ -35,8 +39,16 @@ export const useLoginViewModel = () => {
     setError(null);
     try {
       await startSession(await action());
-    } catch (err: any) {
-      setError(err.response?.data?.message || fallbackMsg);
+        } catch (err: any) {
+      const data = err.response?.data;
+      if (data?.code === 'NOT_ACTIVE' && data?.id_usuario) {
+        router.push({
+          pathname: '/(auth)/verify-account',
+          params: { id_usuario: String(data.id_usuario) },
+        } as any);
+        return;
+      }
+      setError(data?.message || fallbackMsg);
     } finally {
       setIsLoading(false);
     }
@@ -49,7 +61,7 @@ export const useLoginViewModel = () => {
       (response.params as any)?.id_token ?? response.authentication?.idToken;
 
     if (idToken) {
-      run(
+      void run(
         () => authService.login({ type: "google", idToken }),
         "Error al autenticar con Google",
       );
@@ -58,12 +70,17 @@ export const useLoginViewModel = () => {
     }
   }, [response]);
 
+  const validarEmail = (valor = email) =>
+    !valor.trim() ? "Escribe tu correo" : !isValidEmail(valor) ? "Escribe un correo válido" : null;
+  const validarPassword = (valor = password) => (!valor ? "Escribe tu contraseña" : null);
+
   const handleCredentialsLogin = () => {
-    if (!email.trim() || !password) {
-      setError("Ingresa tu correo y contraseña");
-      return;
-    }
-    run(
+    const eEmail = validarEmail();
+    const ePass = validarPassword();
+    setErrorEmail(eEmail);
+    setErrorPassword(ePass);
+    if (eEmail || ePass) return;
+    void run(
       () =>
         authService.login({
           type: "credentials",
@@ -76,9 +93,23 @@ export const useLoginViewModel = () => {
 
   return {
     email,
-    setEmail,
+    setEmail: (v: string) => {
+      setEmail(v.replace(/\s/g, ""));
+      if (errorEmail) setErrorEmail(null);
+      if (error) setError(null);
+    },
     password,
-    setPassword,
+    setPassword: (v: string) => {
+      setPassword(v);
+      if (errorPassword) setErrorPassword(null);
+      if (error) setError(null);
+    },
+    errorEmail,
+    errorPassword,
+    revisarEmail: () => email && setErrorEmail(validarEmail()),
+    irARegistro: () => router.push("/(auth)/register" as any),
+    irARecuperar: () => router.push("/(auth)/forgot-password" as any),
+    volver: () => (router.canGoBack() ? router.back() : router.replace("/" as any)),
     isLoading,
     error,
     handleCredentialsLogin,

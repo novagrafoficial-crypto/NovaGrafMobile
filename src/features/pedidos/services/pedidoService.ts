@@ -16,6 +16,7 @@ const aPedido = (r: any): Pedido => ({
   metodo_entrega_nombre: r.metodo_entrega_nombre ?? '',
   metodo_pago_nombre: r.metodo_pago_nombre ?? null,
   detalles: (r.detalles ?? []).map((d: any) => ({
+    variante_id: Number(d.variante_id),
     producto_nombre: d.producto_nombre,
     color: d.color ?? null,
     imagen_url: d.imagen_url ?? null,
@@ -32,6 +33,24 @@ const aPedido = (r: any): Pedido => ({
     notas_admin: p.notas_admin ?? null,
     fecha_pago: p.fecha_pago ?? null,
   })),
+  disenos: (Array.isArray(r.disenos) ? r.disenos : []).map((d: any) => ({
+    id: Number(d.id),
+    variante_id: d.variante_id != null ? Number(d.variante_id) : null,
+    archivo_url: d.archivo_url ?? null,
+    notas_cliente: d.notas_cliente ?? null,
+    fecha_envio: d.fecha_envio ?? null,
+  })),
+  previas: (Array.isArray(r.previas) ? r.previas : [])
+    .map((p: any) => ({
+      id: Number(p.id),
+      numero_previa: Number(p.numero_previa ?? 0),
+      imagen_url: p.imagen_url ?? '',
+      aprobada: Boolean(p.aprobada),
+      rechazada: Boolean(p.rechazada),
+      fecha_subida: p.fecha_subida ?? null,
+      comentario_cliente: p.comentario_cliente ?? null,
+    }))
+    .sort((a: any, b: any) => a.numero_previa - b.numero_previa),
 });
 
 export const pedidoService = {
@@ -39,5 +58,15 @@ export const pedidoService = {
     const data = await pedidosApi.getAll();
     return (Array.isArray(data) ? data : []).map(aPedido);
   },
-  getById: async (id: number): Promise<Pedido> => aPedido(await pedidosApi.getById(id)),
+  getById: async (id: number): Promise<Pedido> => {
+    const [base, disenos, previas] = await Promise.all([
+      pedidosApi.getById(id),
+      pedidosApi.getDisenos(id).catch(() => null),
+      pedidosApi.getPrevias(id).catch(() => null),
+    ]);
+    return aPedido({ ...base, disenos: disenos?.disenos, previas: previas?.previas });
+  },
+  aprobarPrevia: (pedidoId: number, numeroPrevia: number) => pedidosApi.aprobarPrevia(pedidoId, numeroPrevia),
+  rechazarPrevia: (pedidoId: number, numeroPrevia: number, comentario: string) =>
+    pedidosApi.rechazarPrevia(pedidoId, numeroPrevia, comentario),
 };

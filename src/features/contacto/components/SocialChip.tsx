@@ -1,9 +1,11 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { PressableScale } from '@/shared/components/PressableScale';
-import { brandColors, brandTints } from '@/constants/brand';
+import { fontFamily, radius, surface, textColors } from '@/constants/theme';
 
 interface Props {
+  /** Nombre de Ionicons */
   icono: string;
   nombre: string;
   onPress: () => void;
@@ -11,9 +13,9 @@ interface Props {
 
 // Pastilla de una red social
 export const SocialChip = ({ icono, nombre, onPress }: Props) => (
-  <PressableScale style={styles.chip} onPress={onPress} scaleTo={0.92} accessibilityLabel={`Abrir ${nombre}`}>
-    <Text style={styles.icono}>{icono}</Text>
-    <Text style={styles.nombre}>{nombre}</Text>
+  <PressableScale style={styles.chip} onPress={onPress} scaleTo={0.94} accessibilityLabel={`Abrir ${nombre}`}>
+    <Ionicons name={icono as any} size={18} color={textColors.primary} />
+    <Text style={styles.nombre} maxFontSizeMultiplier={1.15}>{nombre}</Text>
   </PressableScale>
 );
 
@@ -22,11 +24,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: brandTints.accentSoft,
-    borderRadius: 22,
+    height: 40,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: surface.border,
+    backgroundColor: surface.card,
   },
-  icono: { fontSize: 18 },
-  nombre: { fontSize: 14, fontWeight: '700', color: brandColors.primary },
+  nombre: { fontFamily: fontFamily.medium, fontSize: 14, color: textColors.primary },
 });

@@ -11,7 +11,7 @@ interface Props {
 export const ModalConfirmacionLogout: React.FC<Props> = ({ visible, onConfirmar, onCancelar }) => (
   <ModalConfirmacion
     visible={visible}
-    icono="🚪"
+    icono="log-out-outline"
     titulo="Cerrar sesión"
     mensaje="¿Estás seguro de que deseas cerrar sesión?"
     textoConfirmar="Sí, salir"
