@@ -1,14 +1,11 @@
 import { useAuth } from "@/shared/hooks/useAuth";
 import { homeByRole } from "@/shared/utils/roleRoutes";
-import * as Google from "expo-auth-session/providers/google";
 import { useRouter } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { User } from "../models/User";
 import { authService } from "../services/authService";
 import { isValidEmail } from "../utils/validaciones";
-
-WebBrowser.maybeCompleteAuthSession();
+import { useGoogleSignIn } from "./useGoogleSignIn";
 
 export const useLoginViewModel = () => {
   const router = useRouter();
@@ -20,12 +17,7 @@ export const useLoginViewModel = () => {
   // Errores debajo de cada campo
   const [errorEmail, setErrorEmail] = useState<string | null>(null);
   const [errorPassword, setErrorPassword] = useState<string | null>(null);
-
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    
-  });
+  const google = useGoogleSignIn();
 
   const startSession = async (user: User) => {
     await saveSession(user);
@@ -37,7 +29,7 @@ export const useLoginViewModel = () => {
     setError(null);
     try {
       await startSession(await action());
-        } catch (err: any) {
+    } catch (err: any) {
       const data = err.response?.data;
       if (data?.code === 'NOT_ACTIVE' && data?.id_usuario) {
         router.push({
@@ -51,22 +43,6 @@ export const useLoginViewModel = () => {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (response?.type !== "success") return;
-
-    const idToken =
-      (response.params as any)?.id_token ?? response.authentication?.idToken;
-
-    if (idToken) {
-      void run(
-        () => authService.login({ type: "google", idToken }),
-        "Error al autenticar con Google",
-      );
-    } else {
-      setError("Google no devolvió el idToken");
-    }
-  }, [response]);
 
   const validarEmail = (valor = email) =>
     !valor.trim() ? "Escribe tu correo" : !isValidEmail(valor) ? "Escribe un correo válido" : null;
@@ -95,12 +71,14 @@ export const useLoginViewModel = () => {
       setEmail(v.replace(/\s/g, ""));
       if (errorEmail) setErrorEmail(null);
       if (error) setError(null);
+      google.limpiarErrorGoogle();
     },
     password,
     setPassword: (v: string) => {
       setPassword(v);
       if (errorPassword) setErrorPassword(null);
       if (error) setError(null);
+      google.limpiarErrorGoogle();
     },
     errorEmail,
     errorPassword,
@@ -109,9 +87,9 @@ export const useLoginViewModel = () => {
     irARecuperar: () => router.push("/(auth)/forgot-password" as any),
     volver: () => (router.canGoBack() ? router.back() : router.replace("/" as any)),
     isLoading,
-    error,
+    error: error ?? google.googleError,
     handleCredentialsLogin,
-    handleGoogleLogin: () => promptAsync(),
-    isGoogleDisabled: !request,
+    handleGoogleLogin: google.continuarConGoogle,
+    isGoogleLoading: google.isGoogleLoading,
   };
 };

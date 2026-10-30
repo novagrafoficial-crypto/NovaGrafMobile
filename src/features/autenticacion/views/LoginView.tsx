@@ -1,13 +1,13 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text } from 'react-native';
 import { useLoginViewModel } from '../viewmodels/useLoginViewModel';
 import { AuthScreen, EnlaceAuth } from '../components/AuthScreen';
+import { BotonGoogle } from '../components/BotonGoogle';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { CustomInput } from '@/shared/components/CustomInput';
 import { PressableScale } from '@/shared/components/PressableScale';
 import { brandColors } from '@/constants/brand';
-import { fontFamily, space, surface, textColors } from '@/constants/theme';
+import { fontFamily, space } from '@/constants/theme';
 
 export const LoginView = () => {
   const vm = useLoginViewModel();
@@ -56,18 +56,11 @@ export const LoginView = () => {
 
       <CustomButton title="Iniciar sesión" onPress={vm.handleCredentialsLogin} loading={vm.isLoading} />
 
-      <View style={styles.separador}>
-        <View style={styles.linea} />
-        <Text style={styles.o} maxFontSizeMultiplier={1.15}>o continúa con</Text>
-        <View style={styles.linea} />
-      </View>
-
-      <CustomButton
-        title="Continuar con Google"
-        variant="outline"
-        icon={<Ionicons name="logo-google" size={19} color="#EA4335" />}
+      <BotonGoogle
+        separador="o continúa con"
         onPress={vm.handleGoogleLogin}
-        disabled={vm.isGoogleDisabled || vm.isLoading}
+        loading={vm.isGoogleLoading}
+        disabled={vm.isLoading}
       />
     </AuthScreen>
   );
@@ -76,7 +69,4 @@ export const LoginView = () => {
 const styles = StyleSheet.create({
   olvide: { alignSelf: 'flex-end', marginTop: -4, marginBottom: space.lg },
   olvideTexto: { fontFamily: fontFamily.semibold, fontSize: 13, color: brandColors.primary },
-  separador: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginVertical: space.lg },
-  linea: { flex: 1, height: 1, backgroundColor: surface.border },
-  o: { fontFamily: fontFamily.regular, fontSize: 13, color: textColors.muted },
 });
