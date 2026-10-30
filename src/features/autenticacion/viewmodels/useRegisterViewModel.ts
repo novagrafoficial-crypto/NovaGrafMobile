@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import type { RegistroForm } from '../models/Registro';
 import { authService } from '../services/authService';
 import { fechaAISO, limpiarCampo, reglasPassword, validar } from '../utils/validaciones';
+import { useGoogleSignIn } from './useGoogleSignIn';
 
 const VACIO: RegistroForm = {
   name: '',
@@ -32,6 +33,7 @@ export const useRegisterViewModel = () => {
   const [paso, setPaso] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const google = useGoogleSignIn();
 
   const setField = (campo: keyof RegistroForm, valor: string) => {
     const limpio = limpiarCampo(campo, valor);
@@ -110,7 +112,7 @@ export const useRegisterViewModel = () => {
     errores,
     paso,
     isLoading,
-    error,
+    error: error ?? google.googleError,
     reglas: reglasPassword(form.password),
     setField,
     tocar,
@@ -119,5 +121,8 @@ export const useRegisterViewModel = () => {
     registrar,
     volver: () => (paso === 2 ? atras() : router.canGoBack() ? router.back() : router.replace('/' as any)),
     irALogin: () => router.replace('/(auth)/login' as any),
+    // Registro con Google: el backend crea la cuenta si el correo no existe.
+    registrarConGoogle: google.continuarConGoogle,
+    isGoogleLoading: google.isGoogleLoading,
   };
 };
