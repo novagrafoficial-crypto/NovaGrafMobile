@@ -14,7 +14,7 @@ export const LoginView = () => {
 
   return (
     <AuthScreen
-      title="¡Hola de nuevo!"
+      title="¡Bienvenido!"
       subtitle="Inicia sesión para ver precios, personalizar y seguir tus pedidos."
       icono="person-outline"
       onBack={vm.volver}

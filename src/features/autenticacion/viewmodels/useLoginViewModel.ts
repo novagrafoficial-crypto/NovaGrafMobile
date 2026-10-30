@@ -1,6 +1,5 @@
 import { useAuth } from "@/shared/hooks/useAuth";
 import { homeByRole } from "@/shared/utils/roleRoutes";
-import * as AuthSession from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -12,7 +11,6 @@ import { isValidEmail } from "../utils/validaciones";
 WebBrowser.maybeCompleteAuthSession();
 
 export const useLoginViewModel = () => {
-  const redirectUri = AuthSession.makeRedirectUri();
   const router = useRouter();
   const { saveSession } = useAuth();
   const [email, setEmail] = useState("");
@@ -26,7 +24,7 @@ export const useLoginViewModel = () => {
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    redirectUri,
+    
   });
 
   const startSession = async (user: User) => {
