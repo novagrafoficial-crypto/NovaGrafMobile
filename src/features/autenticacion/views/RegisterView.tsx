@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRegisterViewModel } from '../viewmodels/useRegisterViewModel';
 import { AuthScreen, EnlaceAuth } from '../components/AuthScreen';
+import { BotonGoogle } from '../components/BotonGoogle';
 import type { RegistroForm } from '../models/Registro';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { CustomInput } from '@/shared/components/CustomInput';
@@ -95,6 +96,11 @@ export const RegisterView = () => {
             title="Continuar"
             icon={<Ionicons name="arrow-forward" size={18} color="#FFFFFF" />}
             onPress={vm.siguiente}
+          />
+          <BotonGoogle
+            separador="o regístrate con"
+            onPress={vm.registrarConGoogle}
+            loading={vm.isGoogleLoading}
           />
         </FadeInView>
       ) : (

@@ -10,12 +10,23 @@ import { LoginView } from '../../src/features/autenticacion/views/LoginView';
 import { AuthProvider } from '../../src/shared/providers/AuthProvider';
 import apiClient from '../../src/data/api/ApiClient';
 import { SessionStorage } from '../../src/data/SessionStorage';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 jest.mock('expo-router', () => ({ useRouter: () => require('../../test-utils/mocksExpo').router }));
-jest.mock('expo-web-browser', () => ({ maybeCompleteAuthSession: jest.fn() }));
-jest.mock('expo-auth-session', () => ({ makeRedirectUri: () => 'novagrafmobile://redirect' }));
-jest.mock('expo-auth-session/providers/google', () => ({
-  useAuthRequest: () => [null, null, jest.fn()],
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: {
+    configure: jest.fn(),
+    hasPlayServices: jest.fn(async () => true),
+    signOut: jest.fn(async () => null),
+    signIn: jest.fn(),
+  },
+  isSuccessResponse: (r: { type: string }) => r.type === 'success',
+  isErrorWithCode: (e: any) => e != null && 'code' in e,
+  statusCodes: {
+    SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
+  },
 }));
 jest.mock('../../src/data/SessionStorage', () => ({
   SessionStorage: { get: jest.fn(async () => null), save: jest.fn(), clear: jest.fn() },
@@ -102,5 +113,33 @@ describe('Integración: inicio de sesión', () => {
         params: { id_usuario: '9' },
       }),
     );
+  });
+  
+  it('PI-06 · Google: envía el idToken al backend y entra al inicio del cliente', async () => {
+    (GoogleSignin.signIn as jest.Mock).mockResolvedValue({
+      type: 'success',
+      data: { idToken: 'id-token-google', user: { email: 'ana@gmail.com' } },
+    });
+    post.mockResolvedValue({
+      data: { id_usuario: 7, nombre: 'Ana', rol: 'cliente', token: 'jwt-google' },
+    });
+    await pantallaLogin();
+    await fireEvent.press(screen.getByText('Continuar con Google'));
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/(cliente)/inicio'));
+    expect(post).toHaveBeenCalledWith('/auth/google/mobile', { idToken: 'id-token-google' });
+    expect(SessionStorage.save).toHaveBeenCalledWith(
+      expect.objectContaining({ id_usuario: 7, rol: 'cliente', token: 'jwt-google' }),
+    );
+  });
+
+  it('PI-07 · Google cancelado: no llama al backend ni navega', async () => {
+    (GoogleSignin.signIn as jest.Mock).mockResolvedValue({ type: 'cancelled', data: null });
+    await pantallaLogin();
+    await fireEvent.press(screen.getByText('Continuar con Google'));
+
+    await waitFor(() => expect(GoogleSignin.signIn).toHaveBeenCalled());
+    expect(post).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 });
