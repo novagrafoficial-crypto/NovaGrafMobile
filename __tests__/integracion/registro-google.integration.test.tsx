@@ -88,4 +88,47 @@ describe('Integración: registro con Google', () => {
     expect(router.replace).not.toHaveBeenCalled();
     expect(SessionStorage.save).not.toHaveBeenCalled();
   });
+
+  
+  it('PI-10 · Google no devuelve idToken: muestra el error y no llama al backend', async () => {
+    (GoogleSignin.signIn as jest.Mock).mockResolvedValue({
+      type: 'success',
+      data: { idToken: null, user: { email: 'ana@gmail.com' } },
+    });
+    await pantallaRegistro();
+    await fireEvent.press(screen.getByText('Continuar con Google'));
+
+    expect(await screen.findByText('Google no devolvió el idToken')).toBeOnTheScreen();
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it('PI-11 · sin Google Play Services: avisa al usuario', async () => {
+    (GoogleSignin.hasPlayServices as jest.Mock).mockRejectedValueOnce({ code: 'PLAY_SERVICES_NOT_AVAILABLE' });
+    await pantallaRegistro();
+    await fireEvent.press(screen.getByText('Continuar con Google'));
+
+    expect(
+      await screen.findByText('Google Play Services no está disponible en este dispositivo'),
+    ).toBeOnTheScreen();
+    expect(GoogleSignin.signIn).not.toHaveBeenCalled();
+  });
+
+  it('PI-12 · inicio de Google ya en curso: no muestra error ni llama al backend', async () => {
+    (GoogleSignin.signIn as jest.Mock).mockRejectedValue({ code: 'IN_PROGRESS' });
+    await pantallaRegistro();
+    await fireEvent.press(screen.getByText('Continuar con Google'));
+
+    await waitFor(() => expect(GoogleSignin.signIn).toHaveBeenCalled());
+    expect(screen.queryByText('No se pudo iniciar sesión con Google')).toBeNull();
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it('PI-13 · error inesperado de Google: muestra un mensaje genérico', async () => {
+    (GoogleSignin.signIn as jest.Mock).mockRejectedValue(new Error('fallo de red'));
+    await pantallaRegistro();
+    await fireEvent.press(screen.getByText('Continuar con Google'));
+
+    expect(await screen.findByText('No se pudo iniciar sesión con Google')).toBeOnTheScreen();
+    expect(router.replace).not.toHaveBeenCalled();
+  });
 });
