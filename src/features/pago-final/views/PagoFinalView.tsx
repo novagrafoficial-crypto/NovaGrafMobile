@@ -1,5 +1,6 @@
 import React from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePagoFinalViewModel } from '../viewmodels/usePagoFinalViewModel';
@@ -37,7 +38,7 @@ export const PagoFinalView = ({ pedidoId }: { pedidoId: number }) => {
     // 1) Ya envió su pago final → confirmación
     if (vm.vista === 'enviado') {
       return (
-        <ScrollView contentContainerStyle={styles.scroll}>
+        <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll}>
           <PagoEnviadoCard pedidoId={pedido.id} pago={pagoFinal} />
 
           {/* Comprobante y recibo */}
@@ -64,7 +65,7 @@ export const PagoFinalView = ({ pedidoId }: { pedidoId: number }) => {
             icon={<Ionicons name="git-commit-outline" size={iconSize.md} color={textColors.inverse} />}
             onPress={vm.irAlPedido}
           />
-        </ScrollView>
+        </KeyboardAwareScrollView>
       );
     }
 
@@ -84,7 +85,7 @@ export const PagoFinalView = ({ pedidoId }: { pedidoId: number }) => {
 
     // 3) Flujo normal: resumen → datos de pago → comprobante → nota
     return (
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <ResumenSaldoCard pedidoId={pedido.id} total={pedido.total_general} pagado={pagado} pendiente={montoPendiente} />
 
         {!!vm.rechazoAnterior && (
@@ -137,14 +138,14 @@ export const PagoFinalView = ({ pedidoId }: { pedidoId: number }) => {
             <Text style={[styles.alertaTxt, { flex: 1 }]}>{vm.errorEnvio}</Text>
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     );
   };
 
   const mostrarBarra = !!vm.pantalla && vm.vista === 'pagar' && !vm.cargando;
 
   return (
-    <KeyboardAvoidingView style={styles.pantalla} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View style={styles.pantalla}>
       <ScreenHeader title="Pago final" onBack={vm.volver} />
       <View style={{ flex: 1 }}>{cuerpo()}</View>
 
@@ -174,7 +175,7 @@ export const PagoFinalView = ({ pedidoId }: { pedidoId: number }) => {
           />
         </View>
       )}
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

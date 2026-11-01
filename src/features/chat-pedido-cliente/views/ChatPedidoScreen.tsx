@@ -1,5 +1,6 @@
 import React from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/shared/components/ScreenHeader';
@@ -17,7 +18,7 @@ export const ChatPedidoScreen = ({ pedidoId }: { pedidoId: number }) => {
   return (
     <KeyboardAvoidingView
       style={styles.pantalla}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior="padding"
     >
       <ScreenHeader title={`Chat · ${folioDe(pedidoId)}`} onBack={volver} />
       <View style={[styles.cuerpo, { paddingBottom: insets.bottom }]}>

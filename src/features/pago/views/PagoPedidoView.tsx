@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, Linking, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { View, Text, Linking, StyleSheet } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Ionicons } from '@expo/vector-icons';
 import { usePagoPedidoViewModel } from '../viewmodels/usePagoPedidoViewModel';
 import { AccionesFicha } from '../components/AccionesFicha';
@@ -41,7 +42,7 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
       const p = vm.pagoExistente;
       const enTienda = p.comprobante_url === 'TIENDA_FISICA';
       return (
-        <ScrollView contentContainerStyle={styles.scroll}>
+        <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll}>
           <FadeInView style={styles.exito}>
             <View style={styles.check}>
               <Ionicons name={enTienda ? 'storefront-outline' : 'checkmark'} size={34} color="#FFFFFF" />
@@ -101,7 +102,7 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
             icon={<Ionicons name="receipt-outline" size={20} color="#FFFFFF" />}
             onPress={vm.irAPedidos}
           />
-        </ScrollView>
+        </KeyboardAwareScrollView>
       );
     }
 
@@ -119,7 +120,7 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
 
     // ── 3) Flujo normal: datos de pago + comprobante ───────────
     return (
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <FadeInView>
           <Text style={styles.titulo}>Pedido {folioDe(pedido.id)}</Text>
         </FadeInView>
@@ -184,14 +185,14 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
             <Text style={styles.errorTexto}>{vm.errorEnvio}</Text>
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     );
   };
 
   const mostrarBarra = !!vm.pantalla && vm.puedePagar && !vm.pagoExistente;
 
   return (
-    <KeyboardAvoidingView style={styles.pantalla} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View style={styles.pantalla}>
       <ScreenHeader title="Pago del anticipo" onBack={vm.volver} />
       <View style={{ flex: 1 }}>{cuerpo()}</View>
 
@@ -214,7 +215,7 @@ export const PagoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
           <CustomButton title="Más tarde" variant="outline" onPress={vm.irAPedidos} />
         </View>
       )}
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

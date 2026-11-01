@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   useFonts,
@@ -33,6 +34,8 @@ export default function RootLayout() {
   if (!fuentesListas && !errorFuentes) return null;
 
   return (
+    // KeyboardProvider: maneja el teclado en Android (edge-to-edge) para que no tape las cajas de texto
+    <KeyboardProvider>
     <AuthProvider>
       <CartProvider>
         <NotificacionesProvider>
@@ -53,5 +56,6 @@ export default function RootLayout() {
        </NotificacionesProvider>
        </CartProvider>
     </AuthProvider>
+    </KeyboardProvider>
   );
 }

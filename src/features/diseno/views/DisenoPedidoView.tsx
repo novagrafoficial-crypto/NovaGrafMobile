@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDisenoPedidoViewModel } from '../viewmodels/useDisenoPedidoViewModel';
@@ -64,7 +65,7 @@ export const DisenoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
     const progreso = vm.total > 0 ? vm.listos / vm.total : 0;
 
     return (
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Avance: cuántos productos ya tienen su diseño */}
         <View style={styles.avance}>
           <View style={styles.avanceFila}>
@@ -95,7 +96,7 @@ export const DisenoPedidoView = ({ pedidoId }: { pedidoId: number }) => {
             <Text style={styles.errorTexto} maxFontSizeMultiplier={ESCALA}>{vm.errorEnvio}</Text>
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     );
   };
 

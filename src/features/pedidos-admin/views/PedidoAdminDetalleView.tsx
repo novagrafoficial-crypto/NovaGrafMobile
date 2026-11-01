@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAwareScrollView, type KeyboardAwareScrollViewRef } from 'react-native-keyboard-controller';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
@@ -81,20 +82,11 @@ export const PedidoAdminDetalleView = () => {
   const vm = usePedidoAdminDetalleViewModel();
   const d = vm.data;
   const sel = vm.detalle;
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<KeyboardAwareScrollViewRef>(null);
   // Posición de cada sección para poder bajar a ella
   const posiciones = useRef<Record<string, number>>({});
   const guardarPosicion = (clave: string) => (e: { nativeEvent: { layout: { y: number } } }) => {
     posiciones.current[clave] = e.nativeEvent.layout.y;
-  };
-  // Al escribir en el chat: cuando aparece el teclado se baja hasta el final,
-  // así la caja de texto queda visible encima del teclado.
-  const bajarAlChat = () => {
-    const sub = Keyboard.addListener('keyboardDidShow', () => scrollRef.current?.scrollToEnd({ animated: true }));
-    setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
-      sub.remove();
-    }, 400);
   };
   const irA = (clave: string) => scrollRef.current?.scrollTo({ y: Math.max(0, (posiciones.current[clave] ?? 0) - 12), animated: true });
 
@@ -217,8 +209,8 @@ export const PedidoAdminDetalleView = () => {
           <CustomButton title="Reintentar" variant="outline" onPress={vm.reintentar} />
         </View>
       ) : (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <ScrollView
+        <View style={{ flex: 1 }}>
+          <KeyboardAwareScrollView bottomOffset={24}
             ref={scrollRef}
             contentContainerStyle={styles.scroll}
             showsVerticalScrollIndicator={false}
@@ -421,7 +413,7 @@ export const PedidoAdminDetalleView = () => {
 
             {/* 7. Chat con el cliente */}
             <View onLayout={guardarPosicion('chat')}>
-              <ChatPedidoView pedidoId={vm.pedidoId} onInputFocus={bajarAlChat} />
+              <ChatPedidoView pedidoId={vm.pedidoId} />
             </View>
 
             {/* 8. Cancelar (al final, para no tocarlo por error) */}
@@ -431,8 +423,8 @@ export const PedidoAdminDetalleView = () => {
                 <Text style={styles.cancelarTexto} maxFontSizeMultiplier={ESCALA}>Cancelar pedido</Text>
               </PressableScale>
             )}
-          </ScrollView>
-        </KeyboardAvoidingView>
+          </KeyboardAwareScrollView>
+        </View>
       )}
     </View>
   );
