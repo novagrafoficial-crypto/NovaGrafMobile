@@ -1,7 +1,11 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { SessionStorage } from '../SessionStorage';
 import { sessionEvents } from '../sessionEvents';
+
 import { API_URL, API_TIMEOUT } from '@/constants/app';
+
+// Respuestas del middleware de autenticación del backend que invalidan la sesión
+const SESION_INVALIDA = ['Token inválido', 'Sesión expirada', 'Acceso no autorizado'];
 
 /**
  * Patrón Singleton: toda la app comparte UNA sola instancia de axios
@@ -32,7 +36,12 @@ class ApiClient {
       (response) => response,
       (error) => {
         const llevabaToken = Boolean(error?.config?.headers?.Authorization);
-        if (error?.response?.status === 401 && llevabaToken) {
+        const status = error?.response?.status;
+        // Solo cuando el middleware de autenticación rechaza el TOKEN (vencido, inválido
+        // o emitido antes de un cambio de contraseña). Otros 401/403 no cierran la sesión.
+        const motivo = error?.response?.data?.error;
+        const tokenRechazado = (status === 401 || status === 403) && SESION_INVALIDA.includes(motivo);
+        if (tokenRechazado && llevabaToken) {
           sessionEvents.emitirSesionExpirada();
         }
         return Promise.reject(error);
