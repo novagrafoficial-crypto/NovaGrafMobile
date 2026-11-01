@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
@@ -86,6 +86,15 @@ export const PedidoAdminDetalleView = () => {
   const posiciones = useRef<Record<string, number>>({});
   const guardarPosicion = (clave: string) => (e: { nativeEvent: { layout: { y: number } } }) => {
     posiciones.current[clave] = e.nativeEvent.layout.y;
+  };
+  // Al escribir en el chat: cuando aparece el teclado se baja hasta el final,
+  // así la caja de texto queda visible encima del teclado.
+  const bajarAlChat = () => {
+    const sub = Keyboard.addListener('keyboardDidShow', () => scrollRef.current?.scrollToEnd({ animated: true }));
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+      sub.remove();
+    }, 400);
   };
   const irA = (clave: string) => scrollRef.current?.scrollTo({ y: Math.max(0, (posiciones.current[clave] ?? 0) - 12), animated: true });
 
@@ -208,7 +217,7 @@ export const PedidoAdminDetalleView = () => {
           <CustomButton title="Reintentar" variant="outline" onPress={vm.reintentar} />
         </View>
       ) : (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView
             ref={scrollRef}
             contentContainerStyle={styles.scroll}
@@ -412,7 +421,7 @@ export const PedidoAdminDetalleView = () => {
 
             {/* 7. Chat con el cliente */}
             <View onLayout={guardarPosicion('chat')}>
-              <ChatPedidoView pedidoId={vm.pedidoId} onInputFocus={() => setTimeout(() => irA('chat'), 300)} />
+              <ChatPedidoView pedidoId={vm.pedidoId} onInputFocus={bajarAlChat} />
             </View>
 
             {/* 8. Cancelar (al final, para no tocarlo por error) */}
