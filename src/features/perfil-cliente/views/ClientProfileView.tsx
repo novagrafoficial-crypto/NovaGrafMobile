@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Ionicons } from '@expo/vector-icons';
 import { useClientProfileViewModel } from '../viewmodels/useClientProfileViewModel';
 import { ModalConfirmacionLogout } from '@/shared/components/ModalConfirmacionLogout';
@@ -13,12 +14,13 @@ import { TarjetaUsuario } from '../components/TarjetaUsuario';
 import { FilaDato } from '../components/FilaDato';
 import { FilaMenu } from '../components/FilaMenu';
 import { CampoTexto } from '../components/CampoTexto';
+import { FormularioContrasena } from '../components/FormularioContrasena';
 
 const ESCALA = 1.15;
 
 export const ClientProfileView = () => {
   const vm = useClientProfileViewModel();
-  const { profile, form, setForm, pwForm, setPwForm } = vm;
+  const { profile, form, setForm } = vm;
 
   const nombreCompleto = [profile?.nombre, profile?.apellido_paterno, profile?.apellido_materno]
     .filter(Boolean)
@@ -37,8 +39,8 @@ export const ClientProfileView = () => {
       {vm.loading ? (
         <Loading fullScreen />
       ) : (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView
+        <View style={{ flex: 1 }}>
+          <KeyboardAwareScrollView bottomOffset={24}
             contentContainerStyle={styles.scroll}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
@@ -130,57 +132,7 @@ export const ClientProfileView = () => {
                     onPress={vm.alternarPwForm}
                   />
 
-                  {vm.showPwForm && (
-                    <FadeInView distance={-8} duration={240} style={styles.formularioPw}>
-                      <CampoTexto
-                        etiqueta="Contraseña actual"
-                        icono="key-outline"
-                        secureTextEntry={!vm.verPw}
-                        value={pwForm.actual}
-                        onChangeText={(t) => setPwForm({ ...pwForm, actual: t })}
-                        onAlternarVer={vm.alternarVerPw}
-                        visible={vm.verPw}
-                      />
-                      <CampoTexto
-                        etiqueta="Nueva contraseña"
-                        icono="lock-closed-outline"
-                        placeholder="Mínimo 6 caracteres"
-                        secureTextEntry={!vm.verPw}
-                        value={pwForm.nueva}
-                        onChangeText={(t) => setPwForm({ ...pwForm, nueva: t })}
-                      />
-                      <CampoTexto
-                        etiqueta="Confirmar contraseña"
-                        icono="lock-closed-outline"
-                        secureTextEntry={!vm.verPw}
-                        value={pwForm.confirmar}
-                        onChangeText={(t) => setPwForm({ ...pwForm, confirmar: t })}
-                      />
-
-                      {vm.pwMsg && (
-                        <View style={styles.pwMensaje}>
-                          <Ionicons
-                            name={vm.pwMsg.ok ? 'checkmark-circle' : 'alert-circle'}
-                            size={16}
-                            color={vm.pwMsg.ok ? '#166534' : brandColors.error}
-                          />
-                          <Text style={[styles.pwMensajeTexto, { color: vm.pwMsg.ok ? '#166534' : brandColors.error }]} maxFontSizeMultiplier={ESCALA}>
-                            {vm.pwMsg.text}
-                          </Text>
-                        </View>
-                      )}
-
-                      <PressableScale
-                        style={[styles.boton, styles.botonCompleto, styles.botonPrincipal, vm.pwSaving && styles.deshabilitado]}
-                        onPress={vm.handleSavePassword}
-                        disabled={vm.pwSaving}
-                      >
-                        <Text style={styles.botonPrincipalTexto} maxFontSizeMultiplier={ESCALA}>
-                          {vm.pwSaving ? 'Guardando…' : 'Guardar contraseña'}
-                        </Text>
-                      </PressableScale>
-                    </FadeInView>
-                  )}
+                  {vm.showPwForm && <FormularioContrasena onGuardar={vm.cambiarContrasena} />}
                 </>
               )}
 
@@ -188,8 +140,8 @@ export const ClientProfileView = () => {
               <FilaMenu icono="trash-outline" titulo="Eliminar mi cuenta" onPress={vm.irAEliminarCuenta} />
               <FilaMenu icono="log-out-outline" titulo="Cerrar sesión" flecha="ninguna" peligro onPress={vm.pedirLogout} ultima />
             </FadeInView>
-          </ScrollView>
-        </KeyboardAvoidingView>
+          </KeyboardAwareScrollView>
+        </View>
       )}
     </View>
   );
@@ -241,9 +193,6 @@ const styles = StyleSheet.create({
 
   // Formularios
   formulario: { gap: space.md, paddingTop: space.sm, paddingBottom: space.lg },
-  formularioPw: { gap: space.md, paddingBottom: space.lg },
-  pwMensaje: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  pwMensajeTexto: { fontFamily: fontFamily.medium, fontSize: 13 },
 
   // Botones
   botones: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },

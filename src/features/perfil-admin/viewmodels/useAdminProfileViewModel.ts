@@ -38,9 +38,6 @@ export const useAdminProfileViewModel = () => {
   const [aviso, setAviso] = useState<AvisoUI | null>(null);
 
   const [verPw, setVerPw] = useState(false);
-  const [pw, setPw] = useState({ actual: '', nueva: '', confirmar: '' });
-  const [pwGuardando, setPwGuardando] = useState(false);
-  const [pwAviso, setPwAviso] = useState<AvisoUI | null>(null);
 
   const [logoutVisible, setLogoutVisible] = useState(false);
 
@@ -99,36 +96,11 @@ export const useAdminProfileViewModel = () => {
     }
   };
 
-  const guardarContrasena = async () => {
-    if (!userId) return;
-    if (!pw.actual || !pw.nueva) {
-      setPwAviso({ texto: 'Completa todos los campos.', ok: false });
-      return;
-    }
-    if (pw.nueva.length < 6) {
-      setPwAviso({ texto: 'La contraseña debe tener al menos 6 caracteres.', ok: false });
-      return;
-    }
-    if (pw.nueva !== pw.confirmar) {
-      setPwAviso({ texto: 'Las contraseñas no coinciden.', ok: false });
-      return;
-    }
-    setPwGuardando(true);
-    try {
-      const res = await adminProfileService.changePassword(userId, { actual: pw.actual, nueva: pw.nueva });
-      setPw({ actual: '', nueva: '', confirmar: '' });
-      setPwAviso({ texto: res.message ?? 'Contraseña actualizada.', ok: true });
-    } catch (e: any) {
-      setPwAviso({ texto: e?.response?.data?.message ?? 'Error de conexión.', ok: false });
-    } finally {
-      setPwGuardando(false);
-    }
-  };
+  // Cambio de contraseña: validación y cierre de sesión viven en useCambioContrasena
+  const cambiarContrasena = (actual: string, nueva: string) =>
+    adminProfileService.changePassword(userId as number, { actual, nueva });
 
-  const alternarPw = () => {
-    setVerPw((v) => !v);
-    setPwAviso(null);
-  };
+  const alternarPw = () => setVerPw((v) => !v);
 
   const confirmarLogout = async () => {
     setLogoutVisible(false);
@@ -141,7 +113,7 @@ export const useAdminProfileViewModel = () => {
     iniciarEdicion: () => setEditando(true), cancelarEdicion, guardarPerfil,
     aviso,
     esGoogle: perfil?.proveedor === 'google',
-    verPw, alternarPw, pw, setPw, pwGuardando, pwAviso, guardarContrasena,
+    verPw, alternarPw, cambiarContrasena,
     logoutVisible,
     pedirLogout: () => setLogoutVisible(true),
     cancelarLogout: () => setLogoutVisible(false),
