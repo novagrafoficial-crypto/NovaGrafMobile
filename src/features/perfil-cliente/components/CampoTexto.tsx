@@ -33,6 +33,7 @@ export const CampoTexto = ({ etiqueta, icono, bloqueado, onAlternarVer, visible,
         <Ionicons name={icono} size={18} color={enfocado ? brandColors.primary : textColors.muted} />
         <TextInput
           {...input}
+          accessibilityLabel={input.accessibilityLabel ?? etiqueta}
           editable={!bloqueado}
           style={styles.input}
           placeholderTextColor={textColors.muted}

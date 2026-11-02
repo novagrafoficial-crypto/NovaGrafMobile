@@ -45,3 +45,17 @@ describe('Permiso de galería a demanda', () => {
     expect(picker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
   });
 });
+
+describe('Permiso de galería desactivado', () => {
+  it('PS-17 · si ya no se puede preguntar, ofrece abrir Ajustes y no abre la galería', async () => {
+    const { Linking } = require('react-native');
+    const abrirAjustes = jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
+    (picker.getMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({ granted: false, canAskAgain: false });
+    jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, botones) => {
+      botones?.find((b) => b.text === 'Abrir ajustes')?.onPress?.();
+    });
+    expect(await pedirPermisoGaleria()).toBe(false);
+    expect(abrirAjustes).toHaveBeenCalled();
+    expect(picker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
+  });
+});
