@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { SessionStorage } from '../SessionStorage';
 import { sessionEvents } from '../sessionEvents';
+import { asegurarPinning } from './certificatePinning';
 
 import { API_URL, API_TIMEOUT } from '@/constants/app';
 
@@ -20,6 +21,8 @@ class ApiClient {
 
     this.http.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
+        // Certificate pinning activo antes de que salga la primera petición
+        await asegurarPinning();
         const session = await SessionStorage.get();
         if (session?.token && config.headers) {
           config.headers.Authorization = `Bearer ${session.token}`;
