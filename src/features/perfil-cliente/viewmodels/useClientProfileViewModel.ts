@@ -4,6 +4,7 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import { useNotificaciones } from '@/features/notificaciones';
 import type { ClientProfile } from '../models/ClientProfile';
 import { clientProfileService } from '../services/clientProfileService';
+import { usePreferenciasPrivacidad } from './usePreferenciasPrivacidad';
 
 type Mensaje = { text: string; ok: boolean };
 
@@ -24,6 +25,7 @@ export const useClientProfileViewModel = () => {
 
   const [logoutVisible, setLogoutVisible] = useState<boolean>(false);
   const { noLeidas } = useNotificaciones();
+  const privacidad = usePreferenciasPrivacidad(userId);
 
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const later = (fn: () => void, ms: number) => {
@@ -98,6 +100,7 @@ export const useClientProfileViewModel = () => {
     showPwForm,
     alternarPwForm: () => setShowPwForm((v) => !v),
     cambiarContrasena,
+    privacidad,
     cancelarEdicion,
     noLeidas,
     irANotificaciones: () => router.push('/(cliente)/notificaciones' as any),

@@ -15,6 +15,7 @@ import { FilaDato } from '../components/FilaDato';
 import { FilaMenu } from '../components/FilaMenu';
 import { CampoTexto } from '../components/CampoTexto';
 import { FormularioContrasena } from '../components/FormularioContrasena';
+import { PreferenciasPrivacidad } from '../components/PreferenciasPrivacidad';
 
 const ESCALA = 1.15;
 
@@ -121,7 +122,18 @@ export const ClientProfileView = () => {
               )}
             </FadeInView>
 
-            {/* 4. CUENTA: contraseña (solo cuentas con correo) + cerrar sesión */}
+            {/* 4. PRIVACIDAD: derecho ARCO de Oposición (switches Opt-Out) */}
+            <FadeInView delay={150} style={styles.card}>
+              <PreferenciasPrivacidad
+                prefs={vm.privacidad.prefs}
+                cargando={vm.privacidad.cargando}
+                guardando={vm.privacidad.guardando}
+                error={vm.privacidad.error}
+                onCambiar={vm.privacidad.cambiar}
+              />
+            </FadeInView>
+
+            {/* 5. CUENTA: contraseña (solo cuentas con correo) + cerrar sesión */}
             <FadeInView delay={180} style={styles.card}>
               {!vm.esGoogle && (
                 <>
