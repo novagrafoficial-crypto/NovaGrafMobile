@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRegisterViewModel } from '../viewmodels/useRegisterViewModel';
 import { AuthScreen, EnlaceAuth } from '../components/AuthScreen';
 import { BotonGoogle } from '../components/BotonGoogle';
+import { ConsentimientoPrivacidad } from '../components/ConsentimientoPrivacidad';
 import type { RegistroForm } from '../models/Registro';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { CustomInput } from '@/shared/components/CustomInput';
@@ -97,6 +98,11 @@ export const RegisterView = () => {
             icon={<Ionicons name="arrow-forward" size={18} color="#FFFFFF" />}
             onPress={vm.siguiente}
           />
+          <ConsentimientoPrivacidad
+            aceptado={vm.aceptaPrivacidad}
+            onAlternar={vm.alternarPrivacidad}
+            onVerAviso={vm.verAviso}
+          />
           <BotonGoogle
             separador="o regístrate con"
             onPress={vm.registrarConGoogle}
@@ -155,7 +161,17 @@ export const RegisterView = () => {
             {...campo('confirmPassword')}
           />
 
-          <CustomButton title="Crear mi cuenta" onPress={vm.registrar} loading={vm.isLoading} />
+          <ConsentimientoPrivacidad
+            aceptado={vm.aceptaPrivacidad}
+            onAlternar={vm.alternarPrivacidad}
+            onVerAviso={vm.verAviso}
+          />
+          <CustomButton
+            title="Crear mi cuenta"
+            onPress={vm.registrar}
+            loading={vm.isLoading}
+            disabled={!vm.aceptaPrivacidad || vm.isLoading}
+          />
           <CustomButton title="Atrás" variant="outline" onPress={vm.atras} disabled={vm.isLoading} style={{ marginTop: space.sm }} />
         </FadeInView>
       )}

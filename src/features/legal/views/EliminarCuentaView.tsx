@@ -1,5 +1,6 @@
 import React from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Ionicons } from '@expo/vector-icons';
 import { brandColors } from '@/constants/brand';
 import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
@@ -19,7 +20,7 @@ export const EliminarCuentaView = () => {
   const vm = useEliminarCuentaViewModel();
 
   return (
-    <KeyboardAvoidingView style={styles.pantalla} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View style={styles.pantalla}>
       <ScreenHeader title="Eliminar mi cuenta" onBack={vm.volver} />
 
       {vm.enviado ? (
@@ -32,7 +33,7 @@ export const EliminarCuentaView = () => {
           <CustomButton title="Volver" onPress={vm.volver} style={{ alignSelf: 'stretch', marginTop: space.md }} />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {/* Qué pasa con tus datos */}
           <FadeInView style={styles.card}>
             <Text style={styles.titulo} maxFontSizeMultiplier={ESCALA}>¿Qué pasa al eliminar tu cuenta?</Text>
@@ -104,9 +105,9 @@ export const EliminarCuentaView = () => {
               />
             )}
           </FadeInView>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       )}
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

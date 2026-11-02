@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { SessionStorage } from '@/data/SessionStorage';
+import { sessionEvents } from '@/data/sessionEvents';
 import type { User } from '@/features/autenticacion/models/User';
 
 interface AuthContextType {
@@ -28,6 +29,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     void loadStorageData();
   }, []);
+
+  // Se suscribe al aviso de sesión expirada (401) del cliente HTTP.
+  // Al quitar el usuario, RoleGuard redirige automáticamente al login.
+  useEffect(
+    () =>
+      sessionEvents.onSesionExpirada(() => {
+        setUser(null);
+        void SessionStorage.clear();
+      }),
+    []
+  );
 
   const saveSession = async (userData: User) => {
     setUser(userData);

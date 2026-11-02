@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -215,7 +216,7 @@ export const CheckoutView = () => {
     const contenido = [pasoCompra, pasoEntrega, pasoPago, pasoConfirmar][vm.paso];
 
     return (
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* key = paso → cada paso entra con su animación */}
         <FadeInView key={vm.paso} distance={12} duration={260} style={{ gap: space.md }}>
           {contenido()}
@@ -227,14 +228,14 @@ export const CheckoutView = () => {
             <Text style={styles.errorTexto} maxFontSizeMultiplier={ESCALA}>{vm.errorEnvio}</Text>
           </View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     );
   };
 
   const mostrarBarra = !vm.cargando && !vm.errorCarga && vm.items.length > 0;
 
   return (
-    <KeyboardAvoidingView style={styles.pantalla} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View style={styles.pantalla}>
       <ScreenHeader title="Finalizar compra" onBack={vm.atras} />
       {mostrarBarra && <PasosCheckout pasos={vm.pasos} actual={vm.paso} />}
 
@@ -263,7 +264,7 @@ export const CheckoutView = () => {
           </PressableScale>
         </View>
       )}
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

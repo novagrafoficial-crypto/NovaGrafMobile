@@ -34,6 +34,9 @@ export const useRegisterViewModel = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const google = useGoogleSignIn();
+  // Consentimiento explícito del Aviso de Privacidad (opt-in, inicia sin marcar).
+  const [aceptaPrivacidad, setAceptaPrivacidad] = useState(false);
+  const MSG_PRIVACIDAD = 'Para crear tu cuenta debes aceptar el Aviso de Privacidad.';
 
   const setField = (campo: keyof RegistroForm, valor: string) => {
     const limpio = limpiarCampo(campo, valor);
@@ -82,6 +85,10 @@ export const useRegisterViewModel = () => {
       setError('Revisa los campos marcados en rojo.');
       return;
     }
+    if (!aceptaPrivacidad) {
+      setError(MSG_PRIVACIDAD);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -122,7 +129,17 @@ export const useRegisterViewModel = () => {
     volver: () => (paso === 2 ? atras() : router.canGoBack() ? router.back() : router.replace('/' as any)),
     irALogin: () => router.replace('/(auth)/login' as any),
     // Registro con Google: el backend crea la cuenta si el correo no existe.
-    registrarConGoogle: google.continuarConGoogle,
+    registrarConGoogle: () => {
+      if (!aceptaPrivacidad) return setError(MSG_PRIVACIDAD);
+      setError(null);
+      google.continuarConGoogle();
+    },
+    aceptaPrivacidad,
+    alternarPrivacidad: () => {
+      setAceptaPrivacidad((v) => !v);
+      setError(null);
+    },
+    verAviso: () => router.push('/politicas' as any),
     isGoogleLoading: google.isGoogleLoading,
   };
 };

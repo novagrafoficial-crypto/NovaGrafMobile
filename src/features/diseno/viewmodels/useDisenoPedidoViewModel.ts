@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { pedirPermisoGaleria } from '@/shared/utils/permisos';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { pedidoService } from '@/features/pedidos/services/pedidoService';
@@ -49,6 +50,7 @@ export const useDisenoPedidoViewModel = (pedidoId: number) => {
   };
 
   const desdeGaleria = async (varianteId: number) => {
+    if (!(await pedirPermisoGaleria())) return;
     const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.9 });
     if (r.canceled) return;
     const a = r.assets[0];
