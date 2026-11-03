@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Linking } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { pedirPermisoGaleria } from '@/shared/utils/permisos';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { modoDePago } from '@/features/pago/utils/pagoUtils';
@@ -76,6 +77,7 @@ export const usePagoFinalViewModel = (pedidoId: number) => {
   };
 
   const desdeGaleria = async () => {
+    if (!(await pedirPermisoGaleria())) return;
     const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (r.canceled) return;
     const a = r.assets[0];

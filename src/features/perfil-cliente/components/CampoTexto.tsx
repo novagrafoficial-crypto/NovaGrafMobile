@@ -16,21 +16,24 @@ interface Props extends Omit<TextInputProps, 'style'> {
   /** Para contraseñas: muestra el ojo para ver / ocultar */
   onAlternarVer?: () => void;
   visible?: boolean;
+  /** Mensaje de error debajo del campo (pinta el borde en rojo) */
+  error?: string | null;
 }
 
 const ESCALA = 1.15;
 
 // Campo de formulario con ícono, igual en editar perfil y en contraseña.
-export const CampoTexto = ({ etiqueta, icono, bloqueado, onAlternarVer, visible, ...input }: Props) => {
+export const CampoTexto = ({ etiqueta, icono, bloqueado, onAlternarVer, visible, error, ...input }: Props) => {
   const [enfocado, setEnfocado] = React.useState(false);
 
   return (
     <View style={styles.contenedor}>
       <Text style={styles.etiqueta} maxFontSizeMultiplier={ESCALA}>{etiqueta}</Text>
-      <View style={[styles.caja, enfocado && styles.cajaEnfocada, bloqueado && styles.cajaBloqueada]}>
+      <View style={[styles.caja, enfocado && styles.cajaEnfocada, bloqueado && styles.cajaBloqueada, !!error && styles.cajaError]}>
         <Ionicons name={icono} size={18} color={enfocado ? brandColors.primary : textColors.muted} />
         <TextInput
           {...input}
+          accessibilityLabel={input.accessibilityLabel ?? etiqueta}
           editable={!bloqueado}
           style={styles.input}
           placeholderTextColor={textColors.muted}
@@ -45,6 +48,7 @@ export const CampoTexto = ({ etiqueta, icono, bloqueado, onAlternarVer, visible,
           </PressableScale>
         )}
       </View>
+      {!!error && <Text style={styles.error} maxFontSizeMultiplier={ESCALA}>{error}</Text>}
     </View>
   );
 };
@@ -65,6 +69,8 @@ const styles = StyleSheet.create({
   },
   cajaEnfocada: { borderColor: brandColors.primary, borderWidth: 1.5 },
   cajaBloqueada: { backgroundColor: surface.muted },
+  cajaError: { borderColor: brandColors.error, borderWidth: 1.5 },
+  error: { fontFamily: fontFamily.regular, fontSize: 12, color: brandColors.error },
   input: {
     flex: 1,
     height: '100%',

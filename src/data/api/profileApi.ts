@@ -16,4 +16,15 @@ export const profileApi = {
     const { data } = await apiClient.put(`/users/profile/${userId}/password`, body);
     return data;
   },
+
+  // ARCO — Oposición: preferencias de privacidad (switches Opt-Out)
+  getPrivacidad: async (userId: number) => {
+    const { data } = await apiClient.get(`/users/profile/${userId}/privacidad`);
+    return data;
+  },
+
+  updatePrivacidad: async (userId: number, body: unknown) => {
+    const { data } = await apiClient.put(`/users/profile/${userId}/privacidad`, body);
+    return data;
+  },
 };

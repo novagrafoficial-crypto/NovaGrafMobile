@@ -61,6 +61,7 @@ describe('Integración: registro con Google', () => {
       data: { id_usuario: 12, nombre: 'Nuevo', rol: 'cliente', token: 'jwt-nuevo' },
     });
     await pantallaRegistro();
+    await fireEvent.press(screen.getByLabelText('Acepto el Aviso de Privacidad'));
     await fireEvent.press(screen.getByText('Continuar con Google'));
 
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/(cliente)/inicio'));
@@ -82,6 +83,7 @@ describe('Integración: registro con Google', () => {
       },
     });
     await pantallaRegistro();
+    await fireEvent.press(screen.getByLabelText('Acepto el Aviso de Privacidad'));
     await fireEvent.press(screen.getByText('Continuar con Google'));
 
     expect(await screen.findByText(/ya está registrado con contraseña/)).toBeOnTheScreen();
@@ -96,6 +98,7 @@ describe('Integración: registro con Google', () => {
       data: { idToken: null, user: { email: 'ana@gmail.com' } },
     });
     await pantallaRegistro();
+    await fireEvent.press(screen.getByLabelText('Acepto el Aviso de Privacidad'));
     await fireEvent.press(screen.getByText('Continuar con Google'));
 
     expect(await screen.findByText('Google no devolvió el idToken')).toBeOnTheScreen();
@@ -105,6 +108,7 @@ describe('Integración: registro con Google', () => {
   it('PI-11 · sin Google Play Services: avisa al usuario', async () => {
     (GoogleSignin.hasPlayServices as jest.Mock).mockRejectedValueOnce({ code: 'PLAY_SERVICES_NOT_AVAILABLE' });
     await pantallaRegistro();
+    await fireEvent.press(screen.getByLabelText('Acepto el Aviso de Privacidad'));
     await fireEvent.press(screen.getByText('Continuar con Google'));
 
     expect(
@@ -116,6 +120,7 @@ describe('Integración: registro con Google', () => {
   it('PI-12 · inicio de Google ya en curso: no muestra error ni llama al backend', async () => {
     (GoogleSignin.signIn as jest.Mock).mockRejectedValue({ code: 'IN_PROGRESS' });
     await pantallaRegistro();
+    await fireEvent.press(screen.getByLabelText('Acepto el Aviso de Privacidad'));
     await fireEvent.press(screen.getByText('Continuar con Google'));
 
     await waitFor(() => expect(GoogleSignin.signIn).toHaveBeenCalled());
@@ -126,9 +131,18 @@ describe('Integración: registro con Google', () => {
   it('PI-13 · error inesperado de Google: muestra un mensaje genérico', async () => {
     (GoogleSignin.signIn as jest.Mock).mockRejectedValue(new Error('fallo de red'));
     await pantallaRegistro();
+    await fireEvent.press(screen.getByLabelText('Acepto el Aviso de Privacidad'));
     await fireEvent.press(screen.getByText('Continuar con Google'));
 
     expect(await screen.findByText('No se pudo iniciar sesión con Google')).toBeOnTheScreen();
     expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('PS-10 · sin aceptar el Aviso de Privacidad no abre Google', async () => {
+    await pantallaRegistro();
+    await fireEvent.press(screen.getByText('Continuar con Google'));
+
+    expect(await screen.findByText('Para crear tu cuenta debes aceptar el Aviso de Privacidad.')).toBeOnTheScreen();
+    expect(GoogleSignin.signIn).not.toHaveBeenCalled();
   });
 });

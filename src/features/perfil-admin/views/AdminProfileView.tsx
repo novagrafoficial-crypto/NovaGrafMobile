@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Ionicons } from '@expo/vector-icons';
 import { brandColors } from '@/constants/brand';
 import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
 import { CampoTexto } from '@/features/perfil-cliente/components/CampoTexto';
+import { FormularioContrasena } from '@/features/perfil-cliente/components/FormularioContrasena';
 import { FilaDato } from '@/features/perfil-cliente/components/FilaDato';
 import { FilaMenu } from '@/features/perfil-cliente/components/FilaMenu';
 import { AdminHeader, AvisoAdmin, PastillaAdmin, SeccionAdmin } from '@/shared/components/admin';
@@ -21,8 +23,6 @@ export const AdminProfileView = () => {
   const vm = useAdminProfileViewModel();
   const p = vm.perfil;
   const nombreCompleto = [p?.nombre, p?.apellido_paterno, p?.apellido_materno].filter(Boolean).join(' ');
-  // Solo de la pantalla: mostrar u ocultar lo que se escribe en las contraseñas
-  const [verTexto, setVerTexto] = useState(false);
 
   return (
     <View style={styles.pantalla}>
@@ -33,8 +33,8 @@ export const AdminProfileView = () => {
       {vm.cargando ? (
         <Loading fullScreen />
       ) : (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <View style={{ flex: 1 }}>
+          <KeyboardAwareScrollView bottomOffset={24} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             {vm.aviso && <AvisoAdmin texto={vm.aviso.texto} ok={vm.aviso.ok} />}
 
             {/* 1. Tarjeta del administrador */}
@@ -104,40 +104,15 @@ export const AdminProfileView = () => {
                   {!vm.esGoogle && (
                     <>
                       <FilaMenu icono="lock-closed-outline" titulo="Cambiar contraseña" flecha={vm.verPw ? 'arriba' : 'abajo'} onPress={vm.alternarPw} />
-                      {vm.verPw && (
-                        <FadeInView distance={-8} duration={240} style={styles.formPw}>
-                          <CampoTexto
-                            etiqueta="Contraseña actual"
-                            icono="key-outline"
-                            secureTextEntry={!verTexto}
-                            value={vm.pw.actual}
-                            onChangeText={(t) => vm.setPw({ ...vm.pw, actual: t })}
-                            onAlternarVer={() => setVerTexto((v) => !v)}
-                            visible={verTexto}
-                          />
-                          <CampoTexto etiqueta="Nueva contraseña" icono="lock-closed-outline" placeholder="Mínimo 6 caracteres" secureTextEntry={!verTexto} value={vm.pw.nueva} onChangeText={(t) => vm.setPw({ ...vm.pw, nueva: t })} />
-                          <CampoTexto etiqueta="Confirmar contraseña" icono="lock-closed-outline" secureTextEntry={!verTexto} value={vm.pw.confirmar} onChangeText={(t) => vm.setPw({ ...vm.pw, confirmar: t })} />
-
-                          {vm.pwAviso && (
-                            <View style={styles.pwMensaje}>
-                              <Ionicons name={vm.pwAviso.ok ? 'checkmark-circle' : 'alert-circle'} size={16} color={vm.pwAviso.ok ? '#166534' : brandColors.error} />
-                              <Text style={[styles.pwMensajeTexto, { color: vm.pwAviso.ok ? '#166534' : brandColors.error }]} maxFontSizeMultiplier={ESCALA}>{vm.pwAviso.texto}</Text>
-                            </View>
-                          )}
-
-                          <PressableScale style={[styles.boton, styles.botonPrincipal, { flex: 0 }, vm.pwGuardando && { opacity: 0.6 }]} onPress={vm.guardarContrasena} disabled={vm.pwGuardando}>
-                            <Text style={styles.botonPrincipalTexto} maxFontSizeMultiplier={ESCALA}>{vm.pwGuardando ? 'Guardando…' : 'Guardar contraseña'}</Text>
-                          </PressableScale>
-                        </FadeInView>
-                      )}
+                      {vm.verPw && <FormularioContrasena onGuardar={vm.cambiarContrasena} />}
                     </>
                   )}
                   <FilaMenu icono="log-out-outline" titulo="Cerrar sesión" flecha="ninguna" peligro onPress={vm.pedirLogout} ultima />
                 </View>
               </SeccionAdmin>
             </FadeInView>
-          </ScrollView>
-        </KeyboardAvoidingView>
+          </KeyboardAwareScrollView>
+        </View>
       )}
     </View>
   );
@@ -166,9 +141,6 @@ const styles = StyleSheet.create({
   editar: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, height: 32, borderRadius: radius.pill, backgroundColor: surface.muted },
   editarTexto: { fontFamily: fontFamily.medium, fontSize: 13, color: textColors.primary },
 
-  formPw: { gap: space.md, paddingBottom: space.md },
-  pwMensaje: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  pwMensajeTexto: { flex: 1, fontFamily: fontFamily.medium, fontSize: 13 },
 
   botones: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },
   boton: { flex: 1, height: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },

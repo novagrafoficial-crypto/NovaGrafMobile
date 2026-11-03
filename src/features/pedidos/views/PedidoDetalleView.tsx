@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, ScrollView, Image, StyleSheet, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { usePedidoDetalleViewModel } from '../viewmodels/usePedidoDetalleViewModel';
@@ -49,6 +49,18 @@ const icono = (name: IconoNombre, color: string = textColors.inverse) => (
 export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
   const vm = usePedidoDetalleViewModel(pedidoId);
   const p = vm.pedido;
+
+  // "Revisar previa": baja hasta la etapa de previas (posición de la lista + la de la etapa)
+  const scrollRef = useRef<ScrollView>(null);
+  const posiciones = useRef<Record<string, number>>({});
+  useEffect(() => {
+    if (!vm.irAPrevias) return;
+    const t = setTimeout(() => {
+      const y = (posiciones.current.lista ?? 0) + (posiciones.current.previas ?? 0);
+      scrollRef.current?.scrollTo({ y: Math.max(0, y - 12), animated: true });
+    }, 350);
+    return () => clearTimeout(t);
+  }, [vm.irAPrevias]);
 
   // Contenido de cada etapa al desplegarla
   const contenidoEtapa = (id: EtapaId): React.ReactNode => {
@@ -199,6 +211,7 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
 
     return (
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.scroll}
         refreshControl={
           <RefreshControl
@@ -214,10 +227,10 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
         {vm.siguientePaso && <SiguientePasoCard paso={vm.siguientePaso} />}
 
         <Text style={styles.seccionTitulo}>Seguimiento del pedido</Text>
-        <View>
+        <View onLayout={(ev) => (posiciones.current.lista = ev.nativeEvent.layout.y)}>
           {vm.etapas.map((e, i) => (
+            <View key={e.id} onLayout={(ev) => (posiciones.current[e.id] = ev.nativeEvent.layout.y)}>
             <EtapaCard
-              key={e.id}
               etapa={e}
               abierta={vm.etapaAbierta === e.id}
               esUltima={i === vm.etapas.length - 1}
@@ -225,6 +238,7 @@ export const PedidoDetalleView = ({ pedidoId }: { pedidoId: number }) => {
             >
               {contenidoEtapa(e.id)}
             </EtapaCard>
+            </View>
           ))}
         </View>
       </ScrollView>

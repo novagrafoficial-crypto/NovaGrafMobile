@@ -1,6 +1,12 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { SessionStorage } from '../SessionStorage';
+import { sessionEvents } from '../sessionEvents';
+import { asegurarPinning } from './certificatePinning';
+
 import { API_URL, API_TIMEOUT } from '@/constants/app';
+
+// Respuestas del middleware de autenticación del backend que invalidan la sesión
+const SESION_INVALIDA = ['Token inválido', 'Sesión expirada', 'Acceso no autorizado'];
 
 /**
  * Patrón Singleton: toda la app comparte UNA sola instancia de axios
@@ -15,6 +21,8 @@ class ApiClient {
 
     this.http.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
+        // Certificate pinning activo antes de que salga la primera petición
+        await asegurarPinning();
         const session = await SessionStorage.get();
         if (session?.token && config.headers) {
           config.headers.Authorization = `Bearer ${session.token}`;
@@ -22,6 +30,25 @@ class ApiClient {
         return config;
       },
       (error) => Promise.reject(error)
+    );
+
+    // Interceptor de RESPUESTA: si el token expiró o es inválido (401 Unauthorized),
+    // se cierra la sesión y la app regresa al login. Solo aplica a peticiones que
+    // llevaban token (un login con contraseña incorrecta no cierra nada).
+    this.http.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        const llevabaToken = Boolean(error?.config?.headers?.Authorization);
+        const status = error?.response?.status;
+        // Solo cuando el middleware de autenticación rechaza el TOKEN (vencido, inválido
+        // o emitido antes de un cambio de contraseña). Otros 401/403 no cierran la sesión.
+        const motivo = error?.response?.data?.error;
+        const tokenRechazado = (status === 401 || status === 403) && SESION_INVALIDA.includes(motivo);
+        if (tokenRechazado && llevabaToken) {
+          sessionEvents.emitirSesionExpirada();
+        }
+        return Promise.reject(error);
+      }
     );
   }
 

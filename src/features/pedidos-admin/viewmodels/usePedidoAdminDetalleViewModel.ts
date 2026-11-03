@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { pedirPermisoGaleria } from '@/shared/utils/permisos';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { pedidosAdminService } from '../services/pedidosAdminService';
 import { estadoPrevia, textoTipoPago, type EstadoPrevia, type IconoAdmin } from '../utils/pedidoAdminUtils';
@@ -235,6 +236,7 @@ export const usePedidoAdminDetalleViewModel = () => {
   }, [ultimaPrevia, previas, hayAprobada, ultimaRechazada, estadoPedido]);
 
   const elegirPrevia = async () => {
+    if (!(await pedirPermisoGaleria())) return;
     const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (r.canceled) return;
     const a = r.assets[0];

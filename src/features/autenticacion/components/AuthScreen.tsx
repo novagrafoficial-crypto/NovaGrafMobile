@@ -1,5 +1,6 @@
 import React from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -50,8 +51,8 @@ export const AuthScreen = ({
   const regresar = onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/' as any)));
 
   return (
-    <KeyboardAvoidingView style={styles.pantalla} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView
+    <View style={styles.pantalla}>
+      <KeyboardAwareScrollView bottomOffset={24}
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -100,8 +101,8 @@ export const AuthScreen = ({
 
           {!!pie && <View style={styles.pie}>{pie}</View>}
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 };
 

@@ -67,9 +67,13 @@ export const usePedidoDetalleViewModel = (pedidoId: number) => {
   const irAChat = () => router.push(`/(cliente)/chat-pedido/${pedidoId}` as any);
   const irAPagoFinal = () => router.push(`/(cliente)/pago-final/${pedidoId}` as any);
   // Abre la etapa de previas para que el cliente vea la imagen antes de decidir.
+  // Además pide a la vista que baje hasta esa etapa (antes solo la abría y,
+  // como ya estaba abierta, el botón "Revisar previa" parecía no hacer nada).
+  const [irAPrevias, setIrAPrevias] = useState(0);
   const verPrevias = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setEtapaAbierta('previas');
+    setIrAPrevias((n) => n + 1);
   };
 
   const siguientePaso = useMemo<SiguientePaso | null>(() => {
@@ -199,6 +203,7 @@ export const usePedidoDetalleViewModel = (pedidoId: number) => {
     // Flujo paso a paso
     etapas,
     etapaAbierta,
+    irAPrevias,
     toggleEtapa,
     siguientePaso,
     progreso: pedido ? progresoPedido(pedido) : 0,
