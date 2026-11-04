@@ -9,7 +9,7 @@ interface PulseViewProps {
   duration?: number;
 }
 
-// Figura decorativa que "respira" (crece y se encoge) en bucle, sin tocar nada.
+
 export const PulseView = ({ style, scaleTo = 1.15, duration = 1800 }: PulseViewProps) => {
   const progress = useRef(new Animated.Value(0)).current;
 

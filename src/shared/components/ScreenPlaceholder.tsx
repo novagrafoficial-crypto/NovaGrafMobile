@@ -3,7 +3,6 @@ import { View, Text, StyleSheet } from 'react-native';
 import { FadeInView } from './FadeInView';
 import { brandColors, brandTints } from '@/constants/brand';
 
-// Pantalla temporal "Próximamente..." hasta que exista el módulo real.
 export const ScreenPlaceholder = ({ titulo }: { titulo: string }) => (
   <View style={styles.contenedor}>
     <FadeInView style={styles.centro}>

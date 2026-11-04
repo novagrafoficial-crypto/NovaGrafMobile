@@ -1,0 +1,1 @@
+export { PagoFinalView } from './views/PagoFinalView';

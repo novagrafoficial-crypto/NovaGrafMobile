@@ -1,52 +1,42 @@
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
-import { brandColors } from '@/constants/brand';
+import { View } from 'react-native';
+import { surface } from '@/constants/theme';
+import { MenuAdmin, MenuAdminProvider } from '@/features/menu-admin';
+import { NotificacionesAdminProvider } from '@/features/notificaciones-admin';
+import { RoleGuard } from '@/shared/components/RoleGuard';
+
+// Panel del administrador con MENÚ LATERAL (☰)
+function PanelAdmin() {
+  return (
+    <View style={{ flex: 1 }}>
+      <Tabs
+        backBehavior="history"
+        tabBar={() => null}
+        screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: surface.screen } }}
+      >
+        <Tabs.Screen name="dashboard" />
+        <Tabs.Screen name="pedidos" />
+        <Tabs.Screen name="usuarios" />
+        <Tabs.Screen name="notificaciones" />
+        <Tabs.Screen name="perfil-admin" />
+        <Tabs.Screen name="productos" />
+        <Tabs.Screen name="pedido/[id]" />
+      </Tabs>
+      <MenuAdmin />
+    </View>
+  );
+}
 
 export default function LayoutAdmin() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: brandColors.accent,
-        tabBarInactiveTintColor: '#888',
-        tabBarStyle: {
-          backgroundColor: brandColors.white,
-          borderTopColor: '#E0E0E0',
-          height: 65,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-      }}
-    >
-      <Tabs.Screen
-        name="dashboard"
-        options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>📊</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="usuarios"
-        options={{
-          title: 'Usuarios',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>👥</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="productos"
-        options={{
-          title: 'Productos',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>📦</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="perfil"
-        options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>👤</Text>,
-        }}
-      />
-    </Tabs>
+    // Solo el rol administrador entra aquí; un cliente es redirigido a su inicio.
+    <RoleGuard rol="administrador">
+  
+      <NotificacionesAdminProvider>
+        <MenuAdminProvider>
+          <PanelAdmin />
+        </MenuAdminProvider>
+      </NotificacionesAdminProvider>
+    </RoleGuard>
   );
 }

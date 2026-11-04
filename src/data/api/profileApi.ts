@@ -1,6 +1,5 @@
 import apiClient from './ApiClient';
 
-// OJO: la baseURL (EXPO_PUBLIC_API_URL) ya termina en /api, por eso aquí
 // las rutas empiezan en /users/... igual que el login (/users/login).
 export const profileApi = {
   getProfile: async (userId: number) => {
@@ -15,6 +14,17 @@ export const profileApi = {
 
   changePassword: async (userId: number, body: unknown) => {
     const { data } = await apiClient.put(`/users/profile/${userId}/password`, body);
+    return data;
+  },
+
+  // ARCO — Oposición: preferencias de privacidad (switches Opt-Out)
+  getPrivacidad: async (userId: number) => {
+    const { data } = await apiClient.get(`/users/profile/${userId}/privacidad`);
+    return data;
+  },
+
+  updatePrivacidad: async (userId: number, body: unknown) => {
+    const { data } = await apiClient.put(`/users/profile/${userId}/privacidad`, body);
     return data;
   },
 };

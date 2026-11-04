@@ -1,0 +1,1 @@
+export { DisenoPedidoView } from './views/DisenoPedidoView';

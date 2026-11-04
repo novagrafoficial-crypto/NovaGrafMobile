@@ -1,5 +1,5 @@
-import { ScreenPlaceholder } from '@/shared/components/ScreenPlaceholder';
+import { ClientesAdminView } from '@/features/clientes-admin';
 
 export default function RutaUsuarios() {
-  return <ScreenPlaceholder titulo="Usuarios" />;
+  return <ClientesAdminView />;
 }

@@ -1,5 +1,6 @@
-import { ScreenPlaceholder } from '@/shared/components/ScreenPlaceholder';
+import { Redirect } from 'expo-router';
+
 
 export default function RutaCatalogoPublico() {
-  return <ScreenPlaceholder titulo="Catálogo" />;
+  return <Redirect href={'/(public)/trabajos' as any} />;
 }

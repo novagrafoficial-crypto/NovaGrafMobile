@@ -28,7 +28,7 @@ export const useNosotrosViewModel = () => {
   }, []);
 
   useEffect(() => {
-    cargar();
+    void cargar();
   }, [cargar]);
 
   const lineaTiempo = useMemo<AntecedenteConFecha[]>(

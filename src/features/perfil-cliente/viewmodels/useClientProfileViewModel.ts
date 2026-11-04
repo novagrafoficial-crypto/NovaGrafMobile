@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/shared/hooks/useAuth';
+import { useNotificaciones } from '@/features/notificaciones';
 import type { ClientProfile } from '../models/ClientProfile';
 import { clientProfileService } from '../services/clientProfileService';
+import { usePreferenciasPrivacidad } from './usePreferenciasPrivacidad';
 
 type Mensaje = { text: string; ok: boolean };
 
@@ -20,11 +22,10 @@ export const useClientProfileViewModel = () => {
   const [toastMsg, setToastMsg] = useState<Mensaje | null>(null);
 
   const [showPwForm, setShowPwForm] = useState<boolean>(false);
-  const [pwForm, setPwForm] = useState({ actual: '', nueva: '', confirmar: '' });
-  const [pwSaving, setPwSaving] = useState<boolean>(false);
-  const [pwMsg, setPwMsg] = useState<Mensaje | null>(null);
 
   const [logoutVisible, setLogoutVisible] = useState<boolean>(false);
+  const { noLeidas } = useNotificaciones();
+  const privacidad = usePreferenciasPrivacidad(userId);
 
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const later = (fn: () => void, ms: number) => {
@@ -52,7 +53,7 @@ export const useClientProfileViewModel = () => {
   }, [userId]);
 
   useEffect(() => {
-    fetchProfile();
+    void fetchProfile();
   }, [fetchProfile]);
 
   const handleSaveProfile = async () => {
@@ -71,33 +72,14 @@ export const useClientProfileViewModel = () => {
     }
   };
 
-  const handleSavePassword = async () => {
-    if (!userId) return;
-    if (pwForm.nueva !== pwForm.confirmar) {
-      setPwMsg({ text: 'Las contraseñas no coinciden', ok: false });
-      return;
-    }
-    if (pwForm.nueva.length < 6) {
-      setPwMsg({ text: 'Mínimo 6 caracteres', ok: false });
-      return;
-    }
-    setPwSaving(true);
-    try {
-      const res = await clientProfileService.changePassword(userId, {
-        actual: pwForm.actual,
-        nueva: pwForm.nueva,
-      });
-      setPwMsg({ text: res.message, ok: true });
-      setPwForm({ actual: '', nueva: '', confirmar: '' });
-      later(() => {
-        setShowPwForm(false);
-        setPwMsg(null);
-      }, 2000);
-    } catch (err: any) {
-      setPwMsg({ text: err.response?.data?.message || 'Error de conexión', ok: false });
-    } finally {
-      setPwSaving(false);
-    }
+  // Cambio de contraseña: validación y cierre de sesión viven en useCambioContrasena
+  const cambiarContrasena = (actual: string, nueva: string) =>
+    clientProfileService.changePassword(userId as number, { actual, nueva });
+
+  // Cancelar la edición regresa los datos a como estaban
+  const cancelarEdicion = () => {
+    if (profile) setForm(profile);
+    setEditing(false);
   };
 
   const confirmarLogout = async () => {
@@ -117,16 +99,19 @@ export const useClientProfileViewModel = () => {
     toastMsg,
     showPwForm,
     alternarPwForm: () => setShowPwForm((v) => !v),
-    pwForm,
-    setPwForm,
-    pwSaving,
-    pwMsg,
+    cambiarContrasena,
+    privacidad,
+    cancelarEdicion,
+    noLeidas,
+    irANotificaciones: () => router.push('/(cliente)/notificaciones' as any),
+    irAPedidos: () => router.push('/(cliente)/pedidos' as any),
+    irAPoliticas: () => router.push('/politicas' as any),
+    irAEliminarCuenta: () => router.push('/eliminar-cuenta' as any),
     esGoogle: profile?.proveedor === 'google',
     logoutVisible,
     pedirLogout: () => setLogoutVisible(true),
     cancelarLogout: () => setLogoutVisible(false),
     confirmarLogout,
     handleSaveProfile,
-    handleSavePassword,
   };
 };

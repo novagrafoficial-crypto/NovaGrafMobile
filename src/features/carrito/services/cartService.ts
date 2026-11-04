@@ -12,6 +12,17 @@ const aCartItem = (r: any): CartItem => ({
   cantidad: Number(r.cantidad),
   precio_unitario: Number(r.precio_unitario),
   subtotal: Number(r.subtotal),
+  // Si el backend todavía no manda descuentos, se usa el precio normal
+  precio_original: Number(r.precio_original ?? r.precio_unitario),
+  descuento_nombre: r.descuento_nombre ?? null,
+  ahorro: Number(r.ahorro ?? 0),
+  descuento_pendiente: r.descuento_pendiente
+    ? {
+        nombre: r.descuento_pendiente.nombre,
+        cantidad_minima: Number(r.descuento_pendiente.cantidad_minima),
+        faltan: Number(r.descuento_pendiente.faltan),
+      }
+    : null,
 });
 
 export const cartService = {
@@ -19,7 +30,8 @@ export const cartService = {
     const data = await cartApi.getCart();
     const items: CartItem[] = Array.isArray(data?.items) ? data.items.map(aCartItem) : [];
     const total = Number(data?.total ?? items.reduce((suma, i) => suma + i.subtotal, 0));
-    return { items, total };
+    const ahorro = items.reduce((suma, i) => suma + i.ahorro, 0);
+    return { items, total, ahorro };
   },
 
   addToCart: (varianteId: string | number, cantidad: number) =>

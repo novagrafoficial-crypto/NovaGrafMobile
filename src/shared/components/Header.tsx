@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface HeaderProps {
-  /* Texto pequeño bajo la marca (ej. "Carrito", "Panel de Administrador") */
+ 
   subtitle?: string;
 }
 
@@ -35,10 +35,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   subtitulo: {
-    color: brandColors.accent,
-    fontSize: 12,
+    color: "rgba(255,255,255,0.75)", 
+    fontSize: 13,
     marginTop: 2,
-    fontWeight: "600",
+    fontWeight: "500",
     textAlign: "center",
   },
 });

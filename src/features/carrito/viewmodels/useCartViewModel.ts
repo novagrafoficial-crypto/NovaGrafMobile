@@ -71,6 +71,7 @@ export const useCartViewModel = () => {
   return {
     items: cart.items,
     total: cart.total,
+    ahorro: cart.ahorro,
     count: cart.count,
     loading: cart.loading,
     error: cart.error,

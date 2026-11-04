@@ -1,0 +1,1 @@
+export { ChatPedidoView } from './views/ChatPedidoView';

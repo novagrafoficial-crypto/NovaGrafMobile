@@ -1,26 +1,29 @@
 import type { Ubicacion } from '../models/Contacto';
 
+// Nombres de Ionicons (antes eran emojis)
 const ICONOS_CONTACTO: Record<string, string> = {
-  telefono: '📞',
-  'teléfono': '📞',
-  email: '✉️',
-  correo: '✉️',
-  whatsapp: '💬',
-  horario: '🕒',
+  telefono: 'call-outline',
+  'teléfono': 'call-outline',
+  email: 'mail-outline',
+  correo: 'mail-outline',
+  whatsapp: 'logo-whatsapp',
+  horario: 'time-outline',
 };
 
 const ICONOS_RED: Record<string, string> = {
-  facebook: '📘',
-  instagram: '📷',
-  twitter: '🐦',
-  whatsapp: '💬',
-  youtube: '📺',
-  tiktok: '🎵',
-  linkedin: '🔗',
+  facebook: 'logo-facebook',
+  instagram: 'logo-instagram',
+  twitter: 'logo-twitter',
+  x: 'logo-twitter',
+  whatsapp: 'logo-whatsapp',
+  youtube: 'logo-youtube',
+  tiktok: 'logo-tiktok',
+  linkedin: 'logo-linkedin',
+  pinterest: 'logo-pinterest',
 };
 
-export const iconoContacto = (tipo: string) => ICONOS_CONTACTO[tipo.toLowerCase()] ?? '📌';
-export const iconoRed = (nombre: string) => ICONOS_RED[nombre.toLowerCase()] ?? '🌐';
+export const iconoContacto = (tipo: string) => ICONOS_CONTACTO[tipo.toLowerCase()] ?? 'information-circle-outline';
+export const iconoRed = (nombre: string) => ICONOS_RED[nombre.toLowerCase()] ?? 'globe-outline';
 
 export const capitalizar = (texto: string) =>
   texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : texto;

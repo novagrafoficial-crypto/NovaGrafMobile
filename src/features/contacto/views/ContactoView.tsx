@@ -5,19 +5,20 @@ import { QuickAction } from '../components/QuickAction';
 import { InfoCard } from '../components/InfoCard';
 import { ContactRow } from '../components/ContactRow';
 import { SocialChip } from '../components/SocialChip';
-import { ScreenHeader } from '@/shared/components/ScreenHeader';
+import { PublicHeader } from '@/features/menu-publico';
 import { Loading } from '@/shared/components/Loading';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { FadeInView } from '@/shared/components/FadeInView';
-import { PulseView } from '@/shared/components/PulseView';
-import { brandColors, brandTints } from '@/constants/brand';
+import { Ionicons } from '@expo/vector-icons';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, radius, space, surface, textColors } from '@/constants/theme';
 
 export const ContactoView = () => {
   const vm = useContactoViewModel();
 
   return (
     <View style={styles.pantalla}>
-      <ScreenHeader title="Contacto" onBack={vm.regresar} />
+      <PublicHeader titulo="Contacto" />
 
       {vm.aviso && (
         <FadeInView distance={-10} duration={250} style={styles.toast}>
@@ -29,6 +30,7 @@ export const ContactoView = () => {
         <Loading fullScreen />
       ) : vm.error ? (
         <View style={styles.centrado}>
+          <Ionicons name="cloud-offline-outline" size={40} color={textColors.muted} />
           <Text style={styles.error}>{vm.error}</Text>
           <CustomButton title="Reintentar" onPress={vm.reintentar} style={styles.botonAncho} />
         </View>
@@ -47,12 +49,10 @@ export const ContactoView = () => {
         >
           {/* HERO con círculos que "respiran" y botones de acción rápida */}
           <View style={styles.hero}>
-            <PulseView style={styles.circuloGrande} scaleTo={1.18} duration={2200} />
-            <PulseView style={styles.circuloChico} scaleTo={1.3} duration={1600} />
 
             <FadeInView>
-              <Text style={styles.heroTitulo}>Contáctanos</Text>
-              <Text style={styles.heroTexto}>Estamos aquí para ayudarte a materializar tus ideas.</Text>
+              <Text style={styles.heroTitulo} maxFontSizeMultiplier={1.15}>¿Hablamos?</Text>
+              <Text style={styles.heroTexto} maxFontSizeMultiplier={1.15}>Estamos para ayudarte con tu pedido o tu idea.</Text>
             </FadeInView>
 
             {vm.acciones.length > 0 && (
@@ -79,16 +79,18 @@ export const ContactoView = () => {
 
             {!!vm.horario && (
               <FadeInView delay={150} style={styles.horario}>
-                <Text style={styles.horarioIcono}>🕒</Text>
+                <View style={styles.horarioIcono}>
+                  <Ionicons name="time-outline" size={22} color={brandColors.primary} />
+                </View>
                 <View style={styles.horarioInfo}>
-                  <Text style={styles.horarioEtiqueta}>HORARIO DE ATENCIÓN</Text>
+                  <Text style={styles.horarioEtiqueta}>Horario de atención</Text>
                   <Text style={styles.horarioTexto}>{vm.horario}</Text>
                 </View>
               </FadeInView>
             )}
 
             {vm.filas.length > 0 && (
-              <InfoCard icono="📞" titulo="Contacto directo" delay={250}>
+              <InfoCard icono="call-outline" titulo="Contacto directo" delay={250}>
                 {vm.filas.map((f, i) => (
                   <ContactRow
                     key={f.id}
@@ -104,7 +106,7 @@ export const ContactoView = () => {
             )}
 
             {vm.redes.length > 0 && (
-              <InfoCard icono="🌐" titulo="Síguenos" delay={350}>
+              <InfoCard icono="share-social-outline" titulo="Síguenos" delay={350}>
                 <View style={styles.redes}>
                   {vm.redes.map((r) => (
                     <SocialChip key={r.id} icono={r.icono} nombre={r.nombre} onPress={() => vm.abrir(r.href)} />
@@ -114,7 +116,7 @@ export const ContactoView = () => {
             )}
 
             {vm.ubicacionLineas.length > 0 && (
-              <InfoCard icono="📍" titulo="Dónde estamos" delay={450}>
+              <InfoCard icono="location-outline" titulo="Dónde estamos" delay={450}>
                 {vm.ubicacionLineas.map((linea, i) => (
                   <Text key={`${linea}-${i}`} style={[styles.direccion, i === 0 && styles.direccionPrincipal]}>
                     {linea}
@@ -123,7 +125,7 @@ export const ContactoView = () => {
                 {!!vm.mapaHref && (
                   <CustomButton
                     title="Cómo llegar"
-                    icon={<Text style={styles.iconoBoton}>🗺️</Text>}
+                    icon={<Ionicons name="navigate-outline" size={18} color="#FFFFFF" />}
                     onPress={() => vm.abrir(vm.mapaHref)}
                     style={styles.botonMapa}
                   />
@@ -138,70 +140,51 @@ export const ContactoView = () => {
 };
 
 const styles = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: brandColors.background },
-  centrado: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  error: { color: brandColors.error, textAlign: 'center', fontWeight: '500', marginBottom: 14 },
+  pantalla: { flex: 1, backgroundColor: surface.screen },
+  centrado: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12 },
+  error: { fontFamily: fontFamily.medium, fontSize: 15, color: textColors.primary, textAlign: 'center' },
   botonAncho: { paddingHorizontal: 28 },
   scroll: { paddingBottom: 40 },
 
-  toast: { marginHorizontal: 16, marginTop: 10, padding: 12, borderRadius: 12, backgroundColor: brandTints.errorSoft },
-  toastTexto: { textAlign: 'center', fontWeight: '600', color: brandColors.error },
+  toast: { marginHorizontal: space.lg, marginTop: 10, padding: space.md, borderRadius: radius.md, backgroundColor: '#FEE2E2' },
+  toastTexto: { fontFamily: fontFamily.medium, fontSize: 14, textAlign: 'center', color: brandColors.error },
 
+  // Continúa el verde del encabezado
   hero: {
-    backgroundColor: brandColors.primaryDark,
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 30,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    overflow: 'hidden',
-  },
-  circuloGrande: {
-    position: 'absolute',
-    top: -70,
-    right: -60,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
     backgroundColor: brandColors.primary,
-    opacity: 0.55,
+    paddingHorizontal: 20,
+    paddingTop: 4,
+    paddingBottom: 26,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
-  circuloChico: {
-    position: 'absolute',
-    bottom: -30,
-    left: -30,
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: brandColors.accent,
-    opacity: 0.25,
-  },
-  heroTitulo: { fontSize: 30, fontWeight: '800', color: brandColors.white },
-  heroTexto: { fontSize: 14, color: brandTints.accentSoft, marginTop: 6, lineHeight: 20, maxWidth: '85%' },
-  acciones: { flexDirection: 'row', justifyContent: 'center', gap: 26, marginTop: 24 },
+  heroTitulo: { fontFamily: fontFamily.bold, fontSize: 24, color: '#FFFFFF' },
+  heroTexto: { fontFamily: fontFamily.regular, fontSize: 14, color: 'rgba(255,255,255,0.85)', marginTop: 4, lineHeight: 20 },
+  acciones: { flexDirection: 'row', justifyContent: 'center', gap: 28, marginTop: 22 },
 
   contenido: { padding: 20, gap: 16 },
 
   horario: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: brandColors.primary,
-    borderRadius: 18,
-    padding: 16,
+    gap: space.md,
+    backgroundColor: surface.card,
+    borderRadius: radius.lg,
+    padding: space.lg,
+    borderWidth: 1,
+    borderColor: surface.border,
   },
-  horarioIcono: { fontSize: 26 },
+  horarioIcono: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#E6F2EF', alignItems: 'center', justifyContent: 'center' },
   horarioInfo: { flex: 1 },
-  horarioEtiqueta: { fontSize: 11, fontWeight: '800', letterSpacing: 1, color: brandColors.accent },
-  horarioTexto: { fontSize: 15, fontWeight: '700', color: brandColors.white, marginTop: 2 },
+  horarioEtiqueta: { fontFamily: fontFamily.medium, fontSize: 12, color: textColors.muted },
+  horarioTexto: { fontFamily: fontFamily.semibold, fontSize: 15, color: textColors.primary, marginTop: 2 },
 
-  redes: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  redes: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: space.sm },
 
-  direccion: { fontSize: 14, color: brandTints.textMuted, lineHeight: 21 },
-  direccionPrincipal: { fontSize: 16, fontWeight: '700', color: brandColors.primaryDark },
-  botonMapa: { marginTop: 16 },
-  iconoBoton: { fontSize: 18 },
+  direccion: { fontFamily: fontFamily.regular, fontSize: 14, color: textColors.secondary, lineHeight: 21 },
+  direccionPrincipal: { fontFamily: fontFamily.semibold, fontSize: 15, color: textColors.primary, marginTop: space.sm },
+  botonMapa: { marginTop: space.lg },
 
-  vacio: { backgroundColor: brandColors.white, borderRadius: 16, padding: 20 },
-  vacioTexto: { textAlign: 'center', color: brandTints.textMuted, fontSize: 14 },
+  vacio: { backgroundColor: surface.card, borderRadius: radius.lg, padding: 20, borderWidth: 1, borderColor: surface.border },
+  vacioTexto: { fontFamily: fontFamily.regular, textAlign: 'center', color: textColors.secondary, fontSize: 14 },
 });

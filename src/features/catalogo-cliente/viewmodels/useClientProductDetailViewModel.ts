@@ -57,7 +57,7 @@ export const useClientProductDetailViewModel = (productId: string | number, colo
       }
     };
 
-    cargar();
+    void cargar();
     return () => {
       cancelado = true;
     };

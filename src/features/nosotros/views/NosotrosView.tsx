@@ -1,28 +1,31 @@
 import React from 'react';
 import { View, Text, ScrollView, RefreshControl, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNosotrosViewModel } from '../viewmodels/useNosotrosViewModel';
 import { SectionHeading } from '../components/SectionHeading';
 import { PurposeCard } from '../components/PurposeCard';
 import { ValueCard } from '../components/ValueCard';
 import { TimelineItem } from '../components/TimelineItem';
-import { ScreenHeader } from '@/shared/components/ScreenHeader';
+import { PublicHeader } from '@/features/menu-publico';
 import { Loading } from '@/shared/components/Loading';
 import { CustomButton } from '@/shared/components/CustomButton';
 import { FadeInView } from '@/shared/components/FadeInView';
 import { APP_NAME } from '@/constants/app';
-import { brandColors, brandTints } from '@/constants/brand';
+import { brandColors } from '@/constants/brand';
+import { fontFamily, radius, surface, textColors } from '@/constants/theme';
 
 export const NosotrosView = () => {
   const vm = useNosotrosViewModel();
 
   return (
     <View style={styles.pantalla}>
-      <ScreenHeader title="Nosotros" onBack={vm.regresar} />
+      <PublicHeader titulo="Nosotros" />
 
       {vm.loading ? (
         <Loading fullScreen />
       ) : vm.error ? (
         <View style={styles.centrado}>
+          <Ionicons name="cloud-offline-outline" size={40} color={textColors.muted} />
           <Text style={styles.error}>{vm.error}</Text>
           <CustomButton title="Reintentar" onPress={vm.reintentar} style={styles.botonAncho} />
         </View>
@@ -41,8 +44,8 @@ export const NosotrosView = () => {
         >
           {/* HERO */}
           <FadeInView style={styles.hero}>
-            <Text style={styles.heroTitulo}>Nuestra historia</Text>
-            <Text style={styles.heroTexto}>
+            <Text style={styles.heroTitulo} maxFontSizeMultiplier={1.15}>Nuestra historia</Text>
+            <Text style={styles.heroTexto} maxFontSizeMultiplier={1.15}>
               Conoce quiénes somos, qué nos mueve y el camino que hemos recorrido.
             </Text>
           </FadeInView>
@@ -53,13 +56,13 @@ export const NosotrosView = () => {
               <SectionHeading etiqueta="Propósito" titulo="Nuestra misión y visión" />
               <View style={styles.pila}>
                 <PurposeCard
-                  icono="🎯"
+                  icono="flag-outline"
                   titulo="Misión"
                   texto={vm.mision?.descripcion}
                   acento={brandColors.accent}
                 />
                 <PurposeCard
-                  icono="🔭"
+                  icono="telescope-outline"
                   titulo="Visión"
                   texto={vm.vision?.descripcion}
                   acento={brandColors.primary}
@@ -117,27 +120,27 @@ export const NosotrosView = () => {
 };
 
 const styles = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: brandColors.background },
-  centrado: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  error: { color: brandColors.error, textAlign: 'center', fontWeight: '500', marginBottom: 14 },
+  pantalla: { flex: 1, backgroundColor: surface.screen },
+  centrado: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12 },
+  error: { fontFamily: fontFamily.medium, fontSize: 15, color: textColors.primary, textAlign: 'center' },
   botonAncho: { paddingHorizontal: 28 },
   scroll: { paddingBottom: 40 },
 
-  // Continúa el color del ScreenHeader para que se vea como una sola franja
+  // Continúa el verde del encabezado para que se vea como una sola franja
   hero: {
-    backgroundColor: brandColors.primaryDark,
+    backgroundColor: brandColors.primary,
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 28,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+    paddingTop: 4,
+    paddingBottom: 26,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
-  heroTitulo: { fontSize: 28, fontWeight: '800', color: brandColors.white },
-  heroTexto: { fontSize: 14, color: brandTints.accentSoft, marginTop: 6, lineHeight: 20 },
+  heroTitulo: { fontFamily: fontFamily.bold, fontSize: 24, color: '#FFFFFF' },
+  heroTexto: { fontFamily: fontFamily.regular, fontSize: 14, color: 'rgba(255,255,255,0.85)', marginTop: 4, lineHeight: 20 },
 
   contenido: { padding: 20, gap: 28 },
   pila: { gap: 12 },
 
-  vacio: { backgroundColor: brandColors.white, borderRadius: 14, padding: 18 },
-  vacioTexto: { fontSize: 14, color: brandTints.textMuted, textAlign: 'center', lineHeight: 20 },
+  vacio: { backgroundColor: surface.card, borderRadius: radius.lg, padding: 18, borderWidth: 1, borderColor: surface.border },
+  vacioTexto: { fontFamily: fontFamily.regular, fontSize: 14, color: textColors.secondary, textAlign: 'center', lineHeight: 20 },
 });

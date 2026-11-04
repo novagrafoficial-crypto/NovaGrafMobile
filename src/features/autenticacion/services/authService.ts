@@ -1,5 +1,6 @@
 import { authApi } from '@/data/api/authApi';
 import type { User } from '../models/User';
+import type { RegistroForm, RegistroResponse } from '../models/Registro';
 
 // Adapter: convierte la respuesta del backend en nuestro modelo User.
 const normalize = (data: any): User => {
@@ -39,4 +40,19 @@ const createLoginMethod = (request: LoginRequest): LoginMethod =>
 
 export const authService = {
   login: (request: LoginRequest): Promise<User> => createLoginMethod(request).authenticate(),
+  
+  register: (form: RegistroForm): Promise<RegistroResponse> => authApi.register(form),
+
+  verifyAccount: (idUsuario: string, otp: string) => authApi.verifyOtp(idUsuario, otp),
+
+  resendActivation: (idUsuario: string) => authApi.resendActivationOtp(idUsuario),
+
+  forgotPassword: (email: string) => authApi.forgotPassword(email),
+
+  verifyRecovery: (idUsuario: string, otp: string) => authApi.verifyRecoveryOtp(idUsuario, otp),
+
+  resendRecovery: (idUsuario: string) => authApi.resendRecoveryOtp(idUsuario),
+
+  resetPassword: (idUsuario: string, otp: string, newPassword: string, confirmPassword: string) =>
+    authApi.resetPassword(idUsuario, otp, newPassword, confirmPassword),
 };
