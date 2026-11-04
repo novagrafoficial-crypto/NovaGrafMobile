@@ -1,4 +1,4 @@
-export const FECHA_ACTUALIZACION = "02 de noviembre de 2026";
+export const FECHA_ACTUALIZACION = "03 de noviembre de 2026";
 export const CORREO_PRIVACIDAD = "novagraf.oficial@gmail.com";
 
 export interface BloquePolitica {
@@ -23,7 +23,7 @@ export const POLITICA_PRIVACIDAD: SeccionPolitica[] = [
       { t: 'li', x: "Responsable: Nova Graf." },
       { t: 'li', x: "Domicilio: C. Morelos 43, Centro, 43000 Huejutla de Reyes, Hgo." },
       { t: 'li', x: "Correo de privacidad: novagraf.oficial@gmail.com" },
-      { t: 'li', x: "Fecha de publicación: 20 de octubre de 2026. Última actualización: 02 de noviembre de 2026." },
+      { t: 'li', x: "Fecha de publicación: 20 de octubre de 2026. Última actualización: 03 de noviembre de 2026." },
     ],
   },
   {
@@ -75,7 +75,7 @@ export const POLITICA_PRIVACIDAD: SeccionPolitica[] = [
       { t: 'p', x: "No vendemos tus datos personales ni usamos publicidad ni herramientas de analítica de terceros. Compartimos datos únicamente con los proveedores que hacen posible el servicio:" },
       { t: 'li', x: "Google: recibe tu solicitud de inicio de sesión y nos entrega tu nombre, correo verificado e identificador, para autenticarte." },
       { t: 'li', x: "Supabase: aloja la base de datos y los archivos, por lo que almacena tus datos de cuenta, pedidos, mensajes y archivos." },
-      { t: 'li', x: "SendGrid: recibe tu nombre y correo electrónico para enviarte códigos de verificación, de recuperación y avisos." },
+      { t: 'li', x: "Brevo: recibe tu nombre y correo electrónico para enviarte códigos de verificación, de recuperación y avisos." },
       { t: 'li', x: "Render: aloja el servidor que procesa las solicitudes de la aplicación y del sitio y genera registros técnicos." },
       { t: 'li', x: "Vercel: aloja el sitio web y genera registros técnicos de acceso, como la dirección IP." },
       { t: 'p', x: "También podemos compartir datos con una autoridad competente cuando la ley lo exija." },
