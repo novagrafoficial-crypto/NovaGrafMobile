@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { usePathname, useRouter } from 'expo-router';
@@ -73,7 +73,12 @@ export const MenuLateral = () => {
         {/* Cabecera verde con la marca */}
         <View style={[styles.cabecera, { paddingTop: insets.top + space.lg }]}>
           <View style={styles.logo}>
-            <Ionicons name="color-palette" size={24} color={brandColors.primary} />
+            <Image
+              source={require('@/assets/images/logo-nova-graf-verde.png')}
+              style={styles.logoImagen}
+              resizeMode="contain"
+              accessibilityLabel="Logo de Nova Graf"
+            />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.marca} maxFontSizeMultiplier={ESCALA}>Nova Graf</Text>
@@ -112,6 +117,7 @@ const styles = StyleSheet.create({
     gap: space.md,
   },
   logo: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  logoImagen: { width: 36, height: 22 },
   marca: { fontFamily: fontFamily.bold, fontSize: 18, color: '#FFFFFF' },
   lema: { fontFamily: fontFamily.regular, fontSize: 12, color: 'rgba(255,255,255,0.8)' },
   cerrar: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
