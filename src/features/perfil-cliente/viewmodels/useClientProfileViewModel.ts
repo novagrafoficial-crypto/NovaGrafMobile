@@ -28,15 +28,15 @@ export const useClientProfileViewModel = () => {
   const privacidad = usePreferenciasPrivacidad(userId);
 
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const later = (fn: () => void, ms: number) => {
+  const later = useCallback((fn: () => void, ms: number) => {
     timers.current.push(setTimeout(fn, ms));
-  };
+  }, []);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
-  const notify = (text: string, ok = true) => {
+  const notify = useCallback((text: string, ok = true) => {
     setToastMsg({ text, ok });
     later(() => setToastMsg(null), 3500);
-  };
+  }, [later]);
 
   const fetchProfile = useCallback(async () => {
     if (!userId) return;
@@ -50,7 +50,7 @@ export const useClientProfileViewModel = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, notify]);
 
   useEffect(() => {
     void fetchProfile();

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
@@ -36,7 +36,7 @@ export const MenuLateral = () => {
   const ruta = usePathname();
   const insets = useSafeAreaInsets();
   // 0 = cerrado, 1 = abierto: un solo valor mueve el panel y oscurece el fondo
-  const progreso = useRef(new Animated.Value(0)).current;
+  const progreso = useState(() => new Animated.Value(0))[0];
 
   useEffect(() => {
     Animated.timing(progreso, { toValue: abierto ? 1 : 0, duration: 220, useNativeDriver: true }).start();

@@ -209,7 +209,7 @@ export const usePedidoAdminDetalleViewModel = () => {
     });
 
   // ---- Previas: una a la vez, hasta que el cliente apruebe ----
-  const previas: PreviaAdmin[] = data?.previas ?? [];
+  const previas = useMemo<PreviaAdmin[]>(() => data?.previas ?? [], [data]);
   const estadoPedido = data?.pedido.estado;
   const ultimaPrevia = previas.length ? previas[previas.length - 1] : null;
   const estadoDe = (p: PreviaAdmin): EstadoPrevia => estadoPrevia(p);

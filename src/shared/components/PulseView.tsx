@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, StyleProp, ViewStyle } from 'react-native';
 
 interface PulseViewProps {
@@ -11,7 +11,7 @@ interface PulseViewProps {
 
 
 export const PulseView = ({ style, scaleTo = 1.15, duration = 1800 }: PulseViewProps) => {
-  const progress = useRef(new Animated.Value(0)).current;
+  const progress = useState(() => new Animated.Value(0))[0];
 
   useEffect(() => {
     const loop = Animated.loop(

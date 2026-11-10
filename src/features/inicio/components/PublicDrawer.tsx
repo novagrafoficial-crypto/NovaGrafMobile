@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -19,7 +19,7 @@ export const PublicDrawer = ({ isOpen, onClose }: PublicDrawerProps) => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   // 0 = cerrado, 1 = abierto. Un solo valor mueve el menú Y oscurece el fondo.
-  const progress = useRef(new Animated.Value(0)).current;
+  const progress = useState(() => new Animated.Value(0))[0];
 
   useEffect(() => {
     Animated.timing(progress, {

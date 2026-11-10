@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import { Animated, GestureResponderEvent, Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -18,7 +18,7 @@ export const PressableScale = ({
   children,
   ...rest
 }: PressableScaleProps) => {
-  const scale = useRef(new Animated.Value(1)).current;
+  const scale = useState(() => new Animated.Value(1))[0];
 
   const animateTo = (value: number) =>
     Animated.spring(scale, {

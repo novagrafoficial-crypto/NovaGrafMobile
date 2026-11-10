@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, StyleProp, ViewStyle } from 'react-native';
 
 interface FadeInViewProps {
@@ -18,7 +18,7 @@ export const FadeInView = ({
   duration = 380,
   style,
 }: FadeInViewProps) => {
-  const progress = useRef(new Animated.Value(0)).current;
+  const progress = useState(() => new Animated.Value(0))[0];
 
   useEffect(() => {
     Animated.timing(progress, {
