@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { brandColors } from '@/constants/brand';
@@ -52,7 +52,12 @@ export const PublicHomeView = () => {
               </PressableScale>
             </View>
             <View style={styles.bannerIcono}>
-              <Ionicons name="color-palette" size={44} color="#FFFFFF" />
+              <Image
+                source={require('@/assets/images/logo-nova-graf-blanco.png')}
+                style={styles.bannerLogo}
+                resizeMode="contain"
+                accessibilityLabel="Logo de Nova Graf"
+              />
             </View>
           </FadeInView>
 
@@ -153,6 +158,7 @@ const styles = StyleSheet.create({
   },
   bannerBotonTexto: { fontFamily: fontFamily.semibold, fontSize: 14, color: brandColors.primary },
   bannerIcono: { width: 76, height: 76, borderRadius: 38, backgroundColor: 'rgba(53,186,153,0.35)', alignItems: 'center', justifyContent: 'center' },
+  bannerLogo: { width: 60, height: 37 },
 
   aviso: { alignItems: 'center', gap: space.sm, padding: space.lg, borderRadius: radius.lg, backgroundColor: surface.card, borderWidth: 1, borderColor: surface.border },
   avisoTexto: { fontFamily: fontFamily.regular, fontSize: 14, color: textColors.secondary, textAlign: 'center' },
