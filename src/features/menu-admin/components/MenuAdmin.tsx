@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
@@ -29,7 +29,7 @@ export const MenuAdmin = () => {
   const insets = useSafeAreaInsets();
   const [salirVisible, setSalirVisible] = useState(false);
   // 0 = cerrado, 1 = abierto: un solo valor mueve el panel y oscurece el fondo
-  const progreso = useRef(new Animated.Value(0)).current;
+  const progreso = useState(() => new Animated.Value(0))[0];
 
   useEffect(() => {
     Animated.timing(progreso, { toValue: abierto ? 1 : 0, duration: 220, useNativeDriver: true }).start();

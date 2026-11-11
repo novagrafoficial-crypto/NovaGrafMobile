@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { brandColors } from '@/constants/brand';
@@ -17,7 +17,7 @@ interface Props {
 
 // Encabezado del detalle: folio, estado, barra de avance y "Paso X de 7".
 export const ProgresoPedido = ({ pedido, etapas, progreso, cancelado }: Props) => {
-  const ancho = useRef(new Animated.Value(0)).current;
+  const ancho = useState(() => new Animated.Value(0))[0];
   const actual = etapas.find((e) => e.estado === 'actual');
   const completadas = etapas.filter((e) => e.estado === 'completada').length;
   const piezas = pedido.detalles.reduce((s, d) => s + d.cantidad, 0);

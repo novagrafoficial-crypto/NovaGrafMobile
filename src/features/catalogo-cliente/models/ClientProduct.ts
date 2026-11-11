@@ -7,5 +7,5 @@ export interface ClientProduct {
   categoria?: string;
   subcategoria?: string;
   colores_disponibles?: string[];
-  colores_imagenes?: Array<{ color: string; imagen_url: string }>;
+  colores_imagenes?: { color: string; imagen_url: string }[];
 }

@@ -45,3 +45,7 @@ example
 *.env
 
 coverage/
+
+# Pruebas de Maestro (solo locales)
+.maestro/
+reporte-maestro.html

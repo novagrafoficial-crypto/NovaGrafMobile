@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { create, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { SessionStorage } from '../SessionStorage';
 import { sessionEvents } from '../sessionEvents';
 import { asegurarPinning } from './certificatePinning';
@@ -17,7 +17,7 @@ class ApiClient {
   readonly http: AxiosInstance;
 
   private constructor() {
-    this.http = axios.create({ baseURL: API_URL, timeout: API_TIMEOUT });
+    this.http = create({ baseURL: API_URL, timeout: API_TIMEOUT });
 
     this.http.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
@@ -60,5 +60,5 @@ class ApiClient {
   }
 }
 
-export const apiClient = ApiClient.getInstance().http;
+const apiClient = ApiClient.getInstance().http;
 export default apiClient;
