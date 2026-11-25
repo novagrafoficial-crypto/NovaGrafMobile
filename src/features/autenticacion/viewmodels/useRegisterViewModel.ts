@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { RegistroForm } from '../models/Registro';
 import { authService } from '../services/authService';
@@ -37,6 +38,12 @@ export const useRegisterViewModel = () => {
   // Consentimiento explícito del Aviso de Privacidad (opt-in, inicia sin marcar).
   const [aceptaPrivacidad, setAceptaPrivacidad] = useState(false);
   const MSG_PRIVACIDAD = 'Para crear tu cuenta debes aceptar el Aviso de Privacidad.';
+  // El mensaje de arriba no se ve si el usuario está abajo (botón de Google):
+  // además se muestra como alerta flotante (comentarios de la prueba cerrada).
+  const avisarPrivacidad = () => {
+    setError(MSG_PRIVACIDAD);
+    Alert.alert('Falta un paso', `${MSG_PRIVACIDAD} Marca la casilla antes de continuar.`, [{ text: 'Entendido' }]);
+  };
 
   const setField = (campo: keyof RegistroForm, valor: string) => {
     const limpio = limpiarCampo(campo, valor);
@@ -86,7 +93,7 @@ export const useRegisterViewModel = () => {
       return;
     }
     if (!aceptaPrivacidad) {
-      setError(MSG_PRIVACIDAD);
+      avisarPrivacidad();
       return;
     }
     setIsLoading(true);
@@ -130,7 +137,7 @@ export const useRegisterViewModel = () => {
     irALogin: () => router.replace('/(auth)/login' as any),
     // Registro con Google: el backend crea la cuenta si el correo no existe.
     registrarConGoogle: () => {
-      if (!aceptaPrivacidad) return setError(MSG_PRIVACIDAD);
+      if (!aceptaPrivacidad) return avisarPrivacidad();
       setError(null);
       google.continuarConGoogle();
     },
