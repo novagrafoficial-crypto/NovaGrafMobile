@@ -2,6 +2,7 @@
  * Opt-in del Aviso de Privacidad (derechos ARCO / consentimiento explícito)
  */
 import { renderHook, act } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 import { useRegisterViewModel } from '../../src/features/autenticacion/viewmodels/useRegisterViewModel';
 import { authService } from '../../src/features/autenticacion/services/authService';
 
@@ -51,6 +52,15 @@ describe('Registro: consentimiento del Aviso de Privacidad (opt-in)', () => {
     await act(() => result.current.alternarPrivacidad());
     await act(() => result.current.registrar());
     expect(authService.register).toHaveBeenCalledTimes(1);
+  });
+
+  it('PS-34 · con Google sin aceptar el aviso se muestra una alerta flotante', async () => {
+    const alerta = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    const { result } = await renderHook(() => useRegisterViewModel());
+    await act(() => result.current.registrarConGoogle());
+    expect(alerta).toHaveBeenCalledWith('Falta un paso', expect.stringContaining('Aviso de Privacidad'), expect.any(Array));
+    expect(result.current.error).toBe('Para crear tu cuenta debes aceptar el Aviso de Privacidad.');
+    alerta.mockRestore();
   });
 
   it('PS-04 · el enlace abre el Aviso de Privacidad', async () => {
